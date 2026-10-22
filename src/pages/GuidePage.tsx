@@ -1,5 +1,5 @@
 import { BookOpen, Check, Clock, FileText, Headphones, MessageSquare, PenLine } from 'lucide-react'
-import { Alert, Card, CollapsibleCard } from '../components/ui'
+import { Alert, BackButton, Card, CollapsibleCard } from '../components/ui'
 import type { Route } from '../lib/routes'
 import {
   PASS_THRESHOLD_PER_SKILL,
@@ -17,6 +17,10 @@ import {
 export function GuidePage({ onNavigate }: { onNavigate: (route: Route) => void }) {
   return (
     <div className="flex flex-col gap-4">
+      <div>
+        <BackButton onBack={() => onNavigate('dashboard')} />
+      </div>
+
       <Card>
         <div className="flex items-center gap-2">
           <BookOpen size={20} className="text-teal-700 dark:text-teal-300" />
