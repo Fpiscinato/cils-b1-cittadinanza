@@ -8,7 +8,6 @@
 
 export const ROUTES = [
   'dashboard',
-  'study',
   'practice',
   'mock',
   'progress',

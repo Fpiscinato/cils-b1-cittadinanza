@@ -51,6 +51,19 @@ export class CilsDatabase extends Dexie {
 
 export const db = new CilsDatabase()
 
+/**
+ * Sem isto, a atualização da app fica bloqueada.
+ *
+ * O Dexie abre a base de dados com a versão do esquema. Se um separador
+ * antigo da app (com o esquema v1) ficar aberto, a nova versão (v3) fica a
+ * espera — o `open()` nunca resolve e a app fica eternamente no ecrã
+ * "A carregar…". Com o evento `versionchange`, o separador antigo fecha a
+ * ligação e deixa o upgrade acontecer.
+ */
+db.on('versionchange', () => {
+  db.close()
+})
+
 export async function initializeDatabase(): Promise<void> {
   await db.open()
 }

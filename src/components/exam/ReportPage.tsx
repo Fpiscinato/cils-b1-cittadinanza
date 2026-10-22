@@ -47,6 +47,20 @@ export function ReportPage({
     return evaluateExam(report.session.perSkill)
   }, [report])
 
+  // TODOS os hooks têm de correr ANTES de qualquer return antecipado — caso
+  // contrário o React reclama (erro #310) e o ecrã fica em branco.
+  const oralAudio = report?.oralAudio ?? null
+  const audioUrl = useMemo(
+    () => (oralAudio ? URL.createObjectURL(oralAudio) : null),
+    [oralAudio],
+  )
+
+  useEffect(() => {
+    return () => {
+      if (audioUrl) URL.revokeObjectURL(audioUrl)
+    }
+  }, [audioUrl])
+
   if (loading) {
     return <p className="text-sm font-bold text-slate-500">A carregar o relatório…</p>
   }
@@ -55,7 +69,7 @@ export function ReportPage({
     return (
       <Card>
         <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
-          Não encontrei esta prova. Puede ter sido removida.
+          Não encontrei esta prova. Pode ter sido removida.
         </p>
         <div className="mt-3">
           <Button variant="secondary" onClick={() => onNavigate('progress')}>
@@ -66,12 +80,8 @@ export function ReportPage({
     )
   }
 
-  const { session, questions, writing, oral, passages, oralAudio } = report
+  const { session, questions, writing, oral, passages } = report
   const date = new Date(session.startedAt).toLocaleDateString('pt-PT')
-  const audioUrl = useMemo(
-    () => (oralAudio ? URL.createObjectURL(oralAudio) : null),
-    [oralAudio],
-  )
 
   return (
     <div className="flex flex-col gap-3">

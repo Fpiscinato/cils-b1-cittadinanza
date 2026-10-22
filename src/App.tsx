@@ -7,7 +7,6 @@ import { PracticePage, type PendingSession } from './pages/PracticePage'
 import { MockPage } from './pages/MockPage'
 import { ProgressPage } from './pages/ProgressPage'
 import { GuidePage } from './pages/GuidePage'
-import { StudyPage } from './pages/StudyPage'
 import { ReportPage } from './components/exam/ReportPage'
 import { MistakesPage } from './pages/MistakesPage'
 import { AnswerSheetPage } from './pages/AnswerSheetPage'
@@ -33,6 +32,7 @@ import { BACKUP_EXPORTED_KEY } from './lib/backup'
 export default function App() {
   const [route, setRoute] = useState<Route>(() => routeFromHash(window.location.hash))
   const [ready, setReady] = useState(false)
+  const [bootError, setBootError] = useState<string | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [sessions, setSessions] = useState<Session[]>([])
   const [attempts, setAttempts] = useState<Attempt[]>([])
@@ -66,17 +66,48 @@ export default function App() {
   /* ---------------------------------------------------------------------- */
 
   useEffect(() => {
+    let cancelled = false
+
     async function bootstrap() {
       applyTheme(readStoredTheme())
-      await initializeDatabase()
-      await syncQuestionBank()
-      await ensureDefaultProfile()
-      await refresh()
-      setReady(true)
-      // Snapshot local de segurança: automático, sem ruído para a aluna.
-      void createSnapshotIfChanged().catch(() => undefined)
+      // O arranque não pode ficar eternamente no "A carregar…": se a base de
+      // dados estiver bloqueada (outro separador com a versão antiga da app
+      // aberta) ou a semear o conteúdo falhar, mostramos o erro e deixamos
+      // a aluna tentar de novo.
+      const timeout = window.setTimeout(() => {
+        if (!cancelled) {
+          setBootError(
+            'A app está a demorar a abrir. Se tens outro separador desta app aberto, fecha-o e toca em "Tentar de novo".',
+          )
+        }
+      }, 15000)
+
+      try {
+        await initializeDatabase()
+        await syncQuestionBank()
+        await ensureDefaultProfile()
+        await refresh()
+        if (cancelled) return
+        setReady(true)
+        setBootError(null)
+        // Snapshot local de segurança: automático, sem ruído para a aluna.
+        void createSnapshotIfChanged().catch(() => undefined)
+      } catch (cause) {
+        if (cancelled) return
+        setBootError(
+          cause instanceof Error
+            ? `Não foi possível abrir os dados: ${cause.message}`
+            : 'Não foi possível abrir os dados.',
+        )
+      } finally {
+        window.clearTimeout(timeout)
+      }
     }
+
     void bootstrap()
+    return () => {
+      cancelled = true
+    }
   }, [refresh])
 
   /* ---------------------------------------------------------------------- */
@@ -172,8 +203,23 @@ export default function App() {
 
   if (!ready) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-slate-50 text-sm font-bold text-slate-500 dark:bg-slate-900">
-        A carregar…
+      <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-slate-50 px-6 text-center dark:bg-slate-900">
+        {bootError ? (
+          <>
+            <p className="max-w-sm text-sm font-black text-slate-700 dark:text-slate-200">
+              {bootError}
+            </p>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-black text-white hover:bg-teal-800"
+            >
+              Tentar de novo
+            </button>
+          </>
+        ) : (
+          <p className="text-sm font-bold text-slate-500">A carregar…</p>
+        )}
       </div>
     )
   }
@@ -212,14 +258,6 @@ export default function App() {
             navigate(mode === 'mock_cittadinanza' ? 'mock' : 'practice')
           }}
           onNavigate={navigate}
-        />
-      ) : null}
-
-      {route === 'study' ? (
-        <StudyPage
-          profileId={profileId}
-          onNavigate={navigate}
-          onCompleted={() => void afterSession()}
         />
       ) : null}
 

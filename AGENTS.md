@@ -297,7 +297,8 @@ do Memoriza `src/lib/github-sync.ts`:
 | Sync | `src/services/gistSync.ts` + `src/components/SyncBadge.tsx` | Sync opcional por Gist (§5.4). |
 | Snapshots | `src/lib/snapshot.ts` + `src/services/snapshots.ts` | Cópias de segurança locais (§5.3). |
 | PWA | `src/App.tsx` + `src/components/UpdateBanner.tsx` | Registo do service worker e aviso de "nova versão" / "pronto para offline" (v1.0.2). |
-| Estudo por nível | `src/pages/StudyPage.tsx` + `src/data/studyBank.ts` | Quiz curto e **aleatório** por nível (A1/A2/B1) e por tipo de material (exercícios, ascolto, lettura). |
+| Estudo por nível | `src/components/StudyPicker.tsx` + `src/data/studyBank.ts` | Quiz curto e **aleatório** por nível (A1/A2/B1) e por tipo de material (exercícios, ascolto, lettura). Vive dentro do ecrã de Prática. |
+| Reset total | `src/services/wipe.ts` + Ajustes | Apagar TUDO do aparelho (com confirmação escrita "APAGAR"). |
 | Padrões de gramática | `src/data/grammarPatterns.ts` | 60 lacunas de gramática no formato da Prova 2 do CILS. |
 | Relatório da prova | `src/components/exam/ReportPage.tsx` + `src/services/reports.ts` | Rever a prova e imprimir/guardar em PDF para enviar à professora. |
 | Clínica de erros | `src/pages/MistakesPage.tsx` | Banco de erros (derivado de `attempts`) com a resposta certa e a explicação; treina só esses erros (`buildExam` com `questionIds`). |
@@ -448,6 +449,16 @@ gabarito oficial garantido, por isso é o primeiro conteúdo do banco.
 - O build token da Cloudflare chama-se `workers build 2026-10-22` (nome automático). É só um
   rótulo: o Worker affectedo é o `cils-b1-cittadinanza` (nome vem do `wrangler.jsonc`).
 - Deploy local alternativo: `npm run deploy` (precisa de `wrangler login`).
+
+## 12-bis. Regras de arranque (o "ficar a carregar")
+
+- O arranque tem **timeout de 15 s**: se a base de dados não abrir, aparece um ecrã de erro
+  com "Tentar de novo" — nunca fica eternamente no "A carregar…".
+- `db.on('versionchange', () => db.close())` (`src/db/database.ts`): sem isto, se um separador
+  antigo da app ficar aberto, o **upgrade do IndexedDB fica bloqueado** e a app nova nunca
+  arranca. É o bug mais provável de "atualizei o telemóvel e ficou a carregar".
+- Todos os hooks de um componente têm de correr **antes** de qualquer `return` antecipado
+  (erro do React #310 = ecrã em branco). Foi o que rebentou o "Rever e exportar".
 
 ## 13. Verificação visual (obrigatória antes de cada push)
 

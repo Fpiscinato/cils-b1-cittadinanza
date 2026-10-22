@@ -21,7 +21,7 @@ import {
   serializeBackup,
   triggerDownload,
 } from '../lib/backup'
-import { resetAbandonedMocks, updateProfile } from '../lib/admin'
+import { resetAbandonedMocks, resetAllProgress, updateProfile } from '../lib/admin'
 import { THRESHOLD_DISCLAIMER } from '../lib/scoring'
 import type { Profile } from '../db/schemas'
 import type { Route } from '../lib/routes'
@@ -36,6 +36,7 @@ import {
   type SyncStatus,
 } from '../services/gistSync'
 import { createSnapshotNow, restoreSnapshot } from '../services/snapshots'
+import { wipeEverything } from '../services/wipe'
 import { deleteSnapshot, listSnapshots, type SnapshotMeta } from '../lib/snapshot'
 
 function formatBytes(bytes: number): string {
@@ -69,6 +70,7 @@ export function SettingsPage({
   const [autoSync, setAutoSyncState] = useState(getAutoSync())
   const [snapshots, setSnapshots] = useState<SnapshotMeta[]>([])
   const [busy, setBusy] = useState(false)
+  const [resetText, setResetText] = useState('')
   const fileInput = useRef<HTMLInputElement>(null)
 
   function refreshSnapshots(): void {
@@ -160,6 +162,41 @@ export function SettingsPage({
     } finally {
       setBusy(false)
     }
+  }
+
+  /** Apaga TUDO neste aparelho (progresso, conteúdo, snapshots, sync). */
+  async function handleFullReset(): Promise<void> {
+    if (resetText.trim().toUpperCase() !== 'APAGAR') return
+    const confirmed = window.confirm(
+      'Isto apaga TUDO neste aparelho: todas as provas (inclusive as concluídas), os textos escritos, o banco de conteúdo, os snapshots e o token do GitHub.\n\nNão há como recuperar. Continua?',
+    )
+    if (!confirmed) return
+    setError(null)
+    setMessage(null)
+    setBusy(true)
+    try {
+      await wipeEverything()
+      setResetText('')
+      setMessage('Tudo apagado. A app vai recarregar com o conteúdo original.')
+      window.setTimeout(() => window.location.reload(), 1200)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao apagar os dados.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleResetPractice(): Promise<void> {
+    if (!profile) return
+    const confirmed = window.confirm(
+      'Isto apaga as práticas que ainda estão a decorrer e as tentativas órfãs. As provas CONCLUÍDAS ficam intactas.\n\nContinuar?',
+    )
+    if (!confirmed) return
+    const result = await resetAllProgress(profile.id)
+    setMessage(
+      `Removidas ${result.sessionsRemoved} sessões e ${result.attemptsRemoved} tentativas. Preservadas ${result.sessionsKept} provas concluídas.`,
+    )
+    onChanged()
   }
 
   async function handleSnapshot(): Promise<void> {
@@ -423,17 +460,75 @@ export function SettingsPage({
         </div>
       </Card>
 
-      {/* Limpar */}
+      {/* Repor */}
       <Card>
-        <p className="text-xs font-black uppercase tracking-wide text-slate-500">Limpar</p>
+        <p className="text-xs font-black uppercase tracking-wide text-slate-500">Repor a app</p>
         <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
-          Remove apenas as sessões por terminar. As provas concluídas são o teu histórico e nunca
-          são apagadas.
+          Escolhe o que queres apagar. As provas <strong>concluídas</strong> só se perdem no reset
+          total (e só com confirmação escrita).
         </p>
-        <div className="mt-3">
-          <Button variant="danger" onClick={() => void handleReset()}>
-            Limpar sessões por terminar
-          </Button>
+
+        <div className="mt-3 flex flex-col gap-3">
+          <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-700/40">
+            <p className="text-xs font-black text-slate-900 dark:text-slate-100">
+              Só as sessões por terminar
+            </p>
+            <p className="mt-0.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+              Remove práticas e simulados a meio. O histórico fica intacto.
+            </p>
+            <div className="mt-2">
+              <Button variant="secondary" onClick={() => void handleReset()} disabled={busy}>
+                Limpar sessões por terminar
+              </Button>
+            </div>
+          </div>
+
+          <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-700/40">
+            <p className="text-xs font-black text-slate-900 dark:text-slate-100">
+              Só o progresso de prática
+            </p>
+            <p className="mt-0.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+              Apaga as práticas e as tentativas órfãs. As provas concluídas ficam.
+            </p>
+            <div className="mt-2">
+              <Button variant="secondary" onClick={() => void handleResetPractice()} disabled={busy}>
+                Repor só a prática
+              </Button>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-rose-300 bg-rose-50 p-3 dark:border-rose-800 dark:bg-rose-950/30">
+            <p className="text-xs font-black text-rose-900 dark:text-rose-200">
+              Apagar tudo (este aparelho)
+            </p>
+            <p className="mt-0.5 text-[11px] font-semibold text-rose-800 dark:text-rose-300">
+              Provas concluídas, textos escritos, banco de conteúdo, snapshots e token do GitHub.
+              Não há como recuperar.
+            </p>
+            <label
+              className="mt-2 block text-[11px] font-black uppercase tracking-wide text-rose-900 dark:text-rose-200"
+              htmlFor="reset-confirm"
+            >
+              Escreve APAGAR para confirmar
+            </label>
+            <input
+              id="reset-confirm"
+              value={resetText}
+              onChange={(event) => setResetText(event.target.value)}
+              placeholder="APAGAR"
+              autoComplete="off"
+              className="mt-1 w-full rounded-xl border border-rose-300 bg-white p-2.5 text-sm font-black uppercase tracking-wide text-slate-900 outline-none focus:border-rose-500 dark:border-rose-800 dark:bg-slate-800 dark:text-slate-100"
+            />
+            <div className="mt-2">
+              <Button
+                variant="danger"
+                onClick={() => void handleFullReset()}
+                disabled={busy || resetText.trim().toUpperCase() !== 'APAGAR'}
+              >
+                Apagar tudo e recomeçar
+              </Button>
+            </div>
+          </div>
         </div>
       </Card>
 

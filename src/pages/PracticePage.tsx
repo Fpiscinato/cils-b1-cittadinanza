@@ -1,14 +1,16 @@
 import { useState } from 'react'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, BookOpen, ClipboardCheck, Dices, GraduationCap, Layers, Volume2 } from 'lucide-react'
 import { ExamSession } from '../components/exam/ExamSession'
+import { StudyPicker, type StudyRequest } from '../components/StudyPicker'
+import { studySkill } from '../lib/study'
 import { Button, Card, CollapsibleCard } from '../components/ui'
 import { EXAM_CONFIGS } from '../lib/exam'
 import type { ExamMode, Phase } from '../db/schemas'
 import type { Route } from '../lib/routes'
-import { PHASE_FOCUS, PHASE_LABELS, PHASE_TITLES } from '../lib/phases'
+import { PHASE_FOCUS, PHASE_TITLES } from '../lib/phases'
 
 /**
- * Uma prova pedida noutro ecrã (painel, conteúdo por fase, estudo).
+ * Uma prova pedida noutro ecrã (painel, conteúdo por fase).
  *
  * `null` = nenhum pedido pendente. Quando existe, o ecrã abre a prova
  * DIRECTAMENTE — a aluna não tem de voltar a clicar.
@@ -19,9 +21,12 @@ export interface PendingSession {
 }
 
 /**
- * Página de prática — "action first": o botão de começar fica no PRIMEIRO
- * card, com o resumo da seleção logo abaixo. O resto vive em cards
- * colapsáveis, fechados por padrão (regra herdada do ElevenSpark).
+ * PRÁTICA — o ecrã único para treinar.
+ *
+ * Tem as três-portas do "treinar um bocado por dia":
+ * 1. **Estudo rápido**: quiz aleatório do nível escolhido (A1/A2/B1);
+ * 2. **Prova de uma habilidade**: a prova completa de uma abilità, cronometrada;
+ * 3. **Prática por fase**: só o material do tema que estás a estudar.
  */
 export function PracticePage({
   profileId,
@@ -37,12 +42,14 @@ export function PracticePage({
   /** Prova pedida noutro ecrã — abre directamente. */
   pending: PendingSession | null
   onPendingConsumed: () => void
+  /** Abre o relatório da prova (rever e enviar à professora). */
   onReview?: (sessionId: string) => void
 }) {
-  // A prática por fase entra pelo estado inicial: o ecrã é montado quando se
-  // chega do Conteúdo, por isso o arranque é imediato (sem flash).
+  // A prova pedida noutro ecrã entra pelo estado inicial: o ecrã é montado
+  // quando se chega do painel, por isso o arranque é imediato (sem flash).
   const [mode, setMode] = useState<ExamMode | null>(pending?.mode ?? null)
   const [phase, setPhase] = useState<Phase | undefined>(pending?.phase)
+  const [study, setStudy] = useState<StudyRequest | null>(null)
 
   if (mode) {
     return (
@@ -67,6 +74,29 @@ export function PracticePage({
     )
   }
 
+  if (study) {
+    return (
+      <ExamSession
+        mode="studio"
+        profileId={profileId}
+        buildOptions={{
+          bank: 'all',
+          level: study.level,
+          phase: study.phase,
+          skill: studySkill(study.kind),
+          shuffle: true,
+          limit: 12,
+        }}
+        onExit={() => setStudy(null)}
+        onCompleted={() => {
+          setStudy(null)
+          onCompleted()
+          onNavigate('dashboard')
+        }}
+      />
+    )
+  }
+
   return (
     <div className="flex flex-col gap-3">
       <Card>
@@ -77,13 +107,41 @@ export function PracticePage({
         >
           <ArrowLeft size={14} /> Voltar ao painel
         </button>
-        <p className="text-xs font-black uppercase tracking-wide text-slate-500">Escolha</p>
+        <p className="text-xs font-black uppercase tracking-wide text-slate-500">Prática</p>
         <p className="mt-1 text-base font-black text-slate-900 dark:text-slate-100">
-          Prova de prática · CILS B1 Cittadinanza
+          O que queres treinar hoje?
         </p>
         <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-          Escolhe a habilidade que queres treinar. Os tempos e os pesos de ponto são os da prova
-          oficial.
+          Estudo rápido para todos os dias, a prova de uma habilidade, ou só o material de uma
+          fase do plano.
+        </p>
+      </Card>
+
+      {/* 1. Estudo rápido (aleatório, por nível) */}
+      <Card>
+        <div className="mb-3 flex items-center gap-2">
+          <Dices size={18} className="text-teal-700 dark:text-teal-300" />
+          <p className="text-sm font-black text-slate-900 dark:text-slate-100">
+            1 · Estudo rápido (aleatório)
+          </p>
+        </div>
+        <StudyPicker
+          onStart={(request) => {
+            setStudy(request)
+          }}
+        />
+      </Card>
+
+      {/* 2. Prova de uma habilidade */}
+      <Card>
+        <div className="mb-2 flex items-center gap-2">
+          <GraduationCap size={18} className="text-teal-700 dark:text-teal-300" />
+          <p className="text-sm font-black text-slate-900 dark:text-slate-100">
+            2 · Prova de uma habilidade
+          </p>
+        </div>
+        <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+          Cronometrada como no exame, com o material baralhado.
         </p>
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
           {(['ascolto', 'lettura', 'scrittura', 'orale'] as const).map((item) => {
@@ -92,7 +150,10 @@ export function PracticePage({
               <button
                 key={item}
                 type="button"
-                onClick={() => setMode(item)}
+                onClick={() => {
+                  setPhase(undefined)
+                  setMode(item)
+                }}
                 className="rounded-xl border border-slate-200 p-3 text-left transition hover:border-teal-500 dark:border-slate-700"
               >
                 <p className="text-sm font-black text-slate-900 dark:text-slate-100">
@@ -105,36 +166,11 @@ export function PracticePage({
         </div>
       </Card>
 
-      <CollapsibleCard title="📋 Como funciona a prova de escuta">
+      {/* 3. Prática por fase */}
+      <CollapsibleCard title="3 · Prática por fase" icon={<Layers size={16} />}>
         <p className="text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
-          Na prova oficial cada texto é ouvido <strong>duas vezes</strong>. Depois da 1ª audição tens
-          2 minutos para ler as perguntas, depois da 2ª mais 2 minutos para conferir, e no fim 3
-          minutos para escrever as respostas no foglio delle risposte. A app reproduz este
-          protocolo: o botão de áudio bloqueia ao fim da 2ª passagem.
-        </p>
-      </CollapsibleCard>
-
-      <CollapsibleCard title="🧾 Foglio delle risposte (OMR)">
-        <p className="text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
-          Na prova real tens de escrever as respostas na folha oficial com caneta azul ou preta. As
-          perguntas de escuta e de leitura têm 3 opções (A/B/C) ou verdadeiro/falso, e o gabarito
-          ofuscado segue exatamente o layout do original.
-        </p>
-      </CollapsibleCard>
-
-      <CollapsibleCard title="📖 Sobre a prova e os pontos">
-        <ul className="flex flex-col gap-1 text-xs font-semibold text-slate-600 dark:text-slate-300">
-          <li>• Escuta: 6 perguntas de escolha múltipla (1 pt) + 12 de verdadeiro/falso (0,5 pt).</li>
-          <li>• Leitura: 12 de verdadeiro/falso (0,5 pt) + 6 de completar o texto (1 pt).</li>
-          <li>• Escrita: 80-120 palavras, avaliada com a grelha oficial de 5 critérios.</li>
-          <li>• Oral: apresentação de 1 min + conversa de 2-3 min, grelha oficial de 4 critérios.</li>
-        </ul>
-      </CollapsibleCard>
-
-      <CollapsibleCard title="🎯 Prática por fase">
-        <p className="text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
-          Treina só o material da fase em que estás. O conteúdo extra da app (textos de
-          escuta, de leitura e de gramática) é original e foi escrito para este nível.
+          Treina só o material do tema em que estás. O conteúdo extra da app (textos de escuta, de
+          leitura e de gramática) é original e foi escrito para este nível.
         </p>
         <div className="mt-3 flex flex-col gap-2">
           {(['fondazione', 'struttura', 'cittadinanza'] as const).map((item) => (
@@ -154,7 +190,7 @@ export function PracticePage({
                     setMode('ascolto')
                   }}
                 >
-                  ⚡ Ascolto
+                  <Volume2 size={14} /> Ascolto
                 </Button>
                 <Button
                   variant="secondary"
@@ -164,15 +200,30 @@ export function PracticePage({
                     setMode('lettura')
                   }}
                 >
-                  📖 Lettura
+                  <BookOpen size={14} /> Lettura
                 </Button>
-                <span className="self-center text-[10px] font-bold text-slate-500">
-                  {PHASE_LABELS[item]}
-                </span>
               </div>
             </div>
           ))}
         </div>
+      </CollapsibleCard>
+
+      <CollapsibleCard title="📋 Como funciona a prova de escuta" icon={<ClipboardCheck size={16} />}>
+        <p className="text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
+          Na prova oficial cada texto é ouvido <strong>duas vezes</strong>. Depois da 1ª audição tens
+          2 minutos para ler as perguntas, depois da 2ª mais 2 minutos para conferir, e no fim 3
+          minutos para escrever as respostas no foglio delle risposte. A app reproduz este
+          protocolo: o botão de áudio bloqueia ao fim da 2ª passagem.
+        </p>
+      </CollapsibleCard>
+
+      <CollapsibleCard title="📖 Sobre a prova e os pontos">
+        <ul className="flex flex-col gap-1 text-xs font-semibold text-slate-600 dark:text-slate-300">
+          <li>• Escuta: 6 perguntas de escolha múltipla (1 pt) + 12 de verdadeiro/falso (0,5 pt).</li>
+          <li>• Leitura: 12 de verdadeiro/falso (0,5 pt) + 6 de completar o texto (1 pt).</li>
+          <li>• Escrita: 80-120 palavras, avaliada com a grelha oficial de 5 critérios.</li>
+          <li>• Oral: apresentação de 1 min + conversa de 2-3 min, grelha oficial de 4 critérios.</li>
+        </ul>
       </CollapsibleCard>
 
       <Card>

@@ -1,23 +1,13 @@
 import { useState } from 'react'
-import { ArrowLeft, BookOpen, Dices, Layers, Volume2 } from 'lucide-react'
-import { Card } from '../components/ui'
-import { ExamSession } from '../components/exam/ExamSession'
-import type { Level, Phase, Skill } from '../db/schemas'
-import type { Route } from '../lib/routes'
+import { BookOpen, Dices, Layers, Volume2 } from 'lucide-react'
+import type { Level, Phase } from '../db/schemas'
 import { PHASE_LABELS } from '../lib/phases'
 
 /**
- * ESTUDO POR NÍVEL — o "treinar um bocado por dia".
+ * Escolha do material de ESTUDO (o "treinar um bocado por dia").
  *
- * A aluna escolhe:
- * - o **nível** (A1, A2, B1) — o banco tem material de todos;
- * - o **tipo de material**:
- *   · "Exercícios" (gramática e vocabulário) — o mais rápido;
- *   · "Ascolto" — com áudio;
- *   · "Lettura" — leitura e gramática.
- *
- * O quiz é sempre **aleatório**: o baralhador tira itens diferentes a cada
- * sessão (pode repetir, mas só depois de o banco ser grande).
+ * Vive dentro do ecrã de Prática: a aluna escolhe o nível, o tipo de
+ * material e, se quiser, a fase. O quiz é sempre aleatório.
  */
 
 export type StudyKind = 'exercises' | 'ascolto' | 'lettura'
@@ -55,70 +45,19 @@ const KINDS: Array<{ id: StudyKind; label: string; detail: string; icon: typeof 
   },
 ]
 
-export function StudyPage({
-  profileId,
-  onNavigate,
-  onCompleted,
+export function StudyPicker({
+  onStart,
 }: {
-  profileId: string
-  onNavigate: (route: Route) => void
-  onCompleted: () => void
+  onStart: (request: StudyRequest) => void
 }) {
   const [level, setLevel] = useState<Level>('B1')
   const [kind, setKind] = useState<StudyKind>('exercises')
   const [phase, setPhase] = useState<Phase | undefined>(undefined)
-  const [request, setRequest] = useState<StudyRequest | null>(null)
-
-  if (request) {
-    return (
-      <ExamSession
-        mode="studio"
-        profileId={profileId}
-        buildOptions={{
-          bank: 'all',
-          level: request.level,
-          phase: request.phase,
-          skill: studySkill(request.kind),
-          shuffle: true,
-          limit: 12,
-        }}
-        onExit={() => setRequest(null)}
-        onCompleted={() => {
-          setRequest(null)
-          onCompleted()
-          onNavigate('dashboard')
-        }}
-      />
-    )
-  }
 
   return (
     <div className="flex flex-col gap-3">
       <div>
-        <button
-          type="button"
-          onClick={() => onNavigate('dashboard')}
-          className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-black text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
-        >
-          <ArrowLeft size={14} /> Voltar ao painel
-        </button>
-      </div>
-
-      <Card>
-        <div className="flex items-center gap-2">
-          <Dices size={20} className="text-teal-700 dark:text-teal-300" />
-          <h1 className="text-lg font-black text-slate-900 dark:text-slate-100">
-            Estudo por nível
-          </h1>
-        </div>
-        <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
-          Um exercício curto e <strong>aleatório</strong>: as perguntas são sempre baralhadas e
-          tiradas do banco grande. Pode repetir — mas só depois de passar por muitas outras.
-        </p>
-      </Card>
-
-      <Card>
-        <p className="text-xs font-black uppercase tracking-wide text-slate-500">1 · Nível</p>
+        <p className="text-xs font-black uppercase tracking-wide text-slate-500">Nível</p>
         <div className="mt-2 grid gap-2 sm:grid-cols-3">
           {LEVELS.map((item) => {
             const active = level === item.id
@@ -144,11 +83,11 @@ export function StudyPage({
             )
           })}
         </div>
-      </Card>
+      </div>
 
-      <Card>
+      <div>
         <p className="text-xs font-black uppercase tracking-wide text-slate-500">
-          2 · O que queres treinar
+          O que queres treinar
         </p>
         <div className="mt-2 grid gap-2">
           {KINDS.map((item) => {
@@ -187,11 +126,11 @@ export function StudyPage({
             )
           })}
         </div>
-      </Card>
+      </div>
 
-      <Card>
+      <div>
         <p className="text-xs font-black uppercase tracking-wide text-slate-500">
-          3 · Fase (opcional)
+          Fase (opcional)
         </p>
         <div className="mt-2 flex flex-wrap gap-2">
           <button
@@ -224,40 +163,15 @@ export function StudyPage({
         </div>
         <button
           type="button"
-          onClick={() => setRequest({ level, kind, phase })}
-          className="mt-4 w-full rounded-xl bg-teal-700 px-4 py-3 text-sm font-black text-white hover:bg-teal-800 disabled:opacity-50"
+          onClick={() => onStart({ level, kind, phase })}
+          className="mt-3 w-full rounded-xl bg-teal-700 px-4 py-3 text-sm font-black text-white hover:bg-teal-800"
         >
           🎲 Começar o estudo de {level}
         </button>
         <p className="mt-1 text-[11px] font-semibold text-slate-500">
           10-15 itens · ~10 minutos · com explicação depois de cada resposta
         </p>
-      </Card>
-
-      <Card>
-        <p className="text-xs font-black uppercase tracking-wide text-slate-500">
-          Porque é que a Prática e o Simulado são diferentes
-        </p>
-        <ul className="mt-2 flex flex-col gap-1.5 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
-          <li>
-            <strong>Estudo</strong> — 10-15 itens aleatórios do nível escolhido, para treinar
-            todos os dias sem pressão.
-          </li>
-          <li>
-            <strong>Prática</strong> — a prova de uma habilidade, cronometrada como no exame
-            (30 ou 40 min), também com material baralhado.
-          </li>
-          <li>
-            <strong>Simulado</strong> — a prova oficial do CILS, completa, na ordem e nos
-            tempos exatos (30 + 40 + 40 min). É o ensaio do dia do exame.
-          </li>
-        </ul>
-      </Card>
+      </div>
     </div>
   )
-}
-
-/** Tipo de habilidade que o estudo vai treinar. */
-function studySkill(kind: StudyKind): Skill {
-  return kind === 'ascolto' ? 'ascolto' : 'lettura'
 }
