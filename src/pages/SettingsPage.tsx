@@ -1,7 +1,19 @@
 import { useRef, useState } from 'react'
-import { Alert, Button, Card } from '../components/ui'
+import {
+  ArrowLeft,
+  Cloud,
+  Download,
+  Monitor,
+  Moon,
+  RefreshCw,
+  Sun,
+  Trash2,
+  Upload,
+} from 'lucide-react'
+import { Alert, BackButton, Button, Card } from '../components/ui'
 import { APP_VERSION } from '../config/version'
 import {
+  BACKUP_EXPORTED_KEY,
   buildBackup,
   backupFilename,
   parseBackup,
@@ -12,19 +24,56 @@ import {
 import { resetAbandonedMocks, updateProfile } from '../lib/admin'
 import { PASS_THRESHOLD_PER_SKILL, THRESHOLD_DISCLAIMER } from '../lib/scoring'
 import type { Profile } from '../db/schemas'
+import type { Route } from '../lib/routes'
+import type { Theme } from '../lib/theme'
+import {
+  getAutoSync,
+  getToken,
+  maskToken,
+  setAutoSync,
+  setToken,
+  testToken,
+  type SyncStatus,
+} from '../services/gistSync'
+import { createSnapshotNow, restoreSnapshot } from '../services/snapshots'
+import { deleteSnapshot, listSnapshots, type SnapshotMeta } from '../lib/snapshot'
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
 
 export function SettingsPage({
   profile,
   onChanged,
+  onNavigate,
+  theme,
+  onThemeChange,
+  syncStatus,
+  onSyncNow,
 }: {
   profile: Profile | null
   onChanged: () => void
+  onNavigate: (route: Route) => void
+  theme: Theme
+  onThemeChange: (theme: Theme) => void
+  syncStatus: SyncStatus
+  onSyncNow: () => Promise<void>
 }) {
   const [name, setName] = useState(profile?.name ?? '')
   const [examDate, setExamDate] = useState(profile?.examDate ?? '')
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [token, setTokenState] = useState(getToken())
+  const [autoSync, setAutoSyncState] = useState(getAutoSync())
+  const [snapshots, setSnapshots] = useState<SnapshotMeta[]>([])
+  const [busy, setBusy] = useState(false)
   const fileInput = useRef<HTMLInputElement>(null)
+
+  function refreshSnapshots(): void {
+    setSnapshots(listSnapshots())
+  }
 
   async function handleExport(): Promise<void> {
     setError(null)
@@ -32,6 +81,11 @@ export function SettingsPage({
     try {
       const backup = await buildBackup()
       triggerDownload(backupFilename(), serializeBackup(backup))
+      try {
+        window.localStorage.setItem(BACKUP_EXPORTED_KEY, String(Date.now()))
+      } catch {
+        /* modo privado */
+      }
       setMessage('Backup descarregado. Guardá-lo num sítio seguro.')
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao exportar.')
@@ -82,8 +136,77 @@ export function SettingsPage({
     onChanged()
   }
 
+  async function handleTestToken(): Promise<void> {
+    setError(null)
+    setMessage(null)
+    setBusy(true)
+    try {
+      setToken(token)
+      const result = await testToken()
+      if (result.ok) setMessage(result.message)
+      else setError(result.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleSync(): Promise<void> {
+    setError(null)
+    setMessage(null)
+    setBusy(true)
+    try {
+      setToken(token)
+      await onSyncNow()
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleSnapshot(): Promise<void> {
+    setError(null)
+    setMessage(null)
+    setBusy(true)
+    try {
+      const meta = await createSnapshotNow()
+      refreshSnapshots()
+      setMessage(`Snapshot criado (${formatBytes(meta.bytes)}).`)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao criar o snapshot.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleRestoreSnapshot(id: string): Promise<void> {
+    const confirmed = window.confirm(
+      'Restaurar este snapshot? Os registos mais recentes são preservados — nada é apagado.',
+    )
+    if (!confirmed) return
+    setError(null)
+    setMessage(null)
+    setBusy(true)
+    try {
+      const outcome = await restoreSnapshot(id)
+      setMessage(
+        `Snapshot restaurado: ${outcome.added} registo(s) novo(s), ${outcome.updated} atualizado(s).`,
+      )
+      onChanged()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao restaurar o snapshot.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const syncGreen = syncStatus.state === 'ok'
+
   return (
     <div className="flex flex-col gap-3">
+      <div>
+        <BackButton onBack={() => onNavigate('dashboard')} />
+      </div>
+
+      {/* Perfil */}
       <Card>
         <p className="text-xs font-black uppercase tracking-wide text-slate-500">Perfil</p>
         <label className="mt-2 block text-xs font-bold text-slate-600 dark:text-slate-300" htmlFor="name">
@@ -116,18 +239,120 @@ export function SettingsPage({
         </div>
       </Card>
 
+      {/* Aparência */}
+      <Card>
+        <p className="text-xs font-black uppercase tracking-wide text-slate-500">Aparência</p>
+        <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
+          O tema fica guardado neste aparelho.
+        </p>
+        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+          {(
+            [
+              { id: 'light', label: 'Claro', icon: <Sun size={16} /> },
+              { id: 'dark', label: 'Escuro', icon: <Moon size={16} /> },
+              { id: 'system', label: 'Sistema', icon: <Monitor size={16} /> },
+            ] as const
+          ).map((option) => {
+            const active = theme === option.id
+            return (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() => onThemeChange(option.id)}
+                aria-pressed={active}
+                className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-black transition ${
+                  active
+                    ? 'border-teal-600 bg-teal-700 text-white'
+                    : 'border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700/60'
+                }`}
+              >
+                {option.icon}
+                {option.label}
+              </button>
+            )
+          })}
+        </div>
+      </Card>
+
+      {/* Sync por Gist */}
+      <Card>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs font-black uppercase tracking-wide text-slate-500">
+            Guardar noutro aparelho (GitHub Gist)
+          </p>
+          <span
+            className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-black ${
+              syncGreen
+                ? 'bg-emerald-600 text-white'
+                : 'bg-amber-500 text-white'
+            }`}
+          >
+            <Cloud size={12} /> {syncGreen ? 'SYNC OK' : 'SEM SYNC'}
+          </span>
+        </div>
+        <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
+          O progresso é enviado para um Gist <strong>privado</strong> do teu GitHub. O token fica só
+          neste aparelho e é usado apenas para a permissão <code>gist</code>. Nada é enviado para
+          servidores da app.
+        </p>
+        <label
+          className="mt-3 block text-xs font-bold text-slate-600 dark:text-slate-300"
+          htmlFor="gist-token"
+        >
+          Token pessoal do GitHub {token ? `(${maskToken(token)})` : ''}
+        </label>
+        <input
+          id="gist-token"
+          type="password"
+          inputMode="text"
+          autoComplete="off"
+          value={token}
+          onChange={(event) => setTokenState(event.target.value)}
+          placeholder="ghp_… (personal access token, scope: gist)"
+          className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-sm font-semibold text-slate-900 outline-none focus:border-teal-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+        />
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button variant="secondary" onClick={() => void handleTestToken()} disabled={busy}>
+            Testar token
+          </Button>
+          <Button onClick={() => void handleSync()} disabled={busy}>
+            <RefreshCw size={16} /> Sincronizar agora
+          </Button>
+        </div>
+        <label className="mt-3 flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-200">
+          <input
+            type="checkbox"
+            checked={autoSync}
+            onChange={(event) => {
+              setAutoSyncState(event.target.checked)
+              setAutoSync(event.target.checked)
+            }}
+            className="h-4 w-4 accent-teal-700"
+          />
+          Sincronizar automaticamente ao abrir a app e depois de cada prova
+        </label>
+        <p className="mt-2 text-[11px] font-semibold text-slate-500">
+          {syncStatus.lastSyncAt
+            ? `Último sync: ${new Date(syncStatus.lastSyncAt).toLocaleString('pt-PT')}`
+            : 'Ainda não houve sync.'}
+          {syncStatus.lastError ? ` Erro: ${syncStatus.lastError}` : ''}
+        </p>
+      </Card>
+
+      {/* Cópia de segurança */}
       <Card>
         <p className="text-xs font-black uppercase tracking-wide text-slate-500">Cópia de segurança</p>
         <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
           Os dados vivem só neste dispositivo (IndexedDB). Se limpares os dados do browser, perdes o
-          histórico — exporta um JSON com regularidade.
+          histórico — exporta um JSON com regularidade. Os snapshots abaixo são cópias automáticas
+          guardadas no próprio browser.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Button variant="secondary" onClick={() => void handleExport()}>
-            ⬇️ Exportar JSON
+            <Download size={16} /> Exportar JSON
           </Button>
           <Button variant="secondary" onClick={() => fileInput.current?.click()}>
-            ⬆️ Importar JSON
+            <Upload size={16} /> Importar JSON
           </Button>
           <input
             ref={fileInput}
@@ -141,8 +366,64 @@ export function SettingsPage({
             }}
           />
         </div>
+
+        <div className="mt-4 border-t border-slate-200 pt-3 dark:border-slate-700">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-black uppercase tracking-wide text-slate-500">
+              Snapshots locais
+            </p>
+            <Button variant="secondary" onClick={() => void handleSnapshot()} disabled={busy}>
+              Criar agora
+            </Button>
+          </div>
+          {snapshots.length === 0 ? (
+            <p className="mt-2 text-[11px] font-semibold text-slate-500">
+              Ainda não há snapshots. É criado automaticamente quando o progresso muda.
+            </p>
+          ) : (
+            <ul className="mt-2 flex flex-col gap-1.5">
+              {snapshots.map((snapshot) => (
+                <li
+                  key={snapshot.id}
+                  className="flex items-center justify-between gap-2 rounded-xl bg-slate-50 p-2.5 dark:bg-slate-700/40"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-black text-slate-800 dark:text-slate-100">
+                      {new Date(snapshot.createdAt).toLocaleString('pt-PT')}
+                    </p>
+                    <p className="text-[10px] font-bold text-slate-500">
+                      {snapshot.counts.sessions} provas · {snapshot.counts.attempts} respostas ·{' '}
+                      {formatBytes(snapshot.bytes)}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 gap-1">
+                    <button
+                      type="button"
+                      onClick={() => void handleRestoreSnapshot(snapshot.id)}
+                      className="rounded-lg bg-white px-2 py-1 text-[11px] font-black text-slate-700 shadow-sm hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-200"
+                    >
+                      Restaurar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        deleteSnapshot(snapshot.id)
+                        refreshSnapshots()
+                      }}
+                      aria-label="Apagar snapshot"
+                      className="rounded-lg bg-white p-1.5 text-slate-500 shadow-sm hover:text-rose-600 dark:bg-slate-800"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </Card>
 
+      {/* Limpar */}
       <Card>
         <p className="text-xs font-black uppercase tracking-wide text-slate-500">Limpar</p>
         <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
@@ -156,6 +437,7 @@ export function SettingsPage({
         </div>
       </Card>
 
+      {/* Sobre a prova */}
       <Card>
         <p className="text-xs font-black uppercase tracking-wide text-slate-500">Sobre a prova</p>
         <div className="mt-2">
@@ -169,6 +451,13 @@ export function SettingsPage({
       <Card>
         <p className="text-xs font-black uppercase tracking-wide text-slate-500">Versão</p>
         <p className="mt-1 text-sm font-black text-slate-900 dark:text-slate-100">v{APP_VERSION}</p>
+        <button
+          type="button"
+          onClick={() => onNavigate('guide')}
+          className="mt-2 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-black text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+        >
+          <ArrowLeft size={14} className="rotate-180" /> Ver o guia de uso
+        </button>
       </Card>
 
       {message ? (

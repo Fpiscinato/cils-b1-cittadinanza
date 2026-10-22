@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { useState } from 'react'
+import { ArrowLeft } from 'lucide-react'
 
 export const cardClass =
   'rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800'
@@ -120,6 +121,28 @@ export function Stat({
       <p className="text-xl font-black text-slate-900 dark:text-slate-100">{value}</p>
       {hint ? <p className="text-[11px] font-semibold text-slate-500">{hint}</p> : null}
     </div>
+  )
+}
+
+/**
+ * Botão "voltar ao painel" — presente em todos os ecrãs secundários, para
+ * nunca ficar preso num ecrã sem forma de sair.
+ */
+export function BackButton({
+  onBack,
+  label = 'Voltar ao painel',
+}: {
+  onBack: () => void
+  label?: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onBack}
+      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-black text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+    >
+      <ArrowLeft size={14} /> {label}
+    </button>
   )
 }
 

@@ -164,3 +164,23 @@ export const backupSchema = z.object({
   orals: z.array(oralSchema),
 })
 export type Backup = z.infer<typeof backupSchema>
+
+/**
+ * Payload do sync por Gist.
+ *
+ * É o backup SEM o conteúdo do banco (passagens e perguntas), porque o
+ * conteúdo é re-seedado localmente em cada aparelho — o que viaja entre
+ * aparelhos é o progresso da aluna.
+ */
+export const gistPayloadSchema = z.object({
+  app: z.literal('CILS B1 Cittadinanza'),
+  kind: z.literal('gist-sync'),
+  version: z.number().int().positive(),
+  createdAt: z.number().int(),
+  profiles: z.array(profileSchema),
+  sessions: z.array(sessionSchema),
+  attempts: z.array(attemptSchema),
+  writings: z.array(writingSchema),
+  orals: z.array(oralSchema),
+})
+export type GistPayload = z.infer<typeof gistPayloadSchema>

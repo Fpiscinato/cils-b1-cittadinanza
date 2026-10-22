@@ -9,6 +9,9 @@
 import { db } from '../db/database'
 import { backupSchema, type Backup } from '../db/schemas'
 
+/** Marca local de "já exportaste um backup" (usada nos primeiros passos). */
+export const BACKUP_EXPORTED_KEY = 'cils.backup.exported'
+
 export async function buildBackup(): Promise<Backup> {
   const [profiles, passages, questions, sessions, attempts, writings, orals] = await Promise.all([
     db.profiles.toArray(),

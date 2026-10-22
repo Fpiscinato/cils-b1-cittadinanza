@@ -91,10 +91,31 @@ function mix(a, b, t) {
 }
 
 /**
+ * Fonte de pixels 5x7 para escrever "B1" nos ícones (sem depender de
+ * fontes do sistema, para o PNG ficar igual em todas as máquinas).
+ */
+const GLYPH_B = ['11110', '10001', '10001', '11110', '10001', '10001', '11110']
+const GLYPH_1 = ['00100', '01100', '00100', '00100', '00100', '00100', '01110']
+
+/** "B1" desenhado em coordenadas normalizadas (0..1). */
+function drawB1(u, v) {
+  const pixel = 0.022
+  const columns = 5 + 1 + 3
+  const left = 0.5 - (columns * pixel) / 2
+  const top = 0.6
+  const col = Math.floor((u - left) / pixel)
+  const row = Math.floor((v - top) / pixel)
+  if (col < 0 || col >= columns || row < 0 || row > 6) return false
+  const glyph = col < 5 ? GLYPH_B : GLYPH_1
+  const glyphCol = col < 5 ? col : col - 6
+  return glyph[row][glyphCol] === '1'
+}
+
+/**
  * @param size lado do ícone em pixels
  * @param flagScale fração do lado ocupada pela bandeira (maskable usa menos)
  */
-function makeIcon(size, flagScale, rounded) {
+function makeIcon(size, flagScale, rounded, withText = flagScale === 1) {
   return encodePng(size, (x, y) => {
     const u = x / size
     const v = y / size
@@ -111,11 +132,11 @@ function makeIcon(size, flagScale, rounded) {
       if (distance > radius) return [0, 0, 0, 0]
     }
 
-    // Bandeira italiana centrada: 3 faixas verticais.
-    const flagWidth = 0.66 * flagScale
-    const flagHeight = 0.44 * flagScale
+    // Bandeira italiana: 3 faixas verticais (em cima, com "B1" por baixo).
+    const flagWidth = 0.62 * flagScale
+    const flagHeight = 0.36 * flagScale
     const left = 0.5 - flagWidth / 2
-    const top = 0.5 - flagHeight / 2
+    const top = withText ? 0.18 : 0.5 - flagHeight / 2
     if (u >= left && u < left + flagWidth && v >= top && v < top + flagHeight) {
       const band = Math.floor(((u - left) / flagWidth) * 3)
       color = band === 0 ? GREEN : band === 1 ? WHITE : RED
@@ -130,6 +151,11 @@ function makeIcon(size, flagScale, rounded) {
         const blend = Math.max(0, edge)
         color = mix(mix(TEAL_TOP, TEAL_BOTTOM, v), color, blend)
       }
+    }
+
+    // "B1" por baixo da bandeira (versões normais).
+    if (withText && drawB1(u, v)) {
+      color = WHITE
     }
 
     return [color[0], color[1], color[2], 255]
@@ -161,8 +187,8 @@ function main() {
     }
   }
 
-  // Favicon simples na raiz de public/.
-  writeFileSync(resolve(PUBLIC_DIR, 'favicon-32.png'), makeIcon(32, 1, true))
+  // Favicon simples na raiz de public/ (sem "B1": a 32px seria ilegível).
+  writeFileSync(resolve(PUBLIC_DIR, 'favicon-32.png'), makeIcon(32, 1, true, false))
 
   console.log(`Ícones gerados em ${target}`)
 }

@@ -2,22 +2,42 @@ import { useMemo } from 'react'
 import type { Session, Attempt, Profile } from '../db/schemas'
 import { ReadinessCard } from '../components/ReadinessCard'
 import { PhaseCards } from '../components/PhaseCards'
-import { Card, Stat } from '../components/ui'
+import { OnboardingChecklist } from '../components/OnboardingChecklist'
+import { Card, CollapsibleCard, Stat } from '../components/ui'
 import { computeReadiness } from '../lib/readiness'
 import { computeDailyTask, computeRoadmap } from '../lib/roadmapCalculator'
 import { buildSkillHistory } from '../services/sessions'
 import { formatDuration } from '../lib/timing'
+import { buildOnboardingSteps, pendingSteps } from '../lib/onboarding'
+import type { Route } from '../lib/routes'
 
+/**
+ * Painel — o ecrã que responde a "se eu fizesse a prova amanhã, passaria?".
+ *
+ * A ordem é intencional e simples:
+ * 1. Primeiros passos (só enquanto houver coisas por fazer);
+ * 2. Começar agora (o botão principal está no PRIMEIRO card);
+ * 3. Tarefa de hoje;
+ * 4. Prontidão (o veredito);
+ * 5. Fases e histórico — em cards colapsáveis, para o painel não virar um
+ *    muro de informação.
+ */
 export function DashboardPage({
   profile,
   sessions,
   attempts,
   onStart,
+  onNavigate,
+  hasBackup,
+  hasSync,
 }: {
   profile: Profile | null
   sessions: Session[]
   attempts: Attempt[]
   onStart: (mode: 'mock_cittadinanza' | 'ascolto' | 'lettura' | 'scrittura' | 'orale') => void
+  onNavigate: (route: Route) => void
+  hasBackup: boolean
+  hasSync: boolean
 }) {
   const history = useMemo(() => buildSkillHistory(sessions), [sessions])
   const readiness = useMemo(() => computeReadiness({ history }), [history])
@@ -42,30 +62,37 @@ export function DashboardPage({
   const task = computeDailyTask(roadmap)
 
   const completed = sessions.filter((session) => session.status === 'completed')
-  const best = completed.reduce(
-    (top, session) => Math.max(top, session.score ?? 0),
-    0,
+  const best = completed.reduce((top, session) => Math.max(top, session.score ?? 0), 0)
+
+  const onboarding = useMemo(
+    () =>
+      buildOnboardingSteps({
+        examDate: profile?.examDate ?? '',
+        completedSessions: completed.length,
+        hasBackup,
+        hasSync,
+      }),
+    [profile, completed.length, hasBackup, hasSync],
   )
+  const pending = pendingSteps(onboarding)
 
   return (
     <div className="flex flex-col gap-4">
-      <ReadinessCard report={readiness} />
+      {pending.length > 0 ? (
+        <OnboardingChecklist steps={onboarding} onNavigate={onNavigate} />
+      ) : null}
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Stat label="Provas feitas" value={String(completed.length)} />
-        <Stat label="Melhor resultado" value={best > 0 ? `${best}/48` : '—'} />
-        <Stat label="Perguntas respondidas" value={String(attempts.length)} />
-      </div>
-
+      {/* 1. Action-first: começar está no primeiro card */}
       <Card>
-        <p className="text-xs font-black uppercase tracking-wide text-slate-500">Tarefa de hoje</p>
-        <p className="mt-1 text-base font-black text-slate-900 dark:text-slate-100">{task.title}</p>
-        <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">{task.detail}</p>
+        <p className="text-xs font-black uppercase tracking-wide text-slate-500">Começar</p>
+        <p className="mt-1 text-base font-black text-slate-900 dark:text-slate-100">
+          O que queres treinar agora?
+        </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => onStart('mock_cittadinanza')}
-            className="rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-teal-800"
+            className="rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-black text-white hover:bg-teal-800"
           >
             ▶️ Simular exame completo
           </button>
@@ -98,23 +125,41 @@ export function DashboardPage({
             🎤 Orale
           </button>
         </div>
+        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+          <Stat label="Provas feitas" value={String(completed.length)} />
+          <Stat label="Melhor resultado" value={best > 0 ? `${best}/48` : '—'} />
+          <Stat label="Perguntas respondidas" value={String(attempts.length)} />
+        </div>
       </Card>
 
-      <PhaseCards
-        phases={roadmap.phases}
-        currentPhaseId={roadmap.currentPhaseId}
-        examDate={profile?.examDate ?? ''}
-      />
-
+      {/* 2. Tarefa de hoje */}
       <Card>
-        <p className="text-xs font-black uppercase tracking-wide text-slate-500">Últimas provas</p>
+        <p className="text-xs font-black uppercase tracking-wide text-slate-500">Tarefa de hoje</p>
+        <p className="mt-1 text-base font-black text-slate-900 dark:text-slate-100">{task.title}</p>
+        <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">{task.detail}</p>
+      </Card>
+
+      {/* 3. O veredito */}
+      <ReadinessCard report={readiness} />
+
+      {/* 4. Fases (colapsável) */}
+      <CollapsibleCard title="As 3 fases de preparação">
+        <PhaseCards
+          phases={roadmap.phases}
+          currentPhaseId={roadmap.currentPhaseId}
+          examDate={profile?.examDate ?? ''}
+        />
+      </CollapsibleCard>
+
+      {/* 5. Histórico (colapsável) */}
+      <CollapsibleCard title="Últimas provas">
         {completed.length === 0 ? (
-          <p className="mt-2 text-xs font-semibold text-slate-500">
+          <p className="text-xs font-semibold text-slate-500">
             Ainda não há provas concluídas. Faz o simulado oficial de exemplo para teres a primeira
             leitura da tua pontuação.
           </p>
         ) : (
-          <ul className="mt-2 flex flex-col gap-1">
+          <ul className="flex flex-col gap-1">
             {[...completed]
               .sort((a, b) => b.startedAt - a.startedAt)
               .slice(0, 5)
@@ -131,7 +176,7 @@ export function DashboardPage({
               ))}
           </ul>
         )}
-      </Card>
+      </CollapsibleCard>
     </div>
   )
 }

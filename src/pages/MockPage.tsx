@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { ArrowLeft } from 'lucide-react'
 import { ExamSession } from '../components/exam/ExamSession'
 import { Button, Card } from '../components/ui'
 import { EXAM_CONFIGS } from '../lib/exam'
 import type { ExamMode } from '../db/schemas'
+import type { Route } from '../lib/routes'
 
 /**
  * Página de simulados. O simulado completo replica a prova escrita real:
@@ -12,9 +14,11 @@ import type { ExamMode } from '../db/schemas'
 export function MockPage({
   profileId,
   onCompleted,
+  onNavigate,
 }: {
   profileId: string
   onCompleted: () => void
+  onNavigate: (route: Route) => void
 }) {
   const [mode, setMode] = useState<ExamMode | null>(null)
 
@@ -27,6 +31,7 @@ export function MockPage({
         onCompleted={() => {
           setMode(null)
           onCompleted()
+          onNavigate('dashboard')
         }}
       />
     )
@@ -37,6 +42,13 @@ export function MockPage({
   return (
     <div className="flex flex-col gap-3">
       <Card>
+        <button
+          type="button"
+          onClick={() => onNavigate('dashboard')}
+          className="mb-2 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-black text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+        >
+          <ArrowLeft size={14} /> Voltar ao painel
+        </button>
         <p className="text-xs font-black uppercase tracking-wide text-slate-500">Simulado completo</p>
         <p className="mt-1 text-base font-black text-slate-900 dark:text-slate-100">{full.titlePt}</p>
         <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">{full.subtitlePt}</p>
@@ -84,8 +96,8 @@ export function MockPage({
           no histórico e nunca é apagado automaticamente.
         </p>
         <div className="mt-3">
-          <Button variant="secondary" onClick={onCompleted}>
-            Voltar ao painel
+          <Button variant="secondary" onClick={() => onNavigate('dashboard')}>
+            <ArrowLeft size={16} /> Voltar ao painel
           </Button>
         </div>
       </Card>

@@ -7,9 +7,30 @@
   </defs>
   <rect width="64" height="64" rx="14" fill="url(#bg)" />
   <g>
-    <rect x="11" y="21" width="14" height="22" fill="#008c45" />
-    <rect x="25" y="21" width="14" height="22" fill="#f4f5f4" />
-    <rect x="39" y="21" width="14" height="22" fill="#cd212a" />
+    <rect x="12.2" y="11.5" width="13.2" height="23" fill="#008c45" />
+    <rect x="25.4" y="11.5" width="13.2" height="23" fill="#f4f5f4" />
+    <rect x="38.6" y="11.5" width="13.2" height="23" fill="#cd212a" />
   </g>
-  <rect x="11" y="21" width="42" height="22" rx="3" fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="1.5" />
+  <rect
+    x="12.2"
+    y="11.5"
+    width="39.6"
+    height="23"
+    rx="3"
+    fill="none"
+    stroke="#ffffff"
+    stroke-opacity="0.35"
+    stroke-width="1.5"
+  />
+  <text
+    x="32"
+    y="55"
+    text-anchor="middle"
+    font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+    font-size="16"
+    font-weight="800"
+    fill="#ffffff"
+  >
+    B1
+  </text>
 </svg>

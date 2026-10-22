@@ -1,5 +1,12 @@
 @import 'tailwindcss';
 
+/*
+ * Tema escuro por CLASSE (não por `prefers-color-scheme`), para que a aluna
+ * possa escolher claro/escuro/sistema nos Ajustes. O `index.html` aplica a
+ * classe antes do React montar, para não haver "flash" branco.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root {
     color-scheme: light;
@@ -7,6 +14,11 @@
 
   html {
     -webkit-text-size-adjust: 100%;
+    background-color: #f8fafc;
+  }
+
+  html.dark {
+    background-color: #0f172a;
   }
 
   body {
@@ -24,15 +36,9 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  @media (prefers-color-scheme: dark) {
-    :root {
-      color-scheme: dark;
-    }
-
-    body {
-      background-color: #0f172a;
-      color: #e2e8f0;
-    }
+  .dark body {
+    background-color: #0f172a;
+    color: #e2e8f0;
   }
 
   /* O runner de exame nunca faz scroll no ecrã: só a área da pergunta rola. */

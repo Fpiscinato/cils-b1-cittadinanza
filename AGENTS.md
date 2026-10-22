@@ -214,12 +214,16 @@ de áudio em `public/audio/` (hoje o áudio é sintetizado por TTS — ver §7, 
   (Zod `safeParse`, erro traduzido para PT com o path do campo) → `restoreBackup()` em
   transação Dexie.
 - Nome do arquivo: `cils-b1-backup-YYYY-MM-DD.json`.
-- **Snapshot local automático** (por dia/semana) em `localStorage` + download manual, para
-  nunca perder trabalho se o cache do browser for limpo.
+- **Snapshot local automático** — implementado em `src/lib/snapshot.ts` + `src/services/snapshots.ts`:
+  cópia do **dado da aluna** (perfis, sessões, tentativas, textos, orais) em `localStorage`,
+  no máximo 8 cópias (`MAX_SNAPSHOTS`), indexadas por data. O **conteúdo do banco**
+  (passagens, perguntas) não entra no snapshot — é re-seedado localmente. Sobrevive a
+  "limpar dados do site" no browser.
 
 ### 5.4 Sync por GitHub Gist (opcional, ativado pela aluna)
 
-Padrão do ElevenSpark `src/services/gistSync.ts` / do Memoriza `src/lib/github-sync.ts`:
+Implementado em `src/services/gistSync.ts` — padrão do ElevenSpark `src/services/gistSync.ts` /
+do Memoriza `src/lib/github-sync.ts`:
 
 - Token do GitHub guardado em `localStorage`, **scope `gist` apenas**, enviado direto do browser
   para `api.github.com` (sem backend).
@@ -227,7 +231,22 @@ Padrão do ElevenSpark `src/services/gistSync.ts` / do Memoriza `src/lib/github-
 - Merge: **registro mais novo vence**, nada local é apagado (mesma regra do `db/merge.ts` do
   Memoriza).
 - Badge de estado na UI (nuvem = GitHub, banco = snapshot local) — replicar o header-status do
-  Memoriza.
+  Memoriza. Implementado em `src/components/SyncBadge.tsx`.
+- O payload do Gist é validado por `gistPayloadSchema` (`src/db/schemas.ts`) e **não** inclui o
+  conteúdo do banco — o que viaja entre aparelhos é o progresso, não as perguntas.
+- O merge está em `src/lib/merge.ts` (regras testadas em `src/lib/merge.test.ts`).
+
+## 5-bis. Módulos introduzidos na v1.0.1
+
+| Módulo | Ficheiro | Papel |
+| --- | --- | --- |
+| Rotas | `src/lib/routes.ts` | Fonte única das rotas (`dashboard`, `practice`, `mock`, `progress`, `guide`, `settings`) lidas do hash — evita dependências circulares entre UI e lógica. |
+| Onboarding | `src/lib/onboarding.ts` + `src/components/OnboardingChecklist.tsx` | "O que faço agora?" — 4 passos mínimos derivados do estado real (data da prova, provas concluídas, backup, sync). |
+| Tema | `src/lib/theme.ts` + `src/components/ThemeToggle.tsx` | Tema claro/escuro, com a escolha persistida e aplicada sem flash. |
+| Gráfico | `src/lib/chart.ts` + `src/components/ProgressChart.tsx` | Gráfico de evolução do score por abilità, desenhado em SVG (sem dependência nova). |
+| Guia | `src/pages/GuidePage.tsx` | Página de ajuda: como usar a app, como se preparar, o que levar para a prova. |
+| Sync | `src/services/gistSync.ts` + `src/components/SyncBadge.tsx` | Sync opcional por Gist (§5.4). |
+| Snapshots | `src/lib/snapshot.ts` + `src/services/snapshots.ts` | Cópias de segurança locais (§5.3). |
 
 ## 6. GitHub + Cloudflare (deploy)
 

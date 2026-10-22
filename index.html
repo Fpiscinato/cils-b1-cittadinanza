@@ -2,9 +2,11 @@
 <html lang="pt-PT">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg?v=%APP_VERSION%" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=%APP_VERSION%" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=%APP_VERSION%" />
-    <meta name="mask-icon" href="/favicon.svg?v=%APP_VERSION%" color="#0f766e" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/app-icons/v%APP_VERSION%/apple-touch-icon.png" />
+    <link rel="mask-icon" href="/favicon.svg?v=%APP_VERSION%" color="#0f766e" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0f766e" />
     <meta
@@ -15,8 +17,32 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="CILS B1" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/app-icons/v%APP_VERSION%/apple-touch-icon.png" />
     <title>CILS B1 Cittadinanza — Prep</title>
+    <script>
+      /*
+       * Aplica o tema ANTES de o React montar (evita o "flash" branco quando a
+       * aluna usa o tema escuro). Mesma chave e mesma regra de
+       * `src/lib/theme.ts`.
+       */
+      ;(function () {
+        try {
+          var stored = window.localStorage.getItem('cils.theme')
+          var theme =
+            stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system'
+          var dark =
+            theme === 'dark' ||
+            (theme === 'system' &&
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches)
+          var root = document.documentElement
+          root.classList.toggle('dark', dark)
+          root.style.colorScheme = dark ? 'dark' : 'light'
+          root.dataset.theme = dark ? 'dark' : 'light'
+        } catch (error) {
+          /* sem localStorage: fica o tema do sistema */
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

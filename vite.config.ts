@@ -25,7 +25,7 @@ export default defineConfig({
         short_name: 'CILS B1',
         description:
           'Estudo e simulação do exame oficial CILS B1 Cittadinanza (Università per Stranieri di Siena).',
-        lang: 'pt-BR',
+        lang: 'pt-PT',
         start_url: '/',
         scope: '/',
         display: 'standalone',
@@ -37,12 +37,14 @@ export default defineConfig({
           { src: `/icon.svg?v=${APP_VERSION}`, sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
           { src: `/app-icons/v${APP_VERSION}/icon-192.png`, sizes: '192x192', type: 'image/png', purpose: 'any' },
           { src: `/app-icons/v${APP_VERSION}/icon-512.png`, sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: `/app-icons/v${APP_VERSION}/apple-touch-icon.png`, sizes: '180x180', type: 'image/png', purpose: 'any' },
           { src: `/app-icons/v${APP_VERSION}/maskable-192.png`, sizes: '192x192', type: 'image/png', purpose: 'maskable' },
           { src: `/app-icons/v${APP_VERSION}/maskable-512.png`, sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
         shortcuts: [
           { name: 'Simular exame', short_name: 'Simulado', url: '/#/mock' },
           { name: 'Praticar', short_name: 'Prática', url: '/#/practice' },
+          { name: 'Guia', short_name: 'Guia', url: '/#/guide' },
         ],
       },
       workbox: {
