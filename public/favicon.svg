@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="CILS B1 Cittadinanza">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0f766e" />
+      <stop offset="1" stop-color="#0d4a4c" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg)" />
+  <g>
+    <rect x="11" y="21" width="14" height="22" fill="#008c45" />
+    <rect x="25" y="21" width="14" height="22" fill="#f4f5f4" />
+    <rect x="39" y="21" width="14" height="22" fill="#cd212a" />
+  </g>
+  <rect x="11" y="21" width="42" height="22" rx="3" fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="1.5" />
+</svg>

@@ -1,0 +1,48 @@
+{
+  "name": "cils-b1-cittadinanza",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "deploy": "npm run build && wrangler deploy",
+    "deploy:preview": "npm run build && wrangler versions upload",
+    "icons": "node scripts/generate-icons.mjs",
+    "version:bump": "tsx scripts/bump-version.ts",
+    "audit:exam": "tsx scripts/audit-exam.ts",
+    "audit:content": "tsx scripts/audit-content.ts",
+    "audit": "npm run audit:exam && npm run audit:content && npm run test"
+  },
+  "dependencies": {
+    "dexie": "^4.4.6",
+    "lucide-react": "^1.60.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "fake-indexeddb": "^6.2.6",
+    "jsdom": "^28.0.0",
+    "oxlint": "^1.88.0",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.15",
+    "typescript": "~6.0.3",
+    "vite": "^8.3.4",
+    "vite-plugin-pwa": "^2.0.0",
+    "vitest": "^5.0.5",
+    "wrangler": "^4.151.3"
+  }
+}

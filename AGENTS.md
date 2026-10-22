@@ -113,18 +113,21 @@ Protocolo temporale (replicar exatamente no mock):
 
 ### `src/lib/scoring.ts` — fonte única da verdade do scoring
 
-Deve exportar:
+Exporta (implementado):
 
-- `SKILLS` — as 4 abilità, com id, rótulo italiano, rótulo PT, `maxPoints: 12`.
+- `SKILLS` — as 4 habilidades; `SKILL_LABELS` traz o rótulo italiano e o português;
+  `POINTS_PER_SKILL = 12` e `TOTAL_POINTS = 48`.
 - `PASS_THRESHOLD_PER_SKILL = 7` e `PASS_THRESHOLD_TOTAL = 28` (derivado, não digitado à mão).
-- `scoreAscolto(correctP1, correctP2)` → pontos com os pesos 1.0 e 0.5 (e `0` por errore/omissa).
-- `scoreLettura(correctP1, correctP2)` → idem.
-- `scoreScrittura(rubric)` → somatório dos 5 criteri (3+1+4+3+1 = 12).
-- `scoreOrale(rubric)` → somatório dos 4 criteri (4+4+3+1 = 12).
-- `evaluateAttempt(...)` / `evaluateMock(...)` → `{ total, perSkill, passed, failedSkills[] }`.
+- `scoreObjective(correct, itemCount, pointsPerItem)` → errore/omissão = 0, sem penalidade.
+- `scoreAscolto(correctP1, correctP2)` → 6×1 + 12×0,5.
+- `scoreLettura(correctP1, correctP2)` → 12×0,5 + 6×1.
+- `scoreSkillFromCounts(skill, correctByTask)` → pontuação a partir das contagens por prova.
+- `WRITING_RUBRIC` / `ORAL_RUBRIC` + `scoreScrittura()` / `scoreOrale()` / `scoreRubric()`.
+- `evaluateExam(scores)` → `{ perSkill, total, passed, failedSkills, mustRetakeWholeExam }`.
+- `CAPITALISATION_WARNING` e `THRESHOLD_DISCLAIMER` — os textos de aviso para a UI.
 
 **Regra de ouro:** `passed === true` **implica** `perSkill[s] >= PASS_THRESHOLD_PER_SKILL`
-para **todas** as 4 abilità. Um total alto (ex. 39/48) com uma abilità a 6 **retorna
+para **todas** as 4 habilidades. Um total alto (ex. 39/48) com uma habilidade a 6 **retorna
 `passed: false`**. Esse é o teste que não pode quebrar — está em `scoring.test.ts`.
 
 > A spec original usava o nome de arquivo `src/lib/scoring.ts`, que **não existe** no ElevenSpark
@@ -173,20 +176,23 @@ inventado.
 
 ### 5.1 Dexie (IndexedDB)
 
-Tabelas (espelhar `src/db/database.ts` do ElevenSpark, com `version(n).stores(...).upgrade(...)`
+Tabelas implementadas (`src/db/schemas.ts` + `src/db/database.ts`, com `version(n).stores(...)`
 para migrações):
 
-- `profiles` — quem estuda (a aluna + guest).
-- `skills` / `grammarItems` / `vocabItems` — banco de conteúdo.
-- `questions` — item de prova, com `skill`, `taskId`, `type` (`mcq3` | `truefalse` | `cloze` |
-  `writing` | `oral`), `options`, `correctIndex`, `explanation`, `passageId`, `audioId`.
-- `passages` — testi di lettura (350-500 parole) e trascrizioni.
-- `audio` — metadati degli audio (`public/audio/*.mp3`, path, durata, transcript).
-- `sessions` — uma sessão = uma prova/missao (`mode`, `status`, `startedAt`, `completedAt`,
+- `profiles` — quem estuda (a aluna + guest), com a data da prova.
+- `passages` — textos de leitura, transcrições do áudio, temas de escrita e de oral.
+- `questions` — item de prova, com `skill`, `taskId`, `itemType` (`mcq3` | `truefalse` |
+  `cloze`), `options`, `correctIndex`, `explanation`, `passageId`, `pointsPerItem`, `order`.
+- `sessions` — uma sessão = uma prova (`mode`, `status`, `startedAt`, `completedAt`,
   `totalTimeSeconds`, `score`, `perSkill`).
-- `attempts` — resposta a item (`questionId`, `sessionId`, `skill`, `isCorrect`, `timeSpentSeconds`).
-- `writing` / `oral` — composições + self-assessment rubric.
-- `mistakes` — banco de erros (derivado de `attempts` + flag `cleared`, como no ElevenSpark).
+- `attempts` — resposta a item (`questionId`, `sessionId`, `skill`, `isCorrect`, `skipped`,
+  `timeSpentSeconds`, `timestamp`).
+- `writings` — a produção escrita + auto-avaliação na grelha oficial.
+- `orals` — a prova oral (tema, notas, auto-avaliação, duração).
+
+**Planeado (ainda não existe):** `grammarItems` / `vocabItems` (banco de conteúdo por fase),
+`mistakes` (hoje o banco de erros é derivado de `attempts`, como no ElevenSpark) e ficheiros
+de áudio em `public/audio/` (hoje o áudio é sintetizado por TTS — ver §7, ponto 9).
 
 ### 5.2 Imutabilidade dos mocks concluídos — regra dura
 
@@ -294,15 +300,27 @@ Padrão do ElevenSpark `src/services/gistSync.ts` / do Memoriza `src/lib/github-
 npm run dev            # vite dev
 npm run build          # tsc -b && vite build   <- único type-check confiável
 npm run lint           # oxlint
-npm run test           # vitest run
-npm run audit          # a porta de qualidade (ver abaixo)
-npm run audit:content  # integridade del banco de questions (opzioni corrette uniche, stem non vuoto, punteggi conformi)
-npm run audit:exam     # la configurazione delle prove corrisponde alla specifica ufficiale (6+12+12+6 item, pesi 1/0.5, 12 punti per abilità)
-npm run audit:visibility # nessun testo invisibile in light e dark mode
-npm run icons          # rigenera gli icone dopo un bump di APP_VERSION
+npm run test           # vitest run  (53 testes em 7 ficheiros)
+npm run audit          # a porta de qualidade: audit:exam + audit:content + test
+npm run audit:exam     # a configuração das provas bate com a especificação oficial?
+npm run audit:content  # integridade do banco (opções, pesos, ordem) E o gabarito oficial do CILS
+npm run icons          # regenera os ícones depois de um bump de APP_VERSION
+npm run version:bump   # sobe a versão (base-10, dígito a dígito)
 ```
 
-`npm run audit` é **gate no CI** — se os audit falliscono, il deploy non esce.
+`npm run audit` é **gate no CI** — se os audit falharem, o deploy não sai.
+
+O `audit:content` é o mais importante: ele **recalcula as respostas do banco e compara com as
+chaves oficiais do CILS** ("Chiavi di soluzione delle prove"). As 36 perguntas da prova de
+exemplo oficial (Quaderno + Trascrizioni) estão em `src/data/officialSample.ts` e têm de
+continuar a bater certo com o gabarito publicado.
+
+### Conteúdo de exemplo oficial (já implementado)
+
+`src/data/officialSample.ts` traz a **prova oficial de exemplo completa**, com o gabarito do
+CILS: 6 MCQ + 12 V/F de ascolto, 12 V/F + 6 cloze de lettura, os 2 temas de escrita e os 4
+temas da oral, mais as transcrições (que alimentam o TTS do áudio). É a única prova com
+gabarito oficial garantido, por isso é o primeiro conteúdo do banco.
 
 ## 10. Versionamento (base-10, digit a digit)
 
@@ -312,13 +330,34 @@ npm run icons          # rigenera gli icone dopo un bump di APP_VERSION
 - Bump di `APP_VERSION` → `npm run icons`.
 - Bump di `BANK_VERSION` quando i generatori cambiano, così il banco viene re-seeded.
 
-## 11. Decisioni aperte (da confermare con la studentessa prima di implementarle)
+## 11. Decisões já tomadas e em aberto
 
-1. **Audio**: usare gli audio ufficiali campione (38 MB, ~1 prova) + audio generati/sintetizzati,
-   oppure solo sintesi vocale (TTS) per coprire tutti i 36 item di ogni mock? → la seconda è
-   l'unica scalabile, la prima è la più fedele. Serve capire la priorità.
-2. **Orale**: il app simula solo, oppure c'è un "tutor" che fa domande a voce? (fuori scope PWA
-   offline, ma un prompt-to-speech del browser + registrazione è fattibile).
-3. **Data della prova**: senza la data reale dell'esame, le 3 fasi non hanno una finestra.
-4. **Soglia 7/12**: confermare con la sede di esame (Siena, Londra, ecc.) prima di fissarla
-   come default nell'app.
+**Já decididas:**
+
+1. **Áudio → TTS do browser** (`src/lib/tts.ts`, voz italiana do sistema). Escalável para
+   qualquer número de itens, zero MB, 100% offline. A transcrição oficial do CILS é a fonte
+   do texto lido. O limite de 2 reproduções por prova é sempre respeitado.
+2. **Oral → simulação com a grelha oficial** (timer de 1 min + 2-3 min, 4 critérios). Não há
+   "tutor" que faça perguntas: o examinador é humano e o app prepara, não substitui.
+3. **Limiar 7/12 por habilidade** → 28/48, marcado como "confirmar com a sua sede" na UI.
+
+**Em aberto (precisam da aluna):**
+
+4. **Data da prova** — sem ela, as 3 fases não têm janela (a aluna marca-a nos Ajustes).
+5. **Sede de exame** — Siena, Londres ou outra? Muda a data limite de inscrição e o
+   ficheiro oficial da prova (o `foglio delle risposte` é igual em todas as sedes).
+6. **Conteúdo extra** — o banco tem hoje só a prova oficial de exemplo. Falta gerar conteúdo
+   por fase (gramática do Sillabo, vocabulário, civic/burocracia) e provas adicionais.
+
+## 12. Estado do deploy
+
+O repo está pronto para o GitHub e para a Cloudflare, mas **dois passos são manuais** (não há
+tokens no servidor):
+
+1. Criar o repo `Fpiscinato/cils-b1-cittadinanza` (vazio, sem README) no GitHub.
+2. Adicionar os secrets do repo em *Settings → Secrets and variables → Actions*:
+   `CLOUDFLARE_API_TOKEN` (Workers Scripts: Edit + Account Settings: Read) e
+   `CLOUDFLARE_ACCOUNT_ID`.
+
+Depois disso, cada push para `main` passa pelos audits e é publicado no Worker da Cloudflare.
+Para deploy local: `npm run deploy` (precisa de `wrangler login`).
