@@ -19,6 +19,13 @@ cidadania italiana.
 - **Diz se ela está pronta** — dashboard de prontidão com a nota de cada habilidade, a margem
   sobre o limiar e a habilidade de maior risco. Sem capitalização: ou passa nas quatro, ou
   refaz a prova inteira.
+- **Guia de uso** — um ecrã "Guia" com o passo-a-passo para começar, o protocolo de cada prova,
+  as regras de aprovação e o que levar para o exame.
+- **Acompanha a evolução** — gráfico do score total e de cada abilità ao longo do tempo, com a
+  linha da sufficienza.
+- **Claro ou escuro** — tema claro/escuro/sistema, guardado no aparelho (sem "flash" ao abrir).
+- **Guarda o trabalho em dois sítios** — snapshots locais automáticos (até 8) + sync opcional por
+  GitHub Gist (nuvem verde = sync OK, laranja = sem sync) para continuar noutro aparelho.
 - **É 100% offline** — IndexedDB (Dexie), backup em JSON e PWA instalável.
 
 ## Como está montado
@@ -33,13 +40,18 @@ cidadania italiana.
 | Banco (Dexie) e schemas (Zod) | `src/db/` |
 | Runner único de sessão | `src/components/exam/ExamRunner.tsx` |
 | Áudio por síntese de voz do browser | `src/lib/tts.ts` |
+| Rotas (hash) e menu (sidebar no portátil, barra no telemóvel) | `src/lib/routes.ts`, `src/components/AppShell.tsx` |
+| Tema claro/escuro | `src/lib/theme.ts` |
+| Gráfico de evolução (SVG) | `src/lib/chart.ts`, `src/components/ProgressChart.tsx` |
+| Sync por Gist / snapshots locais | `src/services/gistSync.ts`, `src/lib/snapshot.ts` |
 
 ## Comandos
 
 ```bash
 npm install
 npm run dev        # servidor de desenvolvimento
-npm run test       # 53 testes (scoring, readiness, roadmap, wordCount, timing, admin, examBuilder)
+npm run test       # 80 testes (scoring, readiness, roadmap, wordCount, timing, admin,
+                   # examBuilder, theme, chart, merge, snapshot, onboarding)
 npm run audit      # audit:exam + audit:content + test  <- gate do CI
 npm run build      # type-check + build
 npm run lint       # oxlint
@@ -55,8 +67,8 @@ Cloudflare Workers (wrangler) · GitHub Actions
 
 ## Deploy
 
-Ver [`AGENTS.md` §12](AGENTS.md#12-estado-do-deploy) — a lista exacta dos dois passos manuais
-(criar o repo e adicionar os secrets da Cloudflare).
+O deploy é feito pela **integração Git da Cloudflare** (Workers Builds): cada push para `main`
+publica sozinho. Detalhes em [`AGENTS.md` §12](AGENTS.md#12-estado-do-deploy).
 
 ## Fonte do conteúdo
 
