@@ -2,7 +2,7 @@
  * A versão mostrada nas Settings. Bump de um dígito por vez (base-10):
  * 1.0.0 -> 1.0.1 -> ... -> 1.0.9 -> 1.1.0 -> ...
  */
-export const APP_VERSION = '1.2.0'
+export const APP_VERSION = '1.3.0'
 
 /**
  * Versão do banco de conteúdo. Quando os geradores mudam, este número sobe e o
@@ -17,5 +17,6 @@ export const APP_VERSION = '1.2.0'
  * v6: banco de estudo em volume (padrões de gramática + vocabulário) e
  * lote 4 (ascolto) — banco com 477 itens.
  * v7: lotes 5 e 6 (mais ascolto e leitura) + vocabulário A1/A2 — 629 itens.
+ * v8: lotes 7 e 8 + 46 entradas de vocabulário — 801 itens (meta atingida).
  */
-export const BANK_VERSION = 7
+export const BANK_VERSION = 8

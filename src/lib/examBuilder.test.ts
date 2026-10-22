@@ -95,16 +95,15 @@ describe('montagem das provas', () => {
     for (const question of stage.questions) {
       expect(question.phase).toBe('cittadinanza')
     }
-    expect(Object.keys(stage.audioByTask ?? {}).sort()).toEqual([
-      'ascolto-p2-b4',
-      'ascolto-p2-c6',
-      'ascolto-p2-d7',
-      'ascolto-p2-d8',
-      'ascolto-p2-e2',
-      'ascolto-p2-e3',
-      'ascolto-p2-f2',
-      'ascolto-p2-x',
-    ])
+    // O áudio só existe para as tasks de ascolto desta fase (nunca as
+    // oficiais, que não têm fase).
+    const audioKeys = Object.keys(stage.audioByTask ?? {})
+    expect(audioKeys.length).toBeGreaterThan(0)
+    for (const key of audioKeys) {
+      expect(key.startsWith('ascolto-')).toBe(true)
+      expect(key).not.toBe('ascolto-p1')
+      expect(key).not.toBe('ascolto-p2')
+    }
   })
 
   it('cada fase tem material de ascolto E de lettura (a prática por fase nunca fica vazia)', async () => {

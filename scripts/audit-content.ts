@@ -22,6 +22,8 @@ import { PASSAGES_BATCH3, QUESTIONS_BATCH3 } from '../src/data/practiceBatch3'
 import { PASSAGES_BATCH4, QUESTIONS_BATCH4 } from '../src/data/practiceBatch4'
 import { PASSAGES_BATCH5, QUESTIONS_BATCH5 } from '../src/data/practiceBatch5'
 import { PASSAGES_BATCH6, QUESTIONS_BATCH6 } from '../src/data/practiceBatch6'
+import { PASSAGES_BATCH7, QUESTIONS_BATCH7 } from '../src/data/practiceBatch7'
+import { PASSAGES_BATCH8, QUESTIONS_BATCH8 } from '../src/data/practiceBatch8'
 import { GRAMMAR_ITEMS, VOCAB_ITEMS } from '../src/data/phaseContent'
 import { STUDY_QUESTIONS } from '../src/data/studyBank'
 import { TASK_WEIGHTS } from '../src/lib/scoring'
@@ -167,6 +169,8 @@ const extraPassageIds = new Set([
   ...PASSAGES_BATCH4.map((passage) => passage.id),
   ...PASSAGES_BATCH5.map((passage) => passage.id),
   ...PASSAGES_BATCH6.map((passage) => passage.id),
+  ...PASSAGES_BATCH7.map((passage) => passage.id),
+  ...PASSAGES_BATCH8.map((passage) => passage.id),
 ])
 const seenExtraIds = new Set<string>()
 const extraTasks = new Map<string, number>()
@@ -288,6 +292,31 @@ checkExtraBank(
     'ascolto-p2-d8': 8,
   },
   'lote 4',
+)
+
+checkExtraBank(
+  QUESTIONS_BATCH8,
+  {
+    'ascolto-p1-h1': 6,
+    'ascolto-p1-h2': 6,
+    'ascolto-p2-h3': 8,
+    'ascolto-p2-h4': 8,
+    'lettura-p1-h5': 8,
+    'lettura-p2-h6': 6,
+  },
+  'lote 8',
+)
+
+checkExtraBank(
+  QUESTIONS_BATCH7,
+  {
+    'ascolto-p1-g1': 6,
+    'ascolto-p1-g2': 6,
+    'ascolto-p2-g3': 8,
+    'lettura-p1-g4': 8,
+    'lettura-p2-g5': 6,
+  },
+  'lote 7',
 )
 
 checkExtraBank(
@@ -418,9 +447,9 @@ export const BANK_IDEAL = {
 
 /** Mínimo garantido pelo audit (o que já existe hoje). */
 export const BANK_MINIMUM = {
-  total: 450,
-  byLevel: { A1: 100, A2: 115, B1: 210 },
-  bySkill: { ascolto: 60, lettura: 380 },
+  total: 780,
+  byLevel: { A1: 160, A2: 220, B1: 370 },
+  bySkill: { ascolto: 160, lettura: 610 },
 } as const
 
 /* -------------------------------------------------------------------------- */
@@ -439,6 +468,8 @@ const ALL_QUESTIONS = [
   ...QUESTIONS_BATCH4,
   ...QUESTIONS_BATCH5,
   ...QUESTIONS_BATCH6,
+  ...QUESTIONS_BATCH7,
+  ...QUESTIONS_BATCH8,
   ...STUDY_QUESTIONS,
 ]
 
@@ -489,7 +520,7 @@ if (failures.length > 0) {
 
 console.log(
   `✅ Auditoria do conteúdo: ${OFFICIAL_QUESTIONS.length} perguntas oficiais (com o gabarito do CILS), ` +
-    `${EXTRA_QUESTIONS.length + QUESTIONS_BATCH2.length + QUESTIONS_BATCH3.length + QUESTIONS_BATCH4.length + QUESTIONS_BATCH5.length + QUESTIONS_BATCH6.length} itens extra de prática, ` +
+    `${EXTRA_QUESTIONS.length + QUESTIONS_BATCH2.length + QUESTIONS_BATCH3.length + QUESTIONS_BATCH4.length + QUESTIONS_BATCH5.length + QUESTIONS_BATCH6.length + QUESTIONS_BATCH7.length + QUESTIONS_BATCH8.length} itens extra de prática, ` +
     `${GRAMMAR_ITEMS.length} regras de gramática e ${VOCAB_ITEMS.length} entradas de vocabulário.`,
 )
 console.log(

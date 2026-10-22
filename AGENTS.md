@@ -232,16 +232,16 @@ Banco: 629 itens (ideal 800) · A1 156/150 · A2 183/250 · B1 290/400 · ascolt
 
 - **IDEAL (alvo)**: 800 itens — 150 A1, 250 A2, 400 B1; 200 de ascolto, 600 de lettura.
   É o que dá ~20 "provas" completas por habilidade: a aluna pode estudar 3 meses
-  (~15 min/dia) sem repetir as mesmas perguntas.
-- **MÍNIMO (garantido pelo audit)**: 450 itens, com piso por nível e por habilidade.
+  (~15 min/dia) sem repetir as mesmas perguntas. **Atingido em 2026-10-22 (v1.3.0).**
+- **MÍNIMO (garantido pelo audit)**: 780 itens, com piso por nível e por habilidade.
 - O menu **secundário** (Clínica de erros, Foglio risposte) só aparece no menu lateral
-  do portátil — no telemóvel a barra de baixo fica com os 7 ecrãs principais.
+  do portátil — no telemóvel a barra de baixo fica com os 6 ecrãs principais.
 - Cada item novo é barato: um texto de leitura dá 8 V/F + 6 cloze; uma transcrição
   dá 6 MCQ + 8 V/F; uma regra de gramática dá 3-4 exercícios; uma entrada de
   vocabulário dá 2 perguntas (geradas automaticamente, com as opções baralhadas).
-- **O lado mais fraco é o ascolto** (82/200): é o que exige transcrições novas.
+- **O lado mais fraco continua a ser o ascolto** (172/200): exige transcrições novas.
   Dica: um texto de leitura pode virar "gémeo de áudio" (mesmo texto, lido pelo TTS)
-  com perguntas diferentes — foi assim que se fez o lote 4.
+  com perguntas diferentes — foi assim que se fizeram os lotes 4, 7 e 8.
 
 ### 5.2 Imutabilidade dos mocks concluídos — regra dura
 
