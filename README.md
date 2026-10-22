@@ -61,25 +61,44 @@ cidadania italiana.
 ```bash
 npm install
 npm run dev        # servidor de desenvolvimento
-npm run test       # 80 testes (scoring, readiness, roadmap, wordCount, timing, admin,
+npm run test       # 92 testes (scoring, readiness, roadmap, wordCount, timing, admin,
                    # examBuilder, theme, chart, merge, snapshot, onboarding)
 npm run audit      # audit:exam + audit:content + test  <- gate do CI
 npm run build      # type-check + build
 npm run lint       # oxlint
+npm run icons      # regenera os ícones do PWA
+npm run version:bump  # bump da versão (um dígito de cada vez)
+npm run deploy     # build + wrangler deploy (deploy manual)
 ```
 
-O `audit:content` recalcula as respostas do banco e compara com as **chaves oficiais do
-CILS** — se uma resposta divergir, o deploy não sai.
+O `audit:content` confere cada resposta do banco contra as **chaves oficiais do
+CILS** fixadas em `scripts/audit-content.ts` (`OFFICIAL_KEYS`) — se uma resposta
+divergir, o deploy não sai.
 
 ## Stack
 
 React 19 · TypeScript · Vite 8 · Tailwind CSS 4 · Dexie 4 · Zod 4 · Vite PWA · Vitest · oxlint ·
-Cloudflare Workers (wrangler) · GitHub Actions
+Cloudflare Workers (wrangler).
+
+**Site no ar:** <https://cils-b1-cittadinanza.f-piscinato.workers.dev> · **versão atual:** `1.3.0` (`src/config/version.ts`)
 
 ## Deploy
 
 O deploy é feito pela **integração Git da Cloudflare** (Workers Builds): cada push para `main`
 publica sozinho. Detalhes em [`AGENTS.md` §12](AGENTS.md#12-estado-do-deploy).
+
+| Setting | Valor |
+| --- | --- |
+| Build command | `npm run ci` (roda `audit` **antes** do build) |
+| Deploy command | `npx wrangler deploy` |
+| Root directory | `/` |
+| Worker | `cils-b1-cittadinanza` (`wrangler.jsonc`) |
+
+> **Não há workflow do GitHub Actions neste repositório** — o `.github/workflows/deploy.yml`
+> foi removido de propósito (precisaria de secrets `CLOUDFLARE_API_TOKEN`/`ACCOUNT_ID` que
+> nunca foram configurados). O Workers Builds faz o mesmo trabalho sem nenhum secret.
+
+Deploy manual (alternativa): `npm run deploy` (precisa de `npx wrangler login`).
 
 ## Fonte do conteúdo
 
