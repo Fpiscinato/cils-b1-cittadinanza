@@ -16,7 +16,14 @@ import {
   type Skill,
 } from './scoring'
 
-export const EXAM_MODES = ['ascolto', 'lettura', 'scrittura', 'orale', 'mock_cittadinanza'] as const
+export const EXAM_MODES = [
+  'ascolto',
+  'lettura',
+  'scrittura',
+  'orale',
+  'mock_cittadinanza',
+  'studio',
+] as const
 export type ExamMode = (typeof EXAM_MODES)[number]
 
 export const SKILL_TO_MODE: Record<Skill, ExamMode> = {
@@ -205,6 +212,20 @@ export const EXAM_CONFIGS: Record<ExamMode, ExamConfig> = {
     timeSeconds: 30 * MINUTE + 40 * MINUTE + 40 * MINUTE,
     tasks: [],
     omrEligible: true,
+  },
+  studio: {
+    mode: 'studio',
+    skill: 'all',
+    title: 'Studio per livello',
+    titlePt: 'Estudo por nível (A1 / A2 / B1)',
+    subtitlePt: '10-15 itens aleatórios · sem pressão de tempo',
+    blurbPt:
+      'Um exercício curto e ALEATÓRIO do nível que escolheres: as perguntas são sempre ' +
+      'baralhadas e tiradas do banco grande (oficial + conteúdo extra + exercícios de ' +
+      'gramática e vocabulário). Cada dia é um dia novo.',
+    timeSeconds: 15 * MINUTE,
+    tasks: [],
+    omrEligible: false,
   },
 }
 

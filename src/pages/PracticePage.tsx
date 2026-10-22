@@ -3,8 +3,20 @@ import { ArrowLeft } from 'lucide-react'
 import { ExamSession } from '../components/exam/ExamSession'
 import { Button, Card, CollapsibleCard } from '../components/ui'
 import { EXAM_CONFIGS } from '../lib/exam'
-import type { ExamMode } from '../db/schemas'
+import type { ExamMode, Phase } from '../db/schemas'
 import type { Route } from '../lib/routes'
+import { PHASE_FOCUS, PHASE_LABELS, PHASE_TITLES } from '../lib/phases'
+
+/**
+ * Uma prova pedida noutro ecrã (painel, conteúdo por fase, estudo).
+ *
+ * `null` = nenhum pedido pendente. Quando existe, o ecrã abre a prova
+ * DIRECTAMENTE — a aluna não tem de voltar a clicar.
+ */
+export interface PendingSession {
+  mode: ExamMode
+  phase?: Phase
+}
 
 /**
  * Página de prática — "action first": o botão de começar fica no PRIMEIRO
@@ -15,21 +27,39 @@ export function PracticePage({
   profileId,
   onCompleted,
   onNavigate,
+  pending,
+  onPendingConsumed,
+  onReview,
 }: {
   profileId: string
   onCompleted: () => void
   onNavigate: (route: Route) => void
+  /** Prova pedida noutro ecrã — abre directamente. */
+  pending: PendingSession | null
+  onPendingConsumed: () => void
+  onReview?: (sessionId: string) => void
 }) {
-  const [mode, setMode] = useState<ExamMode | null>(null)
+  // A prática por fase entra pelo estado inicial: o ecrã é montado quando se
+  // chega do Conteúdo, por isso o arranque é imediato (sem flash).
+  const [mode, setMode] = useState<ExamMode | null>(pending?.mode ?? null)
+  const [phase, setPhase] = useState<Phase | undefined>(pending?.phase)
 
   if (mode) {
     return (
       <ExamSession
         mode={mode}
         profileId={profileId}
-        onExit={() => setMode(null)}
+        phase={phase}
+        onReview={onReview}
+        onExit={() => {
+          setMode(null)
+          setPhase(undefined)
+          onPendingConsumed()
+        }}
         onCompleted={() => {
           setMode(null)
+          setPhase(undefined)
+          onPendingConsumed()
           onCompleted()
           onNavigate('dashboard')
         }}
@@ -99,6 +129,50 @@ export function PracticePage({
           <li>• Escrita: 80-120 palavras, avaliada com a grelha oficial de 5 critérios.</li>
           <li>• Oral: apresentação de 1 min + conversa de 2-3 min, grelha oficial de 4 critérios.</li>
         </ul>
+      </CollapsibleCard>
+
+      <CollapsibleCard title="🎯 Prática por fase">
+        <p className="text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
+          Treina só o material da fase em que estás. O conteúdo extra da app (textos de
+          escuta, de leitura e de gramática) é original e foi escrito para este nível.
+        </p>
+        <div className="mt-3 flex flex-col gap-2">
+          {(['fondazione', 'struttura', 'cittadinanza'] as const).map((item) => (
+            <div key={item} className="rounded-xl bg-slate-50 p-3 dark:bg-slate-700/40">
+              <p className="text-xs font-black text-slate-900 dark:text-slate-100">
+                {PHASE_TITLES[item]}
+              </p>
+              <p className="mt-0.5 text-[11px] font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
+                {PHASE_FOCUS[item]}
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <Button
+                  variant="secondary"
+                  className="px-3 py-1.5 text-xs"
+                  onClick={() => {
+                    setPhase(item)
+                    setMode('ascolto')
+                  }}
+                >
+                  ⚡ Ascolto
+                </Button>
+                <Button
+                  variant="secondary"
+                  className="px-3 py-1.5 text-xs"
+                  onClick={() => {
+                    setPhase(item)
+                    setMode('lettura')
+                  }}
+                >
+                  📖 Lettura
+                </Button>
+                <span className="self-center text-[10px] font-bold text-slate-500">
+                  {PHASE_LABELS[item]}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       </CollapsibleCard>
 
       <Card>

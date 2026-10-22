@@ -5,6 +5,7 @@ import { Button, Card } from '../components/ui'
 import { EXAM_CONFIGS } from '../lib/exam'
 import type { ExamMode } from '../db/schemas'
 import type { Route } from '../lib/routes'
+import type { PendingSession } from './PracticePage'
 
 /**
  * Página de simulados. O simulado completo replica a prova escrita real:
@@ -15,21 +16,35 @@ export function MockPage({
   profileId,
   onCompleted,
   onNavigate,
+  pending,
+  onPendingConsumed,
+  onReview,
 }: {
   profileId: string
   onCompleted: () => void
   onNavigate: (route: Route) => void
+  /** Simulado pedido noutro ecrã — abre directamente. */
+  pending: PendingSession | null
+  onPendingConsumed: () => void
+  onReview?: (sessionId: string) => void
 }) {
-  const [mode, setMode] = useState<ExamMode | null>(null)
+  const [mode, setMode] = useState<ExamMode | null>(
+    pending?.mode === 'mock_cittadinanza' ? 'mock_cittadinanza' : null,
+  )
 
   if (mode) {
     return (
       <ExamSession
         mode={mode}
         profileId={profileId}
-        onExit={() => setMode(null)}
+        onReview={onReview}
+        onExit={() => {
+          setMode(null)
+          onPendingConsumed()
+        }}
         onCompleted={() => {
           setMode(null)
+          onPendingConsumed()
           onCompleted()
           onNavigate('dashboard')
         }}

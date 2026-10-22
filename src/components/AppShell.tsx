@@ -3,6 +3,7 @@ import {
   BarChart3,
   BookOpen,
   ClipboardCheck,
+  Dices,
   GraduationCap,
   Settings,
   Target,
@@ -30,6 +31,7 @@ interface NavItem {
  */
 const NAV: NavItem[] = [
   { id: 'dashboard', label: 'Painel', icon: <Target size={20} /> },
+  { id: 'study', label: 'Estudo', icon: <Dices size={20} /> },
   { id: 'practice', label: 'Prática', icon: <GraduationCap size={20} /> },
   { id: 'mock', label: 'Simulado', icon: <ClipboardCheck size={20} /> },
   { id: 'progress', label: 'Progresso', icon: <BarChart3 size={20} /> },

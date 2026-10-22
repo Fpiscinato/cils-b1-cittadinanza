@@ -160,6 +160,59 @@ export const TASK_WEIGHTS: Readonly<Record<string, number>> = {
   'ascolto-p2': ASCOLTO_P2_POINTS_PER_ITEM,
   'lettura-p1': LETTURA_P1_POINTS_PER_ITEM,
   'lettura-p2': LETTURA_P2_POINTS_PER_ITEM,
+  // Banco extra de prática (material original da app): mesmos pesos das
+  // provas oficiais, para a pontuação ser comparável.
+  'ascolto-p1-x': ASCOLTO_P1_POINTS_PER_ITEM,
+  'ascolto-p1-s2': ASCOLTO_P1_POINTS_PER_ITEM,
+  'ascolto-p2-x': ASCOLTO_P2_POINTS_PER_ITEM,
+  'lettura-p1-f1': LETTURA_P1_POINTS_PER_ITEM,
+  'lettura-p1-x': LETTURA_P1_POINTS_PER_ITEM,
+  'lettura-p2-x': LETTURA_P2_POINTS_PER_ITEM,
+  'ascolto-p1-b3': ASCOLTO_P1_POINTS_PER_ITEM,
+  'ascolto-p1-c5': ASCOLTO_P1_POINTS_PER_ITEM,
+  'ascolto-p2-b4': ASCOLTO_P2_POINTS_PER_ITEM,
+  'ascolto-p2-c6': ASCOLTO_P2_POINTS_PER_ITEM,
+  'lettura-p1-b5': LETTURA_P1_POINTS_PER_ITEM,
+  'lettura-p1-b6': LETTURA_P1_POINTS_PER_ITEM,
+  'lettura-p1-c7': LETTURA_P1_POINTS_PER_ITEM,
+  'lettura-p2-b7': LETTURA_P2_POINTS_PER_ITEM,
+  'lettura-p2-c8': LETTURA_P2_POINTS_PER_ITEM,
+  'ascolto-p2-d7': ASCOLTO_P2_POINTS_PER_ITEM,
+  'ascolto-p2-d8': ASCOLTO_P2_POINTS_PER_ITEM,
+}
+
+/**
+ * Pontuação de uma etapa (um `stage` objetivo) na escala 0-12.
+ *
+ * A fórmula é `12 × (acerto ponderado / peso total)`. Para o banco OFICIAL
+ * dá exatamente a pontuação oficial (a soma dos pesos de uma prova é 12), e
+ * para o banco misto (oficial + prática) mantém a escala 0-12 — sem nunca
+ * passar de 12 nem descer abaixo de 0.
+ */
+export function scoreStageFromCounts(
+  items: readonly { taskId: string; pointsPerItem: number }[],
+  correctByTask: Readonly<Record<string, number>>,
+): number {
+  const tasks = new Map<string, { count: number; weight: number }>()
+  for (const item of items) {
+    const entry = tasks.get(item.taskId)
+    if (entry) {
+      entry.count += 1
+    } else {
+      tasks.set(item.taskId, { count: 1, weight: item.pointsPerItem })
+    }
+  }
+
+  let weightedCorrect = 0
+  let weightedTotal = 0
+  for (const [taskId, entry] of tasks) {
+    const correct = clamp(Math.floor(correctByTask[taskId] ?? 0), 0, entry.count)
+    weightedCorrect += correct * entry.weight
+    weightedTotal += entry.count * entry.weight
+  }
+
+  if (weightedTotal <= 0) return 0
+  return round2(clamp((POINTS_PER_SKILL * weightedCorrect) / weightedTotal, 0, POINTS_PER_SKILL))
 }
 
 /**

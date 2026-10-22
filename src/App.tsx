@@ -3,10 +3,12 @@ import { registerSW } from 'virtual:pwa-register'
 import { AppShell } from './components/AppShell'
 import { UpdateBanner, type PwaBannerState } from './components/UpdateBanner'
 import { DashboardPage } from './pages/DashboardPage'
-import { PracticePage } from './pages/PracticePage'
+import { PracticePage, type PendingSession } from './pages/PracticePage'
 import { MockPage } from './pages/MockPage'
 import { ProgressPage } from './pages/ProgressPage'
 import { GuidePage } from './pages/GuidePage'
+import { StudyPage } from './pages/StudyPage'
+import { ReportPage } from './components/exam/ReportPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { db } from './db/database'
 import { initializeDatabase } from './db/database'
@@ -36,6 +38,8 @@ export default function App() {
   const [syncStatus, setSyncStatus] = useState<SyncStatus>(INITIAL_SYNC_STATUS)
   const [hasBackup, setHasBackup] = useState(false)
   const [pwaState, setPwaState] = useState<PwaBannerState>('none')
+  const [pendingSession, setPendingSession] = useState<PendingSession | null>(null)
+  const [reportSessionId, setReportSessionId] = useState<string | null>(null)
   const updateWorker = useRef<((reload?: boolean) => Promise<void>) | null>(null)
   const autoSynced = useRef(false)
 
@@ -126,6 +130,9 @@ export default function App() {
   }, [])
 
   function navigate(next: Route): void {
+    // Um pedido de prova só vale para a entrada immediate: ao sair do ecrã
+    // que o recebeu, o pedido é limpo.
+    if (next !== 'practice' && next !== 'mock') setPendingSession(null)
     window.location.hash = `#/${next}`
     setRoute(next)
     window.scrollTo({ top: 0 })
@@ -198,9 +205,19 @@ export default function App() {
           hasBackup={hasBackup}
           hasSync={hasToken()}
           onStart={(mode) => {
+            // O painel ABRE a prova directamente (sem salto + clique outra vez).
+            setPendingSession({ mode })
             navigate(mode === 'mock_cittadinanza' ? 'mock' : 'practice')
           }}
           onNavigate={navigate}
+        />
+      ) : null}
+
+      {route === 'study' ? (
+        <StudyPage
+          profileId={profileId}
+          onNavigate={navigate}
+          onCompleted={() => void afterSession()}
         />
       ) : null}
 
@@ -209,6 +226,12 @@ export default function App() {
           profileId={profileId}
           onCompleted={() => void afterSession()}
           onNavigate={navigate}
+          pending={pendingSession}
+          onPendingConsumed={() => setPendingSession(null)}
+          onReview={(sessionId) => {
+            setReportSessionId(sessionId)
+            navigate('report')
+          }}
         />
       ) : null}
 
@@ -217,14 +240,43 @@ export default function App() {
           profileId={profileId}
           onCompleted={() => void afterSession()}
           onNavigate={navigate}
+          pending={pendingSession}
+          onPendingConsumed={() => setPendingSession(null)}
+          onReview={(sessionId) => {
+            setReportSessionId(sessionId)
+            navigate('report')
+          }}
         />
       ) : null}
 
       {route === 'progress' ? (
-        <ProgressPage sessions={sessions} attempts={attempts} onNavigate={navigate} />
+        <ProgressPage
+          sessions={sessions}
+          attempts={attempts}
+          onNavigate={navigate}
+          onReview={(sessionId) => {
+            setReportSessionId(sessionId)
+            navigate('report')
+          }}
+        />
       ) : null}
 
-      {route === 'guide' ? <GuidePage onNavigate={navigate} /> : null}
+      {route === 'report' && reportSessionId ? (
+        <ReportPage
+          sessionId={reportSessionId}
+          onNavigate={(target) => navigate(target)}
+        />
+      ) : null}
+
+      {route === 'guide' ? (
+        <GuidePage
+          onNavigate={navigate}
+          onPracticePhase={(phase, skill) => {
+            setPendingSession({ mode: skill, phase })
+            navigate('practice')
+          }}
+        />
+      ) : null}
 
       {route === 'settings' ? (
         <SettingsPage

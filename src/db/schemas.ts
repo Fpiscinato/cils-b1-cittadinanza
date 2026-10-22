@@ -18,6 +18,20 @@ export const objectiveItemTypeSchema = z.enum(objectiveItemTypes)
 export type ObjectiveItemType = z.infer<typeof objectiveItemTypeSchema>
 
 /* -------------------------------------------------------------------------- */
+/* Fases do plano de estudos                                                    */
+/* -------------------------------------------------------------------------- */
+
+/** As 3 fases do plano de estudos (ver `src/lib/roadmapCalculator.ts`). */
+export const PHASES = ['fondazione', 'struttura', 'cittadinanza'] as const
+export const phaseSchema = z.enum(PHASES)
+export type Phase = z.infer<typeof phaseSchema>
+
+/** Níveis do conteúdo (o Sillabo vai de A1 a B1). */
+export const LEVELS = ['A1', 'A2', 'B1'] as const
+export const levelSchema = z.enum(LEVELS)
+export type Level = z.infer<typeof levelSchema>
+
+/* -------------------------------------------------------------------------- */
 /* Perfis                                                                     */
 /* -------------------------------------------------------------------------- */
 
@@ -70,14 +84,97 @@ export const questionSchema = z.object({
   explanation: z.string().min(1),
   /** Id do áudio (ascolto) — aponta para `public/audio/`. */
   audioId: z.string().optional(),
+  /**
+   * De que banco vem o item.
+   * - `official`: a prova oficial de exemplo do CILS (o simulado completo usa
+   *   SÓ este banco, para manter o gabarito intacto).
+   * - `practice`: conteúdo extra da app, para treinar com material novo.
+   */
+  bank: z.enum(['official', 'practice']).optional(),
+  /**
+   * Fase do plano de estudos a que o item pertence (só no banco extra).
+   * Serve para a "prática por fase": a aluna treina só o material do tema
+   * que está a estudar.
+   */
+  phase: phaseSchema.optional(),
+  /**
+   * Nível do item (A1, A2, B1). Serve para o "estudo por nível": escolher
+   * A1 treina o básico, B1 treina o nível do exame.
+   */
+  level: levelSchema.optional(),
 })
 export type Question = z.infer<typeof questionSchema>
+
+/* -------------------------------------------------------------------------- */
+/* Conteúdo por fase (gramática e vocabulário)                                 */
+/* -------------------------------------------------------------------------- */
+
+export const grammarExampleSchema = z.object({
+  it: z.string().min(1),
+  pt: z.string().min(1),
+})
+
+/**
+ * Um item de gramática do Sillabo B1 Cittadinanza.
+ * A regra e os exemplos estão em italiano (é o que a aluna vai ler na prova);
+ * a explicação está em português (é a língua da interface).
+ */
+export const grammarItemSchema = z.object({
+  id: z.string().min(1),
+  phase: phaseSchema,
+  /** Tema do Sillabo (ex.: "Indicativo passato prossimo"). */
+  topic: z.string().min(1),
+  /** Título da regra em italiano. */
+  title: z.string().min(1),
+  /** A regra, em italiano e em uma frase. */
+  rule: z.string().min(1),
+  /** Explicação em português. */
+  explanationPt: z.string().min(1),
+  examples: z.array(grammarExampleSchema).min(1),
+  level: levelSchema,
+})
+export type GrammarItem = z.infer<typeof grammarItemSchema>
+
+export const VOCAB_CATEGORIES = [
+  'quotidiano',
+  'burocracia',
+  'civico',
+  'sanita',
+  'cultura',
+  'lavoro',
+] as const
+export const vocabCategorySchema = z.enum(VOCAB_CATEGORIES)
+export type VocabCategory = z.infer<typeof vocabCategorySchema>
+
+/** Uma entrada de vocabulário, com uma frase de exemplo. */
+export const vocabItemSchema = z.object({
+  id: z.string().min(1),
+  phase: phaseSchema,
+  category: vocabCategorySchema,
+  /** A palavra ou a expressão em italiano. */
+  it: z.string().min(1),
+  /** O significado em português. */
+  pt: z.string().min(1),
+  /** Frase de exemplo em italiano. */
+  example: z.string().min(1),
+  /** A frase traduzida. */
+  examplePt: z.string().min(1),
+  level: levelSchema,
+})
+export type VocabItem = z.infer<typeof vocabItemSchema>
 
 /* -------------------------------------------------------------------------- */
 /* Sessões e tentativas                                                       */
 /* -------------------------------------------------------------------------- */
 
-export const EXAM_MODES = ['ascolto', 'lettura', 'scrittura', 'orale', 'mock_cittadinanza'] as const
+export const EXAM_MODES = [
+  'ascolto',
+  'lettura',
+  'scrittura',
+  'orale',
+  'mock_cittadinanza',
+  'studio',
+] as const
 export const examModeSchema = z.enum(EXAM_MODES)
 export type ExamMode = z.infer<typeof examModeSchema>
 
@@ -111,6 +208,8 @@ export const attemptSchema = z.object({
   isCorrect: z.boolean(),
   /** true quando a aluna não respondeu (vale 0 pontos na prova real). */
   skipped: z.boolean().default(false),
+  /** Índice da opção escolhida (-1 se não respondeu). Serve para o relatório. */
+  selectedIndex: z.number().int().min(-1).max(2).default(-1),
   timeSpentSeconds: z.number().min(0).default(0),
   timestamp: z.number().int(),
 })

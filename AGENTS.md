@@ -193,9 +193,53 @@ para migrações):
 - `writings` — a produção escrita + auto-avaliação na grelha oficial.
 - `orals` — a prova oral (tema, notas, auto-avaliação, duração).
 
-**Planeado (ainda não existe):** `grammarItems` / `vocabItems` (banco de conteúdo por fase),
-`mistakes` (hoje o banco de erros é derivado de `attempts`, como no ElevenSpark) e ficheiros
-de áudio em `public/audio/` (hoje o áudio é sintetizado por TTS — ver §7, ponto 9).
+**Implementado na v1.1.0 (Dexie v2):** `grammarItems` (regras do Sillabo com exemplos) e
+`vocabItems` (vocabulário civic/burocrático), ambos com `phase` e `level` — semeados por
+`src/db/seed.ts` a partir de `src/data/phaseContent.ts`.
+
+**Planeado (ainda não existe):** `mistakes` (hoje o banco de erros é derivado de `attempts`,
+como no ElevenSpark) e ficheiros de áudio em `public/audio/` (hoje o áudio é sintetizado por
+TTS — ver §7, ponto 9).
+
+### 5.1-bis Os dois bancos de conteúdo (regra dura)
+
+O banco tem **duas origens**, misturadas só onde é seguro:
+
+| Banco | `Question.bank` | Onde entra |
+| --- | --- | --- |
+| **Oficial** | `official` (predefinição) | A prova oficial de exemplo do CILS. É a ÚNICA com gabarito garantido. |
+| **Extra da app** | `practice` | Material original da app: 118 itens de ascolto/lettura (4 lotes) + 6 temas de escrita + 6 argumentos de oral + o banco de estudo (gramática e vocabulário). |
+
+- O **simulado completo** (`mock_cittadinanza`) usa **SÓ o banco oficial** — é o que garante
+  que o gabarito do CILS fica intacto (`buildExam(mode, 'official')`).
+- A **prática** usa o banco `all` (oficial + extra) e, opcionalmente, filtra por fase
+  (`buildExam(mode, 'all', phase)`).
+- A pontuação de uma etapa é **normalizada na escala 0-12** (`scoreStageFromCounts`): para o
+  banco oficial dá exatamente a pontuação oficial (há teste a provar), e para o banco misto
+  nunca passa de 12.
+- `BANK_VERSION` (v3) sobe quando o conteúdo muda; o re-seed **nunca** toca em sessões
+  concluídas.
+- `scripts/audit-content.ts` valida os dois bancos: opções, pesos, ordem, ids, fases, níveis, e que
+  **cada fase tem material de ascolto E de lettura** (senão a prática por fase ficaria vazia).
+
+### 5.1-ter O tamanho do banco (ideal: 800 itens)
+
+O audit imprime o estado do banco e **falha** se o banco for menor do que o mínimo:
+
+```
+Banco: 477 itens (ideal 800) · A1 112/150 · A2 125/250 · B1 240/400 · ascolto 82/200 · lettura 395/600
+```
+
+- **IDEAL (alvo)**: 800 itens — 150 A1, 250 A2, 400 B1; 200 de ascolto, 600 de lettura.
+  É o que dá ~20 "provas" completas por habilidade: a aluna pode estudar 3 meses
+  (~15 min/dia) sem repetir as mesmas perguntas.
+- **MÍNIMO (garantido pelo audit)**: 450 itens, com piso por nível e por habilidade.
+- Cada item novo é barato: um texto de leitura dá 8 V/F + 6 cloze; uma transcrição
+  dá 6 MCQ + 8 V/F; uma regra de gramática dá 3-4 exercícios; uma entrada de
+  vocabulário dá 2 perguntas (geradas automaticamente, com as opções baralhadas).
+- **O lado mais fraco é o ascolto** (82/200): é o que exige transcrições novas.
+  Dica: um texto de leitura pode virar "gémeo de áudio" (mesmo texto, lido pelo TTS)
+  com perguntas diferentes — foi assim que se fez o lote 4.
 
 ### 5.2 Imutabilidade dos mocks concluídos — regra dura
 
@@ -251,6 +295,9 @@ do Memoriza `src/lib/github-sync.ts`:
 | Sync | `src/services/gistSync.ts` + `src/components/SyncBadge.tsx` | Sync opcional por Gist (§5.4). |
 | Snapshots | `src/lib/snapshot.ts` + `src/services/snapshots.ts` | Cópias de segurança locais (§5.3). |
 | PWA | `src/App.tsx` + `src/components/UpdateBanner.tsx` | Registo do service worker e aviso de "nova versão" / "pronto para offline" (v1.0.2). |
+| Estudo por nível | `src/pages/StudyPage.tsx` + `src/data/studyBank.ts` | Quiz curto e **aleatório** por nível (A1/A2/B1) e por tipo de material (exercícios, ascolto, lettura). |
+| Padrões de gramática | `src/data/grammarPatterns.ts` | 60 lacunas de gramática no formato da Prova 2 do CILS. |
+| Relatório da prova | `src/components/exam/ReportPage.tsx` + `src/services/reports.ts` | Rever a prova e imprimir/guardar em PDF para enviar à professora. |
 
 ## 6. GitHub + Cloudflare (deploy)
 

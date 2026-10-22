@@ -8,10 +8,12 @@
 
 export const ROUTES = [
   'dashboard',
+  'study',
   'practice',
   'mock',
   'progress',
   'guide',
+  'report',
   'settings',
 ] as const
 

@@ -1,11 +1,13 @@
 import Dexie, { type Table } from 'dexie'
 import type {
   Attempt,
+  GrammarItem,
   Oral,
   Passage,
   Profile,
   Question,
   Session,
+  VocabItem,
   Writing,
 } from './schemas'
 
@@ -17,6 +19,8 @@ export class CilsDatabase extends Dexie {
   attempts!: Table<Attempt, string>
   writings!: Table<Writing, string>
   orals!: Table<Oral, string>
+  grammarItems!: Table<GrammarItem, string>
+  vocabItems!: Table<VocabItem, string>
 
   constructor() {
     super('cils-b1-cittadinanza')
@@ -28,6 +32,12 @@ export class CilsDatabase extends Dexie {
       attempts: 'id, profileId, sessionId, questionId, skill, timestamp',
       writings: 'id, profileId, createdAt',
       orals: 'id, profileId, createdAt',
+    })
+    // v2: o conteúdo por fase (gramática do Sillabo e vocabulário civic/burocrático).
+    // As tabelas do v1 são herdadas — o histórico da aluna nunca é tocado.
+    this.version(2).stores({
+      grammarItems: 'id, phase, topic, level',
+      vocabItems: 'id, phase, category, level',
     })
   }
 }

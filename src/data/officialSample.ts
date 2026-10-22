@@ -153,6 +153,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['è a un colloquio di lavoro.', 'è in vacanza con la moglie.', 'ha vinto un concorso fotografico.'],
     correctIndex: 2,
     pointsPerItem: 1,
+    level: 'B1',
     explanation:
       'Cavani se presenta come il vincitore del concorso “Fotografa la tua estate” e l’interlocutrice gli augura una buona vacanza.',
   },
@@ -171,6 +172,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     ],
     correctIndex: 2,
     pointsPerItem: 1,
+    level: 'B1',
     explanation:
       'La donna gli indica la strada: “prenda la prima strada a sinistra e poi va sempre dritto”. Il taxi è solo un’alternativa suggerita.',
   },
@@ -185,6 +187,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['cenare prima di vedere il film.', 'preparare la pizza in casa.', 'andare al cinema il giorno dopo.'],
     correctIndex: 0,
     pointsPerItem: 1,
+    level: 'B1',
     explanation:
       'Ramona accetta per Alex: “possiamo mangiare una pizza tutti insieme prima del cinema”. Ogni risposta é nel testo, mas só a que corresponde a Ramona é a correta: ela aceita jantar antes do filme.',
   },
@@ -203,6 +206,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     ],
     correctIndex: 2,
     pointsPerItem: 1,
+    level: 'B1',
     explanation:
       '“Mi hanno rubato la valigia mentre aspettavo il taxi” — è una denuncia di furto, non un incidente stradale.',
   },
@@ -221,6 +225,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     ],
     correctIndex: 1,
     pointsPerItem: 1,
+    level: 'B1',
     explanation:
       'Con 4 persone si fa “un biglietto per visitare anche la cattedrale e salire sul campanile”: il biglietto unico copre tutto.',
   },
@@ -239,6 +244,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     ],
     correctIndex: 1,
     pointsPerItem: 1,
+    level: 'B1',
     explanation:
       'Giacomo risponde “non ancora”, perché “i prezzi sono troppo alti” — quindi lei vuole sapere se i biglietti sono già stati presi.',
   },
@@ -257,6 +263,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 1,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation: 'FALSO. Il programma parla della Puglia come meta di vacanza, non della cucina.',
   },
   {
@@ -270,6 +277,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 1,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation: 'FALSO. Non si parla di quiz né di premi: si parla del premio ricevuto dalla Puglia.',
   },
   {
@@ -283,6 +291,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 0,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation: 'VERO. “La regione Puglia ha vinto il premio del National Geographic”.',
   },
   {
@@ -296,6 +305,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 1,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation: 'FALSO. Il testo dice il contrario: la Puglia è un luogo dove “si può trascorrere le vacanze”.',
   },
   {
@@ -309,6 +319,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 0,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation: 'VERO. “Piccoli centri abitati e borghi dove non esiste il caos delle grandi città”.',
   },
   {
@@ -322,6 +333,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 0,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation: 'VERO. “Si possono trovare strutture per tutti i gusti”.',
   },
   {
@@ -335,6 +347,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 0,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation: 'VERO. “Risulta che le migliori idee vengono dalle donne”.',
   },
   {
@@ -348,6 +361,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 1,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation: 'FALSO. Il testo non dice questo: parla di situazioni familiari diverse, senza giudicare le difficoltà.',
   },
   {
@@ -361,6 +375,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 1,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation: 'FALSO. “Si è laureata in Economia all’Università Bocconi”.',
   },
   {
@@ -374,6 +389,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 1,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation:
       'FALSO. Ha insegnato all’Università Bocconi (e il sito di matematica l’ha creato per gli studenti delle scuole).',
   },
@@ -388,6 +404,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 0,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation: 'VERO. “Si è laureata in Economia all’Università Bocconi di Milano, dove ha insegnato tanti anni”.',
   },
   {
@@ -401,6 +418,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 0,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation: 'VERO. “Il sito propone più di mille video-lezioni e settemila esercizi svolti”.',
   },
 
@@ -418,6 +436,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 1,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation: 'FALSO. Il testo descrive i servizi (numero verde, webcam, orari dei traghetti) senza dire che l’obiettivo è migliorarli.',
   },
   {
@@ -431,6 +450,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 0,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation: 'VERO. “Serve per comunicare problemi… per presentare segnalazioni e suggerimenti”.',
   },
   {
@@ -444,6 +464,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 0,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation:
       'VERO. O número verde existe para resolver os problemas do transporte público local e evitar que os passageiros sofram com eles.',
   },
@@ -458,6 +479,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 0,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation:
       'VERO. O texto diz “dalle 8:00 alle 18:00 dal lunedì al venerdì”: ao fim de semana não há atendimento.',
   },
@@ -472,6 +494,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 0,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation: 'VERO. La segnalazione “viene trasmessa sia all’azienda che offre il servizio sia all’ente competente”.',
   },
   {
@@ -485,6 +508,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 1,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation: 'FALSO. L’Amministrazione regionale riceve la segnalazione, ma non c’è nessuna emergenza nel testo.',
   },
   {
@@ -498,6 +522,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 0,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation: 'VERO. “Il cittadino riceve una comunicazione che spiega le cause del problema e le possibili soluzioni”.',
   },
   {
@@ -511,6 +536,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 1,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation: 'FALSO. Il testo parla di telecamere e webcam, non di semafori.',
   },
   {
@@ -524,6 +550,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 1,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation: 'FALSO. Le segnalazioni si fanno al numero verde, non sul sito.',
   },
   {
@@ -537,6 +564,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 0,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation: 'VERO. “È possibile consultare online gli orari di arrivi e partenze dal Porto di Livorno”.',
   },
   {
@@ -550,6 +578,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 1,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation: 'FALSO. Il sito riguarda il traffico stradale e i collegamenti via mare, non gli aeroporti.',
   },
   {
@@ -563,6 +592,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['VERO', 'FALSO'],
     correctIndex: 1,
     pointsPerItem: 0.5,
+    level: 'B1',
     explanation: 'FALSO. Il testo non parla di autobus Firenze–Livorno né di intenzioni future.',
   },
 
@@ -580,6 +610,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['funzioni', 'attività', 'occupazioni'],
     correctIndex: 1,
     pointsPerItem: 1,
+    level: 'B1',
     explanation: 'B) attività. “Alcune tra le tante attività che si possono fare” — è la collocazione naturale in italiano.',
   },
   {
@@ -593,6 +624,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['anche', 'ancora', 'infine'],
     correctIndex: 0,
     pointsPerItem: 1,
+    level: 'B1',
     explanation: 'A) anche. “Non solo X, ma anche Y” — a correlazione aggiuntiva.',
   },
   {
@@ -606,6 +638,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['materiale', 'reale', 'fisico'],
     correctIndex: 2,
     pointsPerItem: 1,
+    level: 'B1',
     explanation: 'C) fisico. “Le giornate dedicate al benessere fisico” — l’aggettivo concorda con il maschile “benessere”.',
   },
   {
@@ -619,6 +652,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['con', 'di', 'su'],
     correctIndex: 0,
     pointsPerItem: 1,
+    level: 'B1',
     explanation: 'A) con. “Con inizio venerdì 1 marzo” — espressione temporale con preposizione.',
   },
   {
@@ -632,6 +666,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['farebbero', 'facevano', 'hanno fatto'],
     correctIndex: 2,
     pointsPerItem: 1,
+    level: 'B1',
     explanation:
       'C) hanno fatto. Le foto sono state scattate durante la corsa, cioè prima dell’evento musicale: serve il passato prossimo.',
   },
@@ -646,6 +681,7 @@ export const OFFICIAL_QUESTIONS: Question[] = [
     options: ['tutti', 'questi', 'molti'],
     correctIndex: 0,
     pointsPerItem: 1,
+    level: 'B1',
     explanation: 'A) tutti. “Tutti possono provare” — l’ingresso è gratuito per tutti, quindi il soggetto è generico.',
   },
 ]

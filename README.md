@@ -20,9 +20,15 @@ cidadania italiana.
   sobre o limiar e a habilidade de maior risco. Sem capitalização: ou passa nas quatro, ou
   refaz a prova inteira.
 - **Guia de uso** — um ecrã "Guia" com o passo-a-passo para começar, o protocolo de cada prova,
-  as regras de aprovação e o que levar para o exame.
+  as regras de aprovação e o que levar para o exame (mais a aba "Conteúdo por fase").
+- **Estudo por nível** — um quiz curto e **aleatório** de A1/A2/B1 (exercícios de gramática e
+  vocabulário, ascolto ou lettura) para treinar todos os dias sem repetir as perguntas.
+- **Banco grande** — 477 itens (meta: 800): a prova oficial do CILS + material original da app
+  por nível e por fase, com explicação depois de cada resposta.
 - **Acompanha a evolução** — gráfico do score total e de cada abilità ao longo do tempo, com a
   linha da sufficienza.
+- **Rever e enviar à professora** — no fim de cada prova podes abrir o relatório completo
+  (enunciado, gabarito, a tua resposta e a explicação) e imprimi-lo ou guardá-lo em PDF.
 - **Claro ou escuro** — tema claro/escuro/sistema, guardado no aparelho (sem "flash" ao abrir).
 - **Guarda o trabalho em dois sítios** — snapshots locais automáticos (até 8) + sync opcional por
   GitHub Gist (nuvem verde = sync OK, laranja = sem sync) para continuar noutro aparelho.
@@ -43,6 +49,8 @@ cidadania italiana.
 | Rotas (hash) e menu (sidebar no portátil, barra no telemóvel) | `src/lib/routes.ts`, `src/components/AppShell.tsx` |
 | Tema claro/escuro | `src/lib/theme.ts` |
 | Gráfico de evolução (SVG) | `src/lib/chart.ts`, `src/components/ProgressChart.tsx` |
+| Banco de conteúdo (oficial + extra + estudo) | `src/data/officialSample.ts`, `src/data/extraPractice.ts`, `src/data/studyBank.ts` |
+| Relatório da prova (rever / PDF) | `src/components/exam/ReportPage.tsx` |
 | Sync por Gist / snapshots locais | `src/services/gistSync.ts`, `src/lib/snapshot.ts` |
 
 ## Comandos

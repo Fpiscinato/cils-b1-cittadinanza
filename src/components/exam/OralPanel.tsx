@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Mic, Square } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Download, Mic, Square } from 'lucide-react'
 import { Button } from '../ui'
 import { ORAL_RUBRIC } from '../../lib/scoring'
 import { formatDuration } from '../../lib/timing'
@@ -21,6 +21,8 @@ const PRESENTATION_QUESTIONS = [
 const PRESENTATION_SECONDS = 60
 const DIALOGUE_SECONDS = 180
 
+type RecordState = 'idle' | 'recording' | 'ready' | 'error'
+
 /**
  * Painel da prova oral.
  *
@@ -28,6 +30,9 @@ const DIALOGUE_SECONDS = 180
  * (com as perguntas fixas do examiner) + 2 a 3 minutos de CONVERSA (não monólogo)
  * sobre um tema que a candidata escolhe. Aqui simulamos com timers e a grelha
  * oficial de 4 critérios.
+ *
+ * A GRAVAÇÃO é real (MediaRecorder): pede o microfone, grava, deixa ouvir e
+ * descarregar o ficheiro. É opcional — na prova real o examiner regista a voz.
  */
 export function OralPanel({
   topics,
@@ -41,7 +46,14 @@ export function OralPanel({
   const [running, setRunning] = useState(false)
   const [rubric, setRubric] = useState<Record<string, number>>({})
   const [submitted, setSubmitted] = useState(false)
-  const [recording, setRecording] = useState(false)
+
+  const [recordState, setRecordState] = useState<RecordState>('idle')
+  const [recordSeconds, setRecordSeconds] = useState(0)
+  const [recordError, setRecordError] = useState<string | null>(null)
+  const [audioUrl, setAudioUrl] = useState<string | null>(null)
+  const recorderRef = useRef<MediaRecorder | null>(null)
+  const streamRef = useRef<MediaStream | null>(null)
+  const chunksRef = useRef<BlobPart[]>([])
 
   useEffect(() => {
     if (!running) return
@@ -49,8 +61,78 @@ export function OralPanel({
     return () => window.clearInterval(timer)
   }, [running])
 
+  useEffect(() => {
+    if (recordState !== 'recording') return
+    const timer = window.setInterval(() => setRecordSeconds((value) => value + 1), 1000)
+    return () => window.clearInterval(timer)
+  }, [recordState])
+
+  // Ao sair da página, liberta o microfone (e não deixa a luz do browser acesa).
+  useEffect(() => {
+    return () => {
+      if (recorderRef.current?.state === 'recording') recorderRef.current.stop()
+      streamRef.current?.getTracks().forEach((track) => track.stop())
+      if (audioUrl) URL.revokeObjectURL(audioUrl)
+    }
+  }, [audioUrl])
+
   const rubricComplete = ORAL_RUBRIC.every((criterion) => rubric[criterion.key] !== undefined)
   const totalTarget = PRESENTATION_SECONDS + DIALOGUE_SECONDS
+
+  async function startRecording(): Promise<void> {
+    setRecordError(null)
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+      setRecordState('error')
+      setRecordError(
+        'Este browser não permite gravar áudio. Abre a app em https (ou em localhost) e volta a tentar.',
+      )
+      return
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      streamRef.current = stream
+      const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg']
+      const mimeType = types.find((type) => MediaRecorder.isTypeSupported?.(type))
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined)
+      chunksRef.current = []
+
+      recorder.ondataavailable = (event: BlobEvent) => {
+        if (event.data.size > 0) chunksRef.current.push(event.data)
+      }
+      recorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: mimeType ?? 'audio/webm' })
+        if (audioUrl) URL.revokeObjectURL(audioUrl)
+        setAudioUrl(URL.createObjectURL(blob))
+        setRecordState('ready')
+        stream.getTracks().forEach((track) => track.stop())
+        streamRef.current = null
+      }
+      recorder.onerror = () => {
+        setRecordState('error')
+        setRecordError('A gravação falhou. Verifica as permissões do microfone.')
+        stream.getTracks().forEach((track) => track.stop())
+      }
+
+      recorder.start()
+      recorderRef.current = recorder
+      setRecordSeconds(0)
+      setRecordState('recording')
+    } catch (cause) {
+      setRecordState('error')
+      setRecordError(
+        cause instanceof DOMException && cause.name === 'NotAllowedError'
+          ? 'Permissão de microfone recusada. Permite o microfone nas definições do site para gravar.'
+          : 'Não foi possível aceder ao microfone. Tenta outra vez.',
+      )
+    }
+  }
+
+  function stopRecording(): void {
+    const recorder = recorderRef.current
+    if (recorder && recorder.state !== 'inactive') recorder.stop()
+    recorderRef.current = null
+    setRecordState('idle')
+  }
 
   if (submitted) {
     return (
@@ -105,18 +187,45 @@ export function OralPanel({
             {formatDuration(elapsed)} / {formatDuration(totalTarget)}
           </span>
           <div className="flex items-center gap-2">
-            <Button
-              variant={recording ? 'danger' : 'secondary'}
-              onClick={() => setRecording((value) => !value)}
-            >
-              {recording ? <Square size={16} /> : <Mic size={16} />}
-              {recording ? 'Parar gravação' : 'Gravar (opcional)'}
-            </Button>
-            <Button onClick={() => setRunning((value) => !value)} disabled={recording}>
+            {recordState === 'recording' ? (
+              <Button variant="danger" onClick={stopRecording}>
+                <Square size={16} /> Parar gravação ({formatDuration(recordSeconds)})
+              </Button>
+            ) : (
+              <Button variant="secondary" onClick={() => void startRecording()}>
+                <Mic size={16} /> Gravar (opcional)
+              </Button>
+            )}
+            <Button onClick={() => setRunning((value) => !value)} disabled={recordState === 'recording'}>
               {running ? 'Pausar' : 'Começar'}
             </Button>
           </div>
         </div>
+
+        {recordState === 'recording' ? (
+          <p className="mt-2 flex items-center gap-2 text-[11px] font-bold text-rose-600 dark:text-rose-300">
+            <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-rose-500" />
+            A gravar — clica em "Parar gravação" quando acabares.
+          </p>
+        ) : null}
+
+        {recordError ? (
+          <p className="mt-2 text-[11px] font-bold text-rose-600 dark:text-rose-300">{recordError}</p>
+        ) : null}
+
+        {audioUrl ? (
+          <div className="mt-2 flex flex-col gap-1.5">
+            <audio controls src={audioUrl} className="w-full" />
+            <a
+              href={audioUrl}
+              download="prova-oral-cils-b1.webm"
+              className="inline-flex items-center gap-1.5 self-start rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-black text-slate-700 shadow-sm hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-200"
+            >
+              <Download size={13} /> Guardar a gravação
+            </a>
+          </div>
+        ) : null}
+
         <p className="mt-2 text-[11px] font-semibold text-slate-500">
           A gravação é opcional e fica só neste dispositivo — na prova real o examiner regista a tua
           voz.

@@ -8,7 +8,7 @@ import { QuestionView } from './QuestionView'
 import { OralPanel, type OralTopic } from './OralPanel'
 import { WritingPanel, type WritingPrompt } from './WritingPanel'
 import { formatDuration } from '../../lib/timing'
-import { scoreSkillFromCounts } from '../../lib/scoring'
+import { scoreStageFromCounts } from '../../lib/scoring'
 
 export type Stage =
   | {
@@ -47,7 +47,27 @@ export type Stage =
 
 export interface RunnerCallbacks {
   onFinish: (perSkill: Record<string, number>, totalTimeSeconds: number) => void
-  onAttempt: (question: Question, isCorrect: boolean, skipped: boolean, seconds: number) => void
+  onAttempt: (
+    question: Question,
+    isCorrect: boolean,
+    skipped: boolean,
+    seconds: number,
+    selectedIndex: number,
+  ) => void
+  /** A produção escrita (texto + auto-avaliação) — para guardar no histórico. */
+  onWriting?: (
+    promptId: string,
+    text: string,
+    rubric: Record<string, number>,
+    score: number,
+  ) => void
+  /** A prova oral (tema + auto-avaliação + duração). */
+  onOral?: (
+    topicId: string,
+    rubric: Record<string, number>,
+    durationSeconds: number,
+    score: number,
+  ) => void
   onAbort: () => void
 }
 
@@ -67,11 +87,19 @@ export function ExamRunner({
   stages,
   passages,
   callbacks,
+  mode = 'practice',
 }: {
   stages: Stage[]
   passages: Map<string, Passage>
   callbacks: RunnerCallbacks
+  /**
+   * `exam` = como na prova a sério (o simulado): sem "aprende a resolver",
+   * sem voltar atrás (section lock), sem repetir a resposta.
+   * `practice` = modo estudo, com explicação e retry.
+   */
+  mode?: 'exam' | 'practice'
 }) {
+  const isExam = mode === 'exam'
   const [stageIndex, setStageIndex] = useState(0)
   const [questionIndex, setQuestionIndex] = useState(0)
   const [selected, setSelected] = useState<number | null>(null)
@@ -79,6 +107,7 @@ export function ExamRunner({
   const [secondsLeft, setSecondsLeft] = useState(stages[0]?.timeSeconds ?? 0)
   const [passesByTask, setPassesByTask] = useState<Record<string, number>>({})
   const [finished, setFinished] = useState(false)
+  const [confirmStop, setConfirmStop] = useState(false)
 
   const correctByTask = useRef<Record<string, number>>({})
   const perSkill = useRef<Record<string, number>>({})
@@ -134,24 +163,40 @@ export function ExamRunner({
     questionStartedAt.current = Date.now()
   }, [stage, stageIndex, stages, callbacks])
 
-  function handleConfirm(): void {
+  /** Grava a resposta escolhida (uma vez por item). */
+  function recordAnswer(): void {
     if (!question || selected === null) return
+    if (answered.current.has(question.id)) return
     const isCorrect = selected === question.correctIndex
     const seconds = Math.round((Date.now() - questionStartedAt.current) / 1000)
+    answered.current.add(question.id)
+    correctByTask.current[question.taskId] =
+      (correctByTask.current[question.taskId] ?? 0) + (isCorrect ? 1 : 0)
+    callbacks.onAttempt(question, isCorrect, false, seconds, selected)
+  }
 
-    if (!answered.current.has(question.id)) {
-      answered.current.add(question.id)
-      correctByTask.current[question.taskId] = (correctByTask.current[question.taskId] ?? 0) + (isCorrect ? 1 : 0)
-      callbacks.onAttempt(question, isCorrect, false, seconds)
-    }
-    setRevealed(true)
+  function handleConfirm(): void {
+    if (!question || selected === null) return
+    recordAnswer()
+    // Na prática a resposta é revelada com a explicação ("aprende a resolver").
+    // Na prova a sério NÃO: a resposta fica marcada e segue-se em frente.
+    if (!isExam) setRevealed(true)
+  }
+
+  /** Na prova a sério: um só clique marca a resposta e avança. */
+  function handleConfirmAndNext(): void {
+    if (!question || selected === null) return
+    recordAnswer()
+    handleNext()
   }
 
   function handleNext(): void {
     if (!stage || stage.kind !== 'objective') return
     if (questionIndex >= questions.length - 1) {
       // Última pergunta: o relógio para (regra de UX do ElevenSpark).
-      perSkill.current[stage.skill] = scoreSkillFromCounts(stage.skill, correctByTask.current)
+      // A pontuação da etapa é normalizada na escala 0-12 — para o banco
+      // oficial dá exatamente a pontuação oficial do CILS.
+      perSkill.current[stage.skill] = scoreStageFromCounts(stage.questions, correctByTask.current)
       advanceStage()
       return
     }
@@ -261,7 +306,7 @@ export function ExamRunner({
               />
             ) : null}
 
-            {revealed && question ? (
+            {revealed && !isExam && question ? (
               <AnswerHelp
                 correct={selected === question.correctIndex}
                 explanation={question.explanation}
@@ -275,9 +320,9 @@ export function ExamRunner({
           <WritingPanel
             prompts={stage.prompts}
             onSubmit={(promptId, text, rubric) => {
-              void promptId
-              void text
-              perSkill.current[stage.skill] = stage.rubricScore(rubric)
+              const score = stage.rubricScore(rubric)
+              perSkill.current[stage.skill] = score
+              callbacks.onWriting?.(promptId, text, rubric, score)
               advanceStage()
             }}
           />
@@ -287,9 +332,9 @@ export function ExamRunner({
           <OralPanel
             topics={stage.topics}
             onSubmit={(topicId, rubric, duration) => {
-              void topicId
-              void duration
-              perSkill.current[stage.skill] = stage.rubricScore(rubric)
+              const score = stage.rubricScore(rubric)
+              perSkill.current[stage.skill] = score
+              callbacks.onOral?.(topicId, rubric, duration, score)
               advanceStage()
             }}
           />
@@ -298,21 +343,28 @@ export function ExamRunner({
 
       {/* Footer sempre visível */}
       <footer className="flex items-center justify-between gap-3 border-t border-slate-200 pt-3 dark:border-slate-700">
-        <Button variant="ghost" onClick={callbacks.onAbort}>
+        <Button variant="ghost" onClick={() => setConfirmStop(true)}>
           <AlertTriangle size={16} /> Parar
         </Button>
         {stage.kind === 'objective' ? (
           <div className="flex items-center gap-2">
-            <Button
-              variant="secondary"
-              onClick={() => setQuestionIndex((index) => Math.max(0, index - 1))}
-              disabled={questionIndex === 0}
-            >
-              <ChevronLeft size={16} />
-            </Button>
+            {isExam ? null : (
+              <Button
+                variant="secondary"
+                onClick={() => setQuestionIndex((index) => Math.max(0, index - 1))}
+                disabled={questionIndex === 0}
+              >
+                <ChevronLeft size={16} />
+              </Button>
+            )}
             {revealed ? (
               <Button onClick={handleNext}>
                 {questionIndex >= questions.length - 1 ? 'Terminar prova' : 'Próxima'}
+                <ChevronRight size={16} />
+              </Button>
+            ) : isExam ? (
+              <Button onClick={handleConfirmAndNext} disabled={selected === null}>
+                {questionIndex >= questions.length - 1 ? 'Terminar prova' : 'Confirmar e seguir'}
                 <ChevronRight size={16} />
               </Button>
             ) : (
@@ -327,6 +379,34 @@ export function ExamRunner({
           </span>
         )}
       </footer>
+
+      {/* Confirmação ao parar (uma única, com duas saídas) */}
+      {confirmStop ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Encerrar a sessão?"
+        >
+          <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-4 shadow-xl dark:border-slate-700 dark:bg-slate-800">
+            <p className="text-base font-black text-slate-900 dark:text-slate-100">
+              Encerrar a sessão?
+            </p>
+            <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
+              As respostas já foram salvas. A sessão fica marcada como abandonada e podes
+              voltar a treinar quando quiseres.
+            </p>
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row-reverse">
+              <Button variant="danger" onClick={() => callbacks.onAbort()}>
+                Encerrar sessão
+              </Button>
+              <Button variant="secondary" onClick={() => setConfirmStop(false)}>
+                Continuar estudando
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

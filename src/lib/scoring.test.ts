@@ -11,6 +11,7 @@ import {
   scoreRubric,
   scoreScrittura,
   scoreSkillFromCounts,
+  scoreStageFromCounts,
   TOTAL_POINTS,
   WRITING_RUBRIC,
   ORAL_RUBRIC,
@@ -133,5 +134,63 @@ describe('regra de aprovação', () => {
     expect(PASS_THRESHOLD_PER_SKILL).toBe(7)
     expect(PASS_THRESHOLD_TOTAL).toBe(28)
     expect(POINTS_PER_SKILL * 4).toBe(TOTAL_POINTS)
+  })
+})
+
+describe('pontuação de uma etapa (escala 0-12, banco misto)', () => {
+  /** Os 18 itens do ascolto oficial: 6 × 1 ponto + 12 × 0,5 ponto. */
+  const officialAscolto = [
+    ...Array.from({ length: 6 }, () => ({ taskId: 'ascolto-p1', pointsPerItem: 1 })),
+    ...Array.from({ length: 12 }, () => ({ taskId: 'ascolto-p2', pointsPerItem: 0.5 })),
+  ]
+
+  it('com o banco oficial dá exatamente a pontuação oficial', () => {
+    for (let p1 = 0; p1 <= 6; p1 += 1) {
+      for (let p2 = 0; p2 <= 12; p2 += 3) {
+        const score = scoreStageFromCounts(officialAscolto, {
+          'ascolto-p1': p1,
+          'ascolto-p2': p2,
+        })
+        expect(score).toBe(scoreAscolto(p1, p2))
+      }
+    }
+  })
+
+  it('nunca passa de 12 nem desce abaixo de 0', () => {
+    expect(
+      scoreStageFromCounts(officialAscolto, { 'ascolto-p1': 6, 'ascolto-p2': 12 }),
+    ).toBe(12)
+    expect(scoreStageFromCounts(officialAscolto, {})).toBe(0)
+  })
+
+  it('com o banco extra (mais itens) a escala continua a ser 0-12', () => {
+    const mixed = [
+      ...officialAscolto,
+      ...Array.from({ length: 6 }, () => ({ taskId: 'ascolto-p1-x', pointsPerItem: 1 })),
+      ...Array.from({ length: 8 }, () => ({ taskId: 'ascolto-p2-x', pointsPerItem: 0.5 })),
+    ]
+    const full = scoreStageFromCounts(mixed, {
+      'ascolto-p1': 6,
+      'ascolto-p2': 12,
+      'ascolto-p1-x': 6,
+      'ascolto-p2-x': 8,
+    })
+    expect(full).toBe(12)
+    const half = scoreStageFromCounts(mixed, {
+      'ascolto-p1': 3,
+      'ascolto-p2': 6,
+      'ascolto-p1-x': 3,
+      'ascolto-p2-x': 4,
+    })
+    expect(half).toBe(6)
+  })
+
+  it('ignora as tasks que não pertencem à etapa', () => {
+    const score = scoreStageFromCounts(officialAscolto, {
+      'ascolto-p1': 6,
+      'ascolto-p2': 12,
+      'lettura-p1': 12,
+    })
+    expect(score).toBe(12)
   })
 })

@@ -41,6 +41,8 @@ export interface AttemptInput {
   taskId: string
   isCorrect: boolean
   skipped: boolean
+  /** Índice da opção escolhida (-1 se não respondeu). */
+  selectedIndex: number
   timeSpentSeconds: number
 }
 
@@ -54,6 +56,7 @@ export async function saveAttempt(input: AttemptInput): Promise<void> {
     taskId: input.taskId,
     isCorrect: input.isCorrect,
     skipped: input.skipped,
+    selectedIndex: input.selectedIndex,
     timeSpentSeconds: input.timeSpentSeconds,
     timestamp: Date.now(),
   }

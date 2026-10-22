@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react'
 import { Button, Card } from '../ui'
 import { ExamRunner, type Stage } from './ExamRunner'
-import { buildExam } from '../../lib/examBuilder'
+import { buildExam, type BuildOptions, type ContentBank } from '../../lib/examBuilder'
 import { EXAM_CONFIGS } from '../../lib/exam'
-import type { ExamMode, Passage, Question } from '../../db/schemas'
+import type { ExamMode, Passage, Phase, Question } from '../../db/schemas'
+import { PHASE_LABELS } from '../../lib/phases'
 import {
   abandonSession,
   completeSession,
   saveAttempt,
   startSession,
 } from '../../services/sessions'
+import { saveOral, saveWriting } from '../../services/productions'
 import { evaluateExam, SKILL_LABELS } from '../../lib/scoring'
 
 /**
@@ -21,13 +23,22 @@ import { evaluateExam, SKILL_LABELS } from '../../lib/scoring'
 export function ExamSession({
   mode,
   profileId,
+  phase,
+  buildOptions,
   onExit,
   onCompleted,
+  onReview,
 }: {
   mode: ExamMode
   profileId: string
+  /** Quando definido, a sessão só usa o material desta fase do plano. */
+  phase?: Phase
+  /** Opções de montagem (nível, baralhar, limite) — usado no modo `studio`. */
+  buildOptions?: BuildOptions
   onExit: () => void
   onCompleted: () => void
+  /** Abre o relatório da prova (para rever e enviar à professora). */
+  onReview?: (sessionId: string) => void
 }) {
   const [stages, setStages] = useState<Stage[] | null>(null)
   const [passages, setPassages] = useState<Map<string, Passage> | null>(null)
@@ -35,16 +46,29 @@ export function ExamSession({
   const [result, setResult] = useState<ReturnType<typeof evaluateExam> | null>(null)
   const [loading, setLoading] = useState(true)
 
+  /**
+   * O simulado completo usa SÓ o banco oficial (o gabarito do CILS fica
+   * intacto); a prática e o estudo usam o banco oficial + o banco extra.
+   */
+  const bank: ContentBank = mode === 'mock_cittadinanza' ? 'official' : 'all'
+
   useEffect(() => {
     let cancelled = false
     async function prepare() {
-      const built = await buildExam(mode)
+      const built = await buildExam(mode, {
+        bank,
+        phase,
+        ...buildOptions,
+      })
       if (cancelled) return
       if (!built) {
         setLoading(false)
         return
       }
-      const session = await startSession(profileId, mode, EXAM_CONFIGS[mode].titlePt)
+      const title = phase
+        ? `${EXAM_CONFIGS[mode].titlePt} — ${PHASE_LABELS[phase]}`
+        : EXAM_CONFIGS[mode].titlePt
+      const session = await startSession(profileId, mode, title)
       if (cancelled) return
       setStages(built.stages)
       setPassages(built.passages)
@@ -55,7 +79,7 @@ export function ExamSession({
     return () => {
       cancelled = true
     }
-  }, [mode, profileId])
+  }, [mode, profileId, bank, phase, buildOptions])
 
   if (loading) {
     return <p className="text-sm font-bold text-slate-500">A preparar a prova…</p>
@@ -97,7 +121,12 @@ export function ExamSession({
                 .map((skill) => SKILL_LABELS[skill].it)
                 .join(', ')}. Na prova real isto obriga a refazer o exame inteiro (sem capitalização).`}
         </p>
-        <Button onClick={onCompleted}>Voltar ao painel</Button>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={onCompleted}>Voltar ao painel</Button>
+          <Button variant="secondary" onClick={() => onReview?.(sessionId)}>
+            Rever a prova / enviar à professora
+          </Button>
+        </div>
       </Card>
     )
   }
@@ -107,12 +136,26 @@ export function ExamSession({
       <ExamRunner
         stages={stages}
         passages={passages}
+        mode={mode === 'mock_cittadinanza' ? 'exam' : 'practice'}
         callbacks={{
           onFinish: async (perSkill, totalTimeSeconds) => {
             await completeSession(sessionId, perSkill, totalTimeSeconds)
             setResult(evaluateExam(perSkill))
           },
-          onAttempt: (question: Question, isCorrect, skipped, seconds) => {
+          onWriting: (promptId, text, rubric, score) => {
+            void saveWriting({ profileId, promptId, text, rubric, score })
+          },
+          onOral: (topicId, rubric, durationSeconds, score) => {
+            void saveOral({
+              profileId,
+              topicId,
+              notes: '',
+              rubric,
+              score,
+              durationSeconds,
+            })
+          },
+          onAttempt: (question: Question, isCorrect, skipped, seconds, selectedIndex) => {
             void saveAttempt({
               profileId,
               sessionId,
@@ -121,6 +164,7 @@ export function ExamSession({
               taskId: question.taskId,
               isCorrect,
               skipped,
+              selectedIndex,
               timeSpentSeconds: seconds,
             })
           },

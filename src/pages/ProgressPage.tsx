@@ -13,10 +13,13 @@ export function ProgressPage({
   sessions,
   attempts,
   onNavigate,
+  onReview,
 }: {
   sessions: Session[]
   attempts: Attempt[]
   onNavigate: (route: Route) => void
+  /** Abre o relatório da prova (rever e enviar à professora). */
+  onReview: (sessionId: string) => void
 }) {
   const history = useMemo(() => buildSkillHistory(sessions), [sessions])
   const readiness = useMemo(() => computeReadiness({ history }), [history])
@@ -146,6 +149,13 @@ export function ProgressPage({
                   {new Date(session.startedAt).toLocaleDateString('pt-PT')} ·{' '}
                   {formatDuration(session.totalTimeSeconds)}
                 </p>
+                <button
+                  type="button"
+                  onClick={() => onReview(session.id)}
+                  className="mt-2 rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-black text-slate-700 shadow-sm hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-200"
+                >
+                  Rever e exportar
+                </button>
                 {session.perSkill ? (
                   <p className="mt-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
                     {Object.entries(session.perSkill)

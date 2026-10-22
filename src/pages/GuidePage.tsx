@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import { BookOpen, Check, Clock, FileText, Headphones, MessageSquare, PenLine } from 'lucide-react'
 import { Alert, BackButton, Card, CollapsibleCard } from '../components/ui'
+import { PhaseContent } from '../components/PhaseContent'
 import type { Route } from '../lib/routes'
+import type { Phase } from '../db/schemas'
 import {
   PASS_THRESHOLD_PER_SKILL,
   PASS_THRESHOLD_TOTAL,
@@ -13,14 +16,53 @@ import {
  *
  * A aluna abre a app para uma pergunta — "se fizesse a prova amanhã, passava?"
  * — e este ecrã responde à outra: "como é que uso isto?".
+ *
+ * Duas abas:
+ * - "Como usar": o passo-a-passo e as regras do exame;
+ * - "Conteúdo": a gramática do Sillabo e o vocabulário por fase.
  */
-export function GuidePage({ onNavigate }: { onNavigate: (route: Route) => void }) {
+export function GuidePage({
+  onNavigate,
+  onPracticePhase,
+}: {
+  onNavigate: (route: Route) => void
+  onPracticePhase: (phase: Phase, skill: 'ascolto' | 'lettura') => void
+}) {
+  const [tab, setTab] = useState<'como-usar' | 'conteudo'>('como-usar')
+
   return (
     <div className="flex flex-col gap-4">
       <div>
         <BackButton onBack={() => onNavigate('dashboard')} />
       </div>
 
+      <div className="flex gap-2 rounded-2xl bg-slate-100 p-1 dark:bg-slate-700/50">
+        {(
+          [
+            { id: 'como-usar', label: 'Como usar' },
+            { id: 'conteudo', label: 'Conteúdo por fase' },
+          ] as const
+        ).map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => setTab(item.id)}
+            aria-pressed={tab === item.id}
+            className={`flex-1 rounded-xl px-3 py-2 text-xs font-black transition ${
+              tab === item.id
+                ? 'bg-teal-700 text-white'
+                : 'text-slate-600 hover:bg-white/60 dark:text-slate-300 dark:hover:bg-slate-700'
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'conteudo' ? (
+        <PhaseContent onPractice={onPracticePhase} />
+      ) : (
+        <>
       <Card>
         <div className="flex items-center gap-2">
           <BookOpen size={20} className="text-teal-700 dark:text-teal-300" />
@@ -300,6 +342,8 @@ export function GuidePage({ onNavigate }: { onNavigate: (route: Route) => void }
           </li>
         </ul>
       </Card>
+        </>
+      )}
     </div>
   )
 }

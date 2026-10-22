@@ -45,4 +45,28 @@
   summary {
     cursor: pointer;
   }
+
+  /*
+   * Impressão: o relatório da prova é para imprimir (ou guardar em PDF) e
+   * enviar à professora. O menu e os botões saem, o conteúdo fica.
+   */
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+
+    body {
+      background: #ffffff;
+      color: #000000;
+    }
+
+    main {
+      padding: 0 !important;
+    }
+
+    .print-break {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+  }
 }

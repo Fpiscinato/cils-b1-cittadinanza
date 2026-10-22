@@ -1,0 +1,313 @@
+/**
+ * LOTE 4 DO BANCO DE PRÁTICA — mais ascolto.
+ *
+ * O ascolto é a habilidade com menos material (precisa de transcrições e de
+ * áudio). Aqui aproveitamos textos de leitura já escritos para criar os
+ * "gémeos" de áudio (o mesmo texto, lido pelo TTS) com perguntas DIFERENTES
+ * das da leitura — assim a aluna treina a escuta sem decorar as respostas.
+ */
+
+import type { Passage, Question } from '../db/schemas'
+
+const SOURCE = 'Contenuto originale CILS B1 Prep — pratica non ufficiale'
+
+const HOSPITAL_TEXT = `Al pronto soccorso: il ticket e i tempi di attesa
+
+In tutti gli ospedali italiani l'attesa per una visita specialistica si gestisce con un numero: il ticket. Al momento dell'accoglienza, la persona prende un biglietto dall'apposita macchina e il sistema le indica il numero di turno e la sala in cui essere servita.
+
+Il numero chiamato può essere molto lontano dal proprio. Per questo motivo il sistema prevede un pulsante di "priorità": chi ha un'emergenza o una visita programmata può chiedere di essere avvisato quando mancano pochi numeri. Dal 2024, inoltre, tutti gli ospedali pubblici permettono di prendere il ticket anche con l'applicazione sul telefono, che fa una notifica quando è il turno.
+
+Le visite urgenti non seguono il ticket: chi ha una situazione grave viene visitato subito, in base alla valutazione del medico di pronto soccorso. La priorità non è quindi un diritto: è una decisione clinica.
+
+Per chi lavora, esiste la cosiddetta "codice bianco", che riguarda le visite specialistiche non urgenti. Il medico di famiglia può assegnare questo codice quando ritiene che la visita non possa aspettare i tempi normali. Il codice bianco dà accesso a un percorso accelerato, ma non garantisce una visita immediata: l'ordine dipende sempre dalla gravità dei casi.
+
+L'attesa media negli ospedali italiani è di circa quattro ore, ma i tempi variano molto da regione a regione e da reparto a reparto.`
+
+const SPORTELLO_TEXT = `Il Comune di Siena ha aperto uno "Sportello di accoglienza" per le persone straniere che vivono in città. Lo sportello si trova in via Banchi di Sopra e offre informazioni su più di venti servizi: dall'iscrizione all'anagrafe alla scelta della scuola per i figli.
+
+Lo sportello è aperto dal lunedì al venerdì, dalle 9 alle 12, e il giovedì anche dalle 15 alle 17. L'accesso è libero e non è necessario fissare un appuntamento, anche se nei giorni di maggiore affluenza è consigliabile arrivare prima delle 9.30.
+
+Presso lo sportello è possibile: iscriversi all'anagrafe, ricevere una copia del contratto di affitto in italiano, prenotare un test di italiano per stranieri e ricevere assistenza per la compilazione dei moduli online. Il servizio di traduzione è disponibile per le lingue più parlate in città: inglese, francese, arabo, romeno, albanese e ucraino. Per le altre lingue è possibile fissare un interprete con un giorno di anticipo.
+
+Lo sportello è finanziato dal progetto europeo "Città Welcome" e le attività proseguiranno fino alla fine del 2026. Secondo i dati pubblicati dal Comune, nel primo anno di attività sono state assistite più di ottomila persone, e la domanda di assistenza per l'iscrizione all'anagrafe è in continua crescita.`
+
+export const PASSAGES_BATCH4: Passage[] = [
+  {
+    id: 'passage-ascolto-p2-d7',
+    kind: 'audio_transcript',
+    title: 'Ascolto Prova 2 (prática, lote 4) — il ticket nos hospitais',
+    source: SOURCE,
+    content: HOSPITAL_TEXT,
+  },
+  {
+    id: 'passage-ascolto-p2-d8',
+    kind: 'audio_transcript',
+    title: 'Ascolto Prova 2 (prática, lote 4) — o sportello de atendimento',
+    source: SOURCE,
+    content: SPORTELLO_TEXT,
+  },
+]
+
+export const QUESTIONS_BATCH4: Question[] = [
+  /* ---------------- Ascolto P2 (lote 4) — 8 V/F --------------------------- */
+  {
+    id: 'ascolto-p2-d7-1',
+    skill: 'ascolto',
+    taskId: 'ascolto-p2-d7',
+    itemType: 'truefalse',
+    order: 1,
+    stem: 'Il ticket si prende in un punto preciso dell\'ospedale.',
+    passageId: 'passage-ascolto-p2-d7',
+    options: ['Vero', 'Falso'],
+    correctIndex: 0,
+    pointsPerItem: 0.5,
+    explanation:
+      '“Al momento dell\'accoglienza, la persona prende un biglietto dall\'apposita macchina”.',
+    phase: 'cittadinanza',
+    level: 'B1',
+    bank: 'practice',
+  },
+  {
+    id: 'ascolto-p2-d7-2',
+    skill: 'ascolto',
+    taskId: 'ascolto-p2-d7',
+    itemType: 'truefalse',
+    order: 2,
+    stem: 'Il numero che viene chiamato può essere molto vicino al proprio.',
+    passageId: 'passage-ascolto-p2-d7',
+    options: ['Vero', 'Falso'],
+    correctIndex: 1,
+    pointsPerItem: 0.5,
+    explanation: '“Il numero chiamato può essere molto lontano dal proprio”.',
+    phase: 'cittadinanza',
+    level: 'B1',
+    bank: 'practice',
+  },
+  {
+    id: 'ascolto-p2-d7-3',
+    skill: 'ascolto',
+    taskId: 'ascolto-p2-d7',
+    itemType: 'truefalse',
+    order: 3,
+    stem: 'Con l\'applicazione sul telefono si riceve un avviso quando è il turno.',
+    passageId: 'passage-ascolto-p2-d7',
+    options: ['Vero', 'Falso'],
+    correctIndex: 0,
+    pointsPerItem: 0.5,
+    explanation: '“…che fa una notifica quando è il turno”.',
+    phase: 'cittadinanza',
+    level: 'B1',
+    bank: 'practice',
+  },
+  {
+    id: 'ascolto-p2-d7-4',
+    skill: 'ascolto',
+    taskId: 'ascolto-p2-d7',
+    itemType: 'truefalse',
+    order: 4,
+    stem: 'Il codice bianco riguarda le visite di emergenza.',
+    passageId: 'passage-ascolto-p2-d7',
+    options: ['Vero', 'Falso'],
+    correctIndex: 1,
+    pointsPerItem: 0.5,
+    explanation:
+      '“Il codice bianco… riguarda le visite specialistiche non urgenti”.',
+    phase: 'cittadinanza',
+    level: 'B1',
+    bank: 'practice',
+  },
+  {
+    id: 'ascolto-p2-d7-5',
+    skill: 'ascolto',
+    taskId: 'ascolto-p2-d7',
+    itemType: 'truefalse',
+    order: 5,
+    stem: 'Il codice bianco garantisce una visita immediata.',
+    passageId: 'passage-ascolto-p2-d7',
+    options: ['Vero', 'Falso'],
+    correctIndex: 1,
+    pointsPerItem: 0.5,
+    explanation: '“Non garantisce una visita immediata”.',
+    phase: 'cittadinanza',
+    level: 'B1',
+    bank: 'practice',
+  },
+  {
+    id: 'ascolto-p2-d7-6',
+    skill: 'ascolto',
+    taskId: 'ascolto-p2-d7',
+    itemType: 'truefalse',
+    order: 6,
+    stem: 'L\'ordine delle visite dipende dalla gravità dei casi.',
+    passageId: 'passage-ascolto-p2-d7',
+    options: ['Vero', 'Falso'],
+    correctIndex: 0,
+    pointsPerItem: 0.5,
+    explanation: '“L\'ordine dipende sempre dalla gravità dei casi”.',
+    phase: 'cittadinanza',
+    level: 'B1',
+    bank: 'practice',
+  },
+  {
+    id: 'ascolto-p2-d7-7',
+    skill: 'ascolto',
+    taskId: 'ascolto-p2-d7',
+    itemType: 'truefalse',
+    order: 7,
+    stem: 'L\'attesa media è uguale in tutte le regioni.',
+    passageId: 'passage-ascolto-p2-d7',
+    options: ['Vero', 'Falso'],
+    correctIndex: 1,
+    pointsPerItem: 0.5,
+    explanation: '“I tempi variano molto da regione a regione e da reparto a reparto”.',
+    phase: 'cittadinanza',
+    level: 'B1',
+    bank: 'practice',
+  },
+  {
+    id: 'ascolto-p2-d7-8',
+    skill: 'ascolto',
+    taskId: 'ascolto-p2-d7',
+    itemType: 'truefalse',
+    order: 8,
+    stem: 'Il pulsante di prioritità serve a chi ha un\'emergenza o una visita già programmata.',
+    passageId: 'passage-ascolto-p2-d7',
+    options: ['Vero', 'Falso'],
+    correctIndex: 0,
+    pointsPerItem: 0.5,
+    explanation:
+      '“Chi ha un\'emergenza o una visita programmata può chiedere di essere avvisato”.',
+    phase: 'cittadinanza',
+    level: 'B1',
+    bank: 'practice',
+  },
+  {
+    id: 'ascolto-p2-d8-1',
+    skill: 'ascolto',
+    taskId: 'ascolto-p2-d8',
+    itemType: 'truefalse',
+    order: 1,
+    stem: 'Lo sportello offre informazioni su più di venti servizi.',
+    passageId: 'passage-ascolto-p2-d8',
+    options: ['Vero', 'Falso'],
+    correctIndex: 0,
+    pointsPerItem: 0.5,
+    explanation: '“Offre informazioni su più di venti servizi”.',
+    phase: 'cittadinanza',
+    level: 'B1',
+    bank: 'practice',
+  },
+  {
+    id: 'ascolto-p2-d8-2',
+    skill: 'ascolto',
+    taskId: 'ascolto-p2-d8',
+    itemType: 'truefalse',
+    order: 2,
+    stem: 'Lo sportello è aperto tutti i giorni della settimana.',
+    passageId: 'passage-ascolto-p2-d8',
+    options: ['Vero', 'Falso'],
+    correctIndex: 1,
+    pointsPerItem: 0.5,
+    explanation: '“Aperto dal lunedì al venerdì” (e giovedì anche al pomeriggio).',
+    phase: 'cittadinanza',
+    level: 'B1',
+    bank: 'practice',
+  },
+  {
+    id: 'ascolto-p2-d8-3',
+    skill: 'ascolto',
+    taskId: 'ascolto-p2-d8',
+    itemType: 'truefalse',
+    order: 3,
+    stem: 'Nei giorni di maggiore affluenza conviene arrivare prima delle 9.30.',
+    passageId: 'passage-ascolto-p2-d8',
+    options: ['Vero', 'Falso'],
+    correctIndex: 0,
+    pointsPerItem: 0.5,
+    explanation: '“È consigliabile arrivare prima delle 9.30”.',
+    phase: 'cittadinanza',
+    level: 'B1',
+    bank: 'practice',
+  },
+  {
+    id: 'ascolto-p2-d8-4',
+    skill: 'ascolto',
+    taskId: 'ascolto-p2-d8',
+    itemType: 'truefalse',
+    order: 4,
+    stem: 'Si può ricevere assistenza per compilare i moduli online.',
+    passageId: 'passage-ascolto-p2-d8',
+    options: ['Vero', 'Falso'],
+    correctIndex: 0,
+    pointsPerItem: 0.5,
+    explanation: '“Ricevere assistenza per la compilazione dei moduli online”.',
+    phase: 'cittadinanza',
+    level: 'B1',
+    bank: 'practice',
+  },
+  {
+    id: 'ascolto-p2-d8-5',
+    skill: 'ascolto',
+    taskId: 'ascolto-p2-d8',
+    itemType: 'truefalse',
+    order: 5,
+    stem: 'L\'interprete è disponibile solo per le lingue più parlate.',
+    passageId: 'passage-ascolto-p2-d8',
+    options: ['Vero', 'Falso'],
+    correctIndex: 1,
+    pointsPerItem: 0.5,
+    explanation:
+      'Para as outras línguas “è possibile fissare un interprete con un giorno di anticipo”.',
+    phase: 'cittadinanza',
+    level: 'B1',
+    bank: 'practice',
+  },
+  {
+    id: 'ascolto-p2-d8-6',
+    skill: 'ascolto',
+    taskId: 'ascolto-p2-d8',
+    itemType: 'truefalse',
+    order: 6,
+    stem: 'Il progetto che finanzia lo sportello è europeo.',
+    passageId: 'passage-ascolto-p2-d8',
+    options: ['Vero', 'Falso'],
+    correctIndex: 0,
+    pointsPerItem: 0.5,
+    explanation: '“È finanziato dal progetto europeo ‘Città Welcome’”.',
+    phase: 'cittadinanza',
+    level: 'B1',
+    bank: 'practice',
+  },
+  {
+    id: 'ascolto-p2-d8-7',
+    skill: 'ascolto',
+    taskId: 'ascolto-p2-d8',
+    itemType: 'truefalse',
+    order: 7,
+    stem: 'Nel primo anno sono state assistite meno di ottomila persone.',
+    passageId: 'passage-ascolto-p2-d8',
+    options: ['Vero', 'Falso'],
+    correctIndex: 1,
+    pointsPerItem: 0.5,
+    explanation: '“Più di ottomila persone”.',
+    phase: 'cittadinanza',
+    level: 'B1',
+    bank: 'practice',
+  },
+  {
+    id: 'ascolto-p2-d8-8',
+    skill: 'ascolto',
+    taskId: 'ascolto-p2-d8',
+    itemType: 'truefalse',
+    order: 8,
+    stem: 'Le attività dello sportello continueranno fino alla fine del 2026.',
+    passageId: 'passage-ascolto-p2-d8',
+    options: ['Vero', 'Falso'],
+    correctIndex: 0,
+    pointsPerItem: 0.5,
+    explanation: '“Le attività proseguiranno fino alla fine del 2026”.',
+    phase: 'cittadinanza',
+    level: 'B1',
+    bank: 'practice',
+  },
+]
