@@ -20,6 +20,7 @@ import { EXTRA_PASSAGES, EXTRA_QUESTIONS } from '../src/data/extraPractice'
 import { PASSAGES_BATCH2, QUESTIONS_BATCH2 } from '../src/data/practiceBatch2'
 import { PASSAGES_BATCH3, QUESTIONS_BATCH3 } from '../src/data/practiceBatch3'
 import { PASSAGES_BATCH4, QUESTIONS_BATCH4 } from '../src/data/practiceBatch4'
+import { PASSAGES_BATCH5, QUESTIONS_BATCH5 } from '../src/data/practiceBatch5'
 import { GRAMMAR_ITEMS, VOCAB_ITEMS } from '../src/data/phaseContent'
 import { STUDY_QUESTIONS } from '../src/data/studyBank'
 import { TASK_WEIGHTS } from '../src/lib/scoring'
@@ -163,6 +164,7 @@ const extraPassageIds = new Set([
   ...PASSAGES_BATCH2.map((passage) => passage.id),
   ...PASSAGES_BATCH3.map((passage) => passage.id),
   ...PASSAGES_BATCH4.map((passage) => passage.id),
+  ...PASSAGES_BATCH5.map((passage) => passage.id),
 ])
 const seenExtraIds = new Set<string>()
 const extraTasks = new Map<string, number>()
@@ -284,6 +286,19 @@ checkExtraBank(
     'ascolto-p2-d8': 8,
   },
   'lote 4',
+)
+
+checkExtraBank(
+  QUESTIONS_BATCH5,
+  {
+    'ascolto-p1-d9': 6,
+    'ascolto-p1-e1': 6,
+    'ascolto-p2-e2': 8,
+    'ascolto-p2-e3': 8,
+    'lettura-p1-e4': 8,
+    'lettura-p2-e5': 6,
+  },
+  'lote 5',
 )
 
 // Nenhum item do banco oficial pode estar marcado como "practice" (e vice-versa).
@@ -409,6 +424,7 @@ const ALL_QUESTIONS = [
   ...QUESTIONS_BATCH2,
   ...QUESTIONS_BATCH3,
   ...QUESTIONS_BATCH4,
+  ...QUESTIONS_BATCH5,
   ...STUDY_QUESTIONS,
 ]
 
@@ -459,7 +475,7 @@ if (failures.length > 0) {
 
 console.log(
   `✅ Auditoria do conteúdo: ${OFFICIAL_QUESTIONS.length} perguntas oficiais (com o gabarito do CILS), ` +
-    `${EXTRA_QUESTIONS.length + QUESTIONS_BATCH2.length + QUESTIONS_BATCH3.length + QUESTIONS_BATCH4.length} itens extra de prática, ` +
+    `${EXTRA_QUESTIONS.length + QUESTIONS_BATCH2.length + QUESTIONS_BATCH3.length + QUESTIONS_BATCH4.length + QUESTIONS_BATCH5.length} itens extra de prática, ` +
     `${GRAMMAR_ITEMS.length} regras de gramática e ${VOCAB_ITEMS.length} entradas de vocabulário.`,
 )
 console.log(

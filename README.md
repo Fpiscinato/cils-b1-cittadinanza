@@ -23,12 +23,15 @@ cidadania italiana.
   as regras de aprovação e o que levar para o exame (mais a aba "Conteúdo por fase").
 - **Estudo por nível** — um quiz curto e **aleatório** de A1/A2/B1 (exercícios de gramática e
   vocabulário, ascolto ou lettura) para treinar todos os dias sem repetir as perguntas.
-- **Banco grande** — 477 itens (meta: 800): a prova oficial do CILS + material original da app
+- **Banco grande** — 601 itens (meta: 800): a prova oficial do CILS + material original da app
   por nível e por fase, com explicação depois de cada resposta.
 - **Acompanha a evolução** — gráfico do score total e de cada abilità ao longo do tempo, com a
   linha da sufficienza.
 - **Rever e enviar à professora** — no fim de cada prova podes abrir o relatório completo
   (enunciado, gabarito, a tua resposta e a explicação) e imprimi-lo ou guardá-lo em PDF.
+- **Clínica de erros** — todas as perguntas que erraste, com a resposta certa e a explicação,
+  e um botão para treinar só esses erros.
+- **Foglio delle risposte** — a folha de respostas A4, igual ao original, para escrever à mão.
 - **Claro ou escuro** — tema claro/escuro/sistema, guardado no aparelho (sem "flash" ao abrir).
 - **Guarda o trabalho em dois sítios** — snapshots locais automáticos (até 8) + sync opcional por
   GitHub Gist (nuvem verde = sync OK, laranja = sem sync) para continuar noutro aparelho.

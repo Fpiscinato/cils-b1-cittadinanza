@@ -2,8 +2,10 @@ import type { ReactNode } from 'react'
 import {
   BarChart3,
   BookOpen,
+  Bug,
   ClipboardCheck,
   Dices,
+  FileText,
   GraduationCap,
   Settings,
   Target,
@@ -29,6 +31,15 @@ interface NavItem {
  * ORDEM FIXA (a mesma no telemóvel e no portátil) — é a sequência que a aluna
  * deve seguir: Painel → Prática → Simulado → Progresso → Guia → Ajustes.
  */
+/**
+ * Menu secundário: só aparece no menu lateral do portátil (no telemóvel
+ * ficariam 9 itens na barra de baixo e nenhum seria legível).
+ */
+const EXTRA_NAV: NavItem[] = [
+  { id: 'mistakes', label: 'Clínica de erros', icon: <Bug size={18} /> },
+  { id: 'foglio', label: 'Foglio risposte', icon: <FileText size={18} /> },
+]
+
 const NAV: NavItem[] = [
   { id: 'dashboard', label: 'Painel', icon: <Target size={20} /> },
   { id: 'study', label: 'Estudo', icon: <Dices size={20} /> },
@@ -173,6 +184,32 @@ export function AppShell({
                 )
               })}
             </ul>
+
+            <ul className="mt-4 flex flex-col gap-1 border-t border-slate-200 pt-3 dark:border-slate-700">
+              {EXTRA_NAV.map((item) => {
+                const active = item.id === route
+                return (
+                  <li key={item.id}>
+                    <button
+                      type="button"
+                      onClick={() => onNavigate(item.id)}
+                      aria-current={active ? 'page' : undefined}
+                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-xs font-black transition ${
+                        active
+                          ? 'bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-slate-100'
+                          : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700/60'
+                      }`}
+                    >
+                      <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700">
+                        {item.icon}
+                      </span>
+                      {item.label}
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+
             <p className="mt-4 px-3 text-[10px] font-bold text-slate-400">v{APP_VERSION}</p>
           </nav>
         </aside>

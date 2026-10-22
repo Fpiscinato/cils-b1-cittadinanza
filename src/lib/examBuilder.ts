@@ -35,6 +35,8 @@ export interface BuildOptions {
   level?: Level
   /** Só uma habilidade (usado pelo modo `studio`). */
   skill?: Skill
+  /** Só estes ids de pergunta (usado pela "clínica de erros"). */
+  questionIds?: string[]
   /** Baralha os itens (a prática e o estudo são sempre aleatórios). */
   shuffle?: boolean
   /** Número máximo de itens por prova (o simulado completo não tem limite). */
@@ -67,6 +69,10 @@ function filterQuestions(
   }
   if (options.skill) {
     filtered = filtered.filter((question) => question.skill === options.skill)
+  }
+  if (options.questionIds && options.questionIds.length > 0) {
+    const wanted = new Set(options.questionIds)
+    filtered = filtered.filter((question) => wanted.has(question.id))
   }
 
   if (options.shuffle) {

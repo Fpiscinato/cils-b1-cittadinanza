@@ -3,6 +3,7 @@ import type { Session, Attempt, Profile } from '../db/schemas'
 import { ReadinessCard } from '../components/ReadinessCard'
 import { PhaseCards } from '../components/PhaseCards'
 import { OnboardingChecklist } from '../components/OnboardingChecklist'
+import { Bug } from 'lucide-react'
 import { Card, CollapsibleCard, Stat } from '../components/ui'
 import { computeReadiness } from '../lib/readiness'
 import { computeDailyTask, computeRoadmap } from '../lib/roadmapCalculator'
@@ -76,6 +77,18 @@ export function DashboardPage({
   )
   const pending = pendingSteps(onboarding)
 
+  // Erros por rever (última tentativa errada, por pergunta).
+  const wrongQuestions = useMemo(() => {
+    const lastByQuestion = new Map<string, Attempt>()
+    for (const attempt of attempts) {
+      const current = lastByQuestion.get(attempt.questionId)
+      if (!current || attempt.timestamp >= current.timestamp) {
+        lastByQuestion.set(attempt.questionId, attempt)
+      }
+    }
+    return [...lastByQuestion.values()].filter((attempt) => !attempt.isCorrect).length
+  }, [attempts])
+
   return (
     <div className="flex flex-col gap-4">
       {pending.length > 0 ? (
@@ -141,6 +154,32 @@ export function DashboardPage({
 
       {/* 3. O veredito */}
       <ReadinessCard report={readiness} />
+
+      {/* 3-bis. Clínica de erros */}
+      <Card>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Bug size={18} className="text-rose-600 dark:text-rose-300" />
+            <div>
+              <p className="text-sm font-black text-slate-900 dark:text-slate-100">
+                Clínica de erros
+              </p>
+              <p className="text-[11px] font-semibold text-slate-500">
+                {wrongQuestions > 0
+                  ? `${wrongQuestions} pergunta(s) por rever`
+                  : 'Sem erros por rever — bom sinal!'}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => onNavigate('mistakes')}
+            className="rounded-xl bg-slate-100 px-3 py-2 text-xs font-black text-slate-800 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-100"
+          >
+            Rever e treinar
+          </button>
+        </div>
+      </Card>
 
       {/* 4. Fases (colapsável) */}
       <CollapsibleCard title="As 3 fases de preparação">

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Check } from 'lucide-react'
 import { Button } from '../ui'
 import { WRITING_RUBRIC } from '../../lib/scoring'
 import { checkWordCount } from '../../lib/wordCount'
@@ -7,6 +8,18 @@ export interface WritingPrompt {
   id: string
   text: string
 }
+
+/**
+ * Checklist de consegna (5 critérios) — o que se revê ANTES de entregar.
+ * É o equivalente a rever o texto na prova: escrever, contar, reler.
+ */
+const DELIVERY_CHECKLIST: Array<{ id: string; label: string }> = [
+  { id: 'tema', label: 'Escolhi um tema e respondi a tudo o que ele pedia' },
+  { id: 'paragrafi', label: 'Dividi o texto em parágrafos (introdução,_argumento, fecho)' },
+  { id: 'palavras', label: 'A contagem está entre 80 e 120 palavras' },
+  { id: 'releitura', label: 'Reli o texto e corrigi os erros mais comuns' },
+  { id: 'final', label: 'Acabei com uma frase de fecho (saudações / pergunta final)' },
+]
 
 /**
  * Painel da prova de escrita.
@@ -26,9 +39,11 @@ export function WritingPanel({
   const [text, setText] = useState('')
   const [rubric, setRubric] = useState<Record<string, number>>({})
   const [submitted, setSubmitted] = useState(false)
+  const [checked, setChecked] = useState<Record<string, boolean>>({})
 
   const count = useMemo(() => checkWordCount(text, 80, 120), [text])
   const rubricComplete = WRITING_RUBRIC.every((criterion) => rubric[criterion.key] !== undefined)
+  const checklistComplete = DELIVERY_CHECKLIST.every((item) => checked[item.id])
 
   if (submitted) {
     return (
@@ -131,6 +146,47 @@ export function WritingPanel({
         </div>
       </div>
 
+      <div>
+        <p className="text-xs font-black uppercase tracking-wide text-slate-500">
+          Checklist de consegna (antes de entregar)
+        </p>
+        <ul className="mt-2 flex flex-col gap-1.5">
+          {DELIVERY_CHECKLIST.map((item) => {
+            const isChecked = checked[item.id] === true
+            return (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setChecked((current) => ({ ...current, [item.id]: !current[item.id] }))
+                  }
+                  aria-pressed={isChecked}
+                  className="flex w-full items-start gap-2 rounded-xl bg-slate-50 p-2 text-left transition hover:bg-slate-100 dark:bg-slate-700/50 dark:hover:bg-slate-700"
+                >
+                  <span
+                    className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${
+                      isChecked
+                        ? 'border-teal-600 bg-teal-600 text-white'
+                        : 'border-slate-300 dark:border-slate-600'
+                    }`}
+                  >
+                    {isChecked ? <Check size={12} strokeWidth={3} /> : null}
+                  </span>
+                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                    {item.label}
+                  </span>
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+        {!checklistComplete ? (
+          <p className="mt-1 text-[11px] font-bold text-amber-700 dark:text-amber-300">
+            Revê a lista antes de entregar — é o que a examinadora vai ver.
+          </p>
+        ) : null}
+      </div>
+
       <div className="flex items-center justify-between gap-3">
         <span className="text-xs font-bold text-slate-500">
           {rubricComplete
@@ -146,7 +202,7 @@ export function WritingPanel({
             setSubmitted(true)
           }}
         >
-          Entregar a produção
+          {checklistComplete ? 'Entregar a produção' : 'Entregar mesmo assim'}
         </Button>
       </div>
     </div>

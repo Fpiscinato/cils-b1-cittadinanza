@@ -80,6 +80,22 @@ export function MockPage({
       </Card>
 
       <Card>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <p className="text-xs font-black uppercase tracking-wide text-slate-500">
+              Foglio delle risposte
+            </p>
+            <p className="mt-1 text-xs font-semibold text-slate-600 dark:text-slate-300">
+              A folha oficial em A4, para escreveres as respostas à mão como no dia do exame.
+            </p>
+          </div>
+          <Button variant="secondary" onClick={() => onNavigate('foglio')}>
+            📄 Abrir e imprimir
+          </Button>
+        </div>
+      </Card>
+
+      <Card>
         <p className="text-xs font-black uppercase tracking-wide text-slate-500">
           Ou simula uma prova só
         </p>

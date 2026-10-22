@@ -13,6 +13,8 @@ export const ROUTES = [
   'mock',
   'progress',
   'guide',
+  'mistakes',
+  'foglio',
   'report',
   'settings',
 ] as const

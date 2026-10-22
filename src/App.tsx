@@ -9,6 +9,8 @@ import { ProgressPage } from './pages/ProgressPage'
 import { GuidePage } from './pages/GuidePage'
 import { StudyPage } from './pages/StudyPage'
 import { ReportPage } from './components/exam/ReportPage'
+import { MistakesPage } from './pages/MistakesPage'
+import { AnswerSheetPage } from './pages/AnswerSheetPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { db } from './db/database'
 import { initializeDatabase } from './db/database'
@@ -260,6 +262,16 @@ export default function App() {
           }}
         />
       ) : null}
+
+      {route === 'mistakes' ? (
+        <MistakesPage
+          profileId={profileId}
+          onNavigate={navigate}
+          onCompleted={() => void afterSession()}
+        />
+      ) : null}
+
+      {route === 'foglio' ? <AnswerSheetPage onNavigate={navigate} /> : null}
 
       {route === 'report' && reportSessionId ? (
         <ReportPage

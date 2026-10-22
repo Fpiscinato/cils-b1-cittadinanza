@@ -227,13 +227,15 @@ O banco tem **duas origens**, misturadas só onde é seguro:
 O audit imprime o estado do banco e **falha** se o banco for menor do que o mínimo:
 
 ```
-Banco: 477 itens (ideal 800) · A1 112/150 · A2 125/250 · B1 240/400 · ascolto 82/200 · lettura 395/600
+Banco: 601 itens (ideal 800) · A1 156/150 · A2 163/250 · B1 282/400 · ascolto 110/200 · lettura 491/600
 ```
 
 - **IDEAL (alvo)**: 800 itens — 150 A1, 250 A2, 400 B1; 200 de ascolto, 600 de lettura.
   É o que dá ~20 "provas" completas por habilidade: a aluna pode estudar 3 meses
   (~15 min/dia) sem repetir as mesmas perguntas.
 - **MÍNIMO (garantido pelo audit)**: 450 itens, com piso por nível e por habilidade.
+- O menu **secundário** (Clínica de erros, Foglio risposte) só aparece no menu lateral
+  do portátil — no telemóvel a barra de baixo fica com os 7 ecrãs principais.
 - Cada item novo é barato: um texto de leitura dá 8 V/F + 6 cloze; uma transcrição
   dá 6 MCQ + 8 V/F; uma regra de gramática dá 3-4 exercícios; uma entrada de
   vocabulário dá 2 perguntas (geradas automaticamente, com as opções baralhadas).
@@ -298,6 +300,9 @@ do Memoriza `src/lib/github-sync.ts`:
 | Estudo por nível | `src/pages/StudyPage.tsx` + `src/data/studyBank.ts` | Quiz curto e **aleatório** por nível (A1/A2/B1) e por tipo de material (exercícios, ascolto, lettura). |
 | Padrões de gramática | `src/data/grammarPatterns.ts` | 60 lacunas de gramática no formato da Prova 2 do CILS. |
 | Relatório da prova | `src/components/exam/ReportPage.tsx` + `src/services/reports.ts` | Rever a prova e imprimir/guardar em PDF para enviar à professora. |
+| Clínica de erros | `src/pages/MistakesPage.tsx` | Banco de erros (derivado de `attempts`) com a resposta certa e a explicação; treina só esses erros (`buildExam` com `questionIds`). |
+| Foglio delle risposte | `src/pages/AnswerSheetPage.tsx` | Folha de respostas A4 imprimível, com o layout do foglio oficial (4 provas + caixa de texto). |
+| Checklist de consegna | `src/components/exam/WritingPanel.tsx` | 5 critérios a rever antes de entregar a produção escrita. |
 
 ## 6. GitHub + Cloudflare (deploy)
 
