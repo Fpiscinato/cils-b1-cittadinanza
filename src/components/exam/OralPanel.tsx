@@ -37,9 +37,12 @@ type RecordState = 'idle' | 'recording' | 'ready' | 'error'
 export function OralPanel({
   topics,
   onSubmit,
+  onAudio,
 }: {
   topics: OralTopic[]
   onSubmit: (topicId: string, rubric: Record<string, number>, durationSeconds: number) => void
+  /** Recebe a gravação (para guardar no histórico). */
+  onAudio?: (blob: Blob) => void
 }) {
   const [topicId, setTopicId] = useState(topics[0]?.id ?? '')
   const [elapsed, setElapsed] = useState(0)
@@ -51,6 +54,7 @@ export function OralPanel({
   const [recordSeconds, setRecordSeconds] = useState(0)
   const [recordError, setRecordError] = useState<string | null>(null)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
+  const audioBlobRef = useRef<Blob | null>(null)
   const recorderRef = useRef<MediaRecorder | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const chunksRef = useRef<BlobPart[]>([])
@@ -101,6 +105,8 @@ export function OralPanel({
       }
       recorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: mimeType ?? 'audio/webm' })
+        audioBlobRef.current = blob
+        onAudio?.(blob)
         if (audioUrl) URL.revokeObjectURL(audioUrl)
         setAudioUrl(URL.createObjectURL(blob))
         setRecordState('ready')

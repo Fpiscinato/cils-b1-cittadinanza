@@ -2,6 +2,7 @@ import Dexie, { type Table } from 'dexie'
 import type {
   Attempt,
   GrammarItem,
+  OralAudio,
   Oral,
   Passage,
   Profile,
@@ -21,6 +22,8 @@ export class CilsDatabase extends Dexie {
   orals!: Table<Oral, string>
   grammarItems!: Table<GrammarItem, string>
   vocabItems!: Table<VocabItem, string>
+  /** Gravações da prova oral (Blob do MediaRecorder). */
+  oralAudios!: Table<OralAudio, string>
 
   constructor() {
     super('cils-b1-cittadinanza')
@@ -38,6 +41,10 @@ export class CilsDatabase extends Dexie {
     this.version(2).stores({
       grammarItems: 'id, phase, topic, level',
       vocabItems: 'id, phase, category, level',
+    })
+    // v3: a gravação de áudio da prova oral (ficca só neste aparelho).
+    this.version(3).stores({
+      oralAudios: 'id, createdAt',
     })
   }
 }

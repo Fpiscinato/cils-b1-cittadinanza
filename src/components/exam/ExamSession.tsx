@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button, Card } from '../ui'
 import { ExamRunner, type Stage } from './ExamRunner'
 import { buildExam, type BuildOptions, type ContentBank } from '../../lib/examBuilder'
@@ -45,6 +45,7 @@ export function ExamSession({
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [result, setResult] = useState<ReturnType<typeof evaluateExam> | null>(null)
   const [loading, setLoading] = useState(true)
+  const audioRef = useRef<Blob | null>(null)
 
   /**
    * O simulado completo usa SÓ o banco oficial (o gabarito do CILS fica
@@ -153,7 +154,11 @@ export function ExamSession({
               rubric,
               score,
               durationSeconds,
+              audio: audioRef.current,
             })
+          },
+          onOralAudio: (blob) => {
+            audioRef.current = blob
           },
           onAttempt: (question: Question, isCorrect, skipped, seconds, selectedIndex) => {
             void saveAttempt({

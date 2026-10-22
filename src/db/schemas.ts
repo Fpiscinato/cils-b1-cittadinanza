@@ -246,6 +246,15 @@ export const oralSchema = z.object({
 })
 export type Oral = z.infer<typeof oralSchema>
 
+/** Gravação de áudio da prova oral (guardada só neste aparelho). */
+export const oralAudioSchema = z.object({
+  /** Id do registo da prova oral a que pertence. */
+  id: z.string().min(1),
+  blob: z.any(),
+  createdAt: z.number().int(),
+})
+export type OralAudio = z.infer<typeof oralAudioSchema>
+
 /* -------------------------------------------------------------------------- */
 /* Backup                                                                     */
 /* -------------------------------------------------------------------------- */

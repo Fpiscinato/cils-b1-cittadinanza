@@ -23,6 +23,8 @@ export interface SessionReport {
   oral: Oral | null
   /** Passagens usadas (transcrições e textos), por id. */
   passages: Map<string, string>
+  /** Gravação de áudio da prova oral (se existir). */
+  oralAudio: Blob | null
 }
 
 /** Carrega tudo o que é preciso para o relatório de uma sessão. */
@@ -50,7 +52,9 @@ export async function loadSessionReport(sessionId: string): Promise<SessionRepor
     if (passage) passages.set(question.passageId, passage.content)
   }
 
-  return { session, attempts, questions, writing, oral, passages }
+  const oralAudio = oral ? ((await db.oralAudios.get(oral.id))?.blob ?? null) : null
+
+  return { session, attempts, questions, writing, oral, passages, oralAudio }
 }
 
 /** O texto que a aluna respondeu a cada item (ou undefined se não respondeu). */

@@ -41,6 +41,8 @@ export interface OralInput {
   rubric: Record<string, number>
   score: number
   durationSeconds: number
+  /** Gravação opcional (MediaRecorder). Fica só neste aparelho. */
+  audio?: Blob | null
 }
 
 export async function saveOral(input: OralInput): Promise<Oral> {
@@ -55,5 +57,8 @@ export async function saveOral(input: OralInput): Promise<Oral> {
     createdAt: Date.now(),
   }
   await db.orals.put(oral)
+  if (input.audio && input.audio.size > 0) {
+    await db.oralAudios.put({ id: oral.id, blob: input.audio, createdAt: oral.createdAt })
+  }
   return oral
 }

@@ -363,10 +363,11 @@ do Memoriza `src/lib/github-sync.ts`:
     **riempimento guidato** che espelha o layout oficial.
 11. **Contador de palavras** na scrittura (80-120) com indicator live e aviso, e uma
     **checklist** di consegna (5 criteri) antes del submit.
-12. **Orale**: pannello con timer de 1 min (presentazione) + 2-3 min (dialogo), la griglia
+12. **Orale**: pannello con timer di 1 min (presentazione) + 2-3 min (dialogo), la griglia
     ufficiale a 4 criteri, e l'elenco dei **temi ufficiali** (città/campagna, cultura, assistenza
     sanitaria, **documenti per la cittadinanza**). Registrazione audio del browser (MediaRecorder)
-    opzionale, con avviso "viene valutata da griglia".
+    **real** (pede o microfone, com playback e download), guardada na tabela `oralAudios`
+    (Dexie v3) e reproduzível no relatório da prova.
 13. **Readiness dashboard**: 4 barre di punteggio per abilità, media mobile, margine sul limiar,
     "abilità a rischio #1" e la regola di capitalizzazione in evidenza.
 

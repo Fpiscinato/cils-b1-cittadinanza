@@ -68,6 +68,8 @@ export interface RunnerCallbacks {
     durationSeconds: number,
     score: number,
   ) => void
+  /** A gravação de áudio da prova oral (opcional). */
+  onOralAudio?: (blob: Blob) => void
   onAbort: () => void
 }
 
@@ -331,6 +333,7 @@ export function ExamRunner({
         {stage.kind === 'oral' ? (
           <OralPanel
             topics={stage.topics}
+            onAudio={callbacks.onOralAudio}
             onSubmit={(topicId, rubric, duration) => {
               const score = stage.rubricScore(rubric)
               perSkill.current[stage.skill] = score

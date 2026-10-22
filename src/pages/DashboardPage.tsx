@@ -150,6 +150,13 @@ export function DashboardPage({
         <p className="text-xs font-black uppercase tracking-wide text-slate-500">Tarefa de hoje</p>
         <p className="mt-1 text-base font-black text-slate-900 dark:text-slate-100">{task.title}</p>
         <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">{task.detail}</p>
+        <button
+          type="button"
+          onClick={() => onNavigate('study')}
+          className="mt-3 rounded-xl bg-slate-100 px-3 py-2 text-xs font-black text-slate-800 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-100"
+        >
+          🎲 Fazer o estudo de hoje (aleatório)
+        </button>
       </Card>
 
       {/* 3. O veredito */}

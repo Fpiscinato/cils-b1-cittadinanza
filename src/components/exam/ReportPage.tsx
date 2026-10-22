@@ -66,8 +66,12 @@ export function ReportPage({
     )
   }
 
-  const { session, questions, writing, oral, passages } = report
+  const { session, questions, writing, oral, passages, oralAudio } = report
   const date = new Date(session.startedAt).toLocaleDateString('pt-PT')
+  const audioUrl = useMemo(
+    () => (oralAudio ? URL.createObjectURL(oralAudio) : null),
+    [oralAudio],
+  )
 
   return (
     <div className="flex flex-col gap-3">
@@ -215,6 +219,14 @@ export function ReportPage({
           <p className="mt-1 text-sm font-black text-slate-900 dark:text-slate-100">
             {oral.topicId} · {oral.score}/12 · {formatDuration(oral.durationSeconds)}
           </p>
+          {audioUrl ? (
+            <div className="mt-2">
+              <p className="text-[11px] font-black uppercase tracking-wide text-slate-500">
+                Gravação
+              </p>
+              <audio controls src={audioUrl} className="mt-1 w-full" />
+            </div>
+          ) : null}
           {oral.notes ? (
             <p className="mt-2 whitespace-pre-line text-xs font-semibold text-slate-700 dark:text-slate-200">
               {oral.notes}
