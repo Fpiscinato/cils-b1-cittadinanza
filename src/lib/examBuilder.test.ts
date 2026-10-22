@@ -102,6 +102,7 @@ describe('montagem das provas', () => {
       'ascolto-p2-d8',
       'ascolto-p2-e2',
       'ascolto-p2-e3',
+      'ascolto-p2-f2',
       'ascolto-p2-x',
     ])
   })

@@ -21,6 +21,7 @@ import { PASSAGES_BATCH2, QUESTIONS_BATCH2 } from '../src/data/practiceBatch2'
 import { PASSAGES_BATCH3, QUESTIONS_BATCH3 } from '../src/data/practiceBatch3'
 import { PASSAGES_BATCH4, QUESTIONS_BATCH4 } from '../src/data/practiceBatch4'
 import { PASSAGES_BATCH5, QUESTIONS_BATCH5 } from '../src/data/practiceBatch5'
+import { PASSAGES_BATCH6, QUESTIONS_BATCH6 } from '../src/data/practiceBatch6'
 import { GRAMMAR_ITEMS, VOCAB_ITEMS } from '../src/data/phaseContent'
 import { STUDY_QUESTIONS } from '../src/data/studyBank'
 import { TASK_WEIGHTS } from '../src/lib/scoring'
@@ -165,6 +166,7 @@ const extraPassageIds = new Set([
   ...PASSAGES_BATCH3.map((passage) => passage.id),
   ...PASSAGES_BATCH4.map((passage) => passage.id),
   ...PASSAGES_BATCH5.map((passage) => passage.id),
+  ...PASSAGES_BATCH6.map((passage) => passage.id),
 ])
 const seenExtraIds = new Set<string>()
 const extraTasks = new Map<string, number>()
@@ -286,6 +288,17 @@ checkExtraBank(
     'ascolto-p2-d8': 8,
   },
   'lote 4',
+)
+
+checkExtraBank(
+  QUESTIONS_BATCH6,
+  {
+    'ascolto-p1-f1': 6,
+    'ascolto-p2-f2': 8,
+    'lettura-p1-f3': 8,
+    'lettura-p2-f4': 6,
+  },
+  'lote 6',
 )
 
 checkExtraBank(
@@ -425,6 +438,7 @@ const ALL_QUESTIONS = [
   ...QUESTIONS_BATCH3,
   ...QUESTIONS_BATCH4,
   ...QUESTIONS_BATCH5,
+  ...QUESTIONS_BATCH6,
   ...STUDY_QUESTIONS,
 ]
 
@@ -475,7 +489,7 @@ if (failures.length > 0) {
 
 console.log(
   `✅ Auditoria do conteúdo: ${OFFICIAL_QUESTIONS.length} perguntas oficiais (com o gabarito do CILS), ` +
-    `${EXTRA_QUESTIONS.length + QUESTIONS_BATCH2.length + QUESTIONS_BATCH3.length + QUESTIONS_BATCH4.length + QUESTIONS_BATCH5.length} itens extra de prática, ` +
+    `${EXTRA_QUESTIONS.length + QUESTIONS_BATCH2.length + QUESTIONS_BATCH3.length + QUESTIONS_BATCH4.length + QUESTIONS_BATCH5.length + QUESTIONS_BATCH6.length} itens extra de prática, ` +
     `${GRAMMAR_ITEMS.length} regras de gramática e ${VOCAB_ITEMS.length} entradas de vocabulário.`,
 )
 console.log(

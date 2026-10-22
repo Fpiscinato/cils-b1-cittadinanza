@@ -23,7 +23,7 @@ cidadania italiana.
   as regras de aprovação e o que levar para o exame (mais a aba "Conteúdo por fase").
 - **Estudo por nível** — um quiz curto e **aleatório** de A1/A2/B1 (exercícios de gramática e
   vocabulário, ascolto ou lettura) para treinar todos os dias sem repetir as perguntas.
-- **Banco grande** — 601 itens (meta: 800): a prova oficial do CILS + material original da app
+- **Banco grande** — 629 itens (meta: 800): a prova oficial do CILS + material original da app
   por nível e por fase, com explicação depois de cada resposta.
 - **Acompanha a evolução** — gráfico do score total e de cada abilità ao longo do tempo, com a
   linha da sufficienza.

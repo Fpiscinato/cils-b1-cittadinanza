@@ -19,6 +19,7 @@ import { PASSAGES_BATCH2, QUESTIONS_BATCH2 } from '../data/practiceBatch2'
 import { PASSAGES_BATCH3, QUESTIONS_BATCH3 } from '../data/practiceBatch3'
 import { PASSAGES_BATCH4, QUESTIONS_BATCH4 } from '../data/practiceBatch4'
 import { PASSAGES_BATCH5, QUESTIONS_BATCH5 } from '../data/practiceBatch5'
+import { PASSAGES_BATCH6, QUESTIONS_BATCH6 } from '../data/practiceBatch6'
 import { STUDY_QUESTIONS } from '../data/studyBank'
 import { GRAMMAR_ITEMS, VOCAB_ITEMS } from '../data/phaseContent'
 
@@ -58,6 +59,7 @@ export async function syncQuestionBank(): Promise<void> {
     ...PASSAGES_BATCH3,
     ...PASSAGES_BATCH4,
     ...PASSAGES_BATCH5,
+    ...PASSAGES_BATCH6,
   ])
   await db.questions.bulkPut([
     ...OFFICIAL_QUESTIONS,
@@ -66,6 +68,7 @@ export async function syncQuestionBank(): Promise<void> {
     ...QUESTIONS_BATCH3,
     ...QUESTIONS_BATCH4,
     ...QUESTIONS_BATCH5,
+    ...QUESTIONS_BATCH6,
     ...STUDY_QUESTIONS,
   ])
   await db.grammarItems.bulkPut(GRAMMAR_ITEMS)

@@ -227,7 +227,7 @@ O banco tem **duas origens**, misturadas só onde é seguro:
 O audit imprime o estado do banco e **falha** se o banco for menor do que o mínimo:
 
 ```
-Banco: 601 itens (ideal 800) · A1 156/150 · A2 163/250 · B1 282/400 · ascolto 110/200 · lettura 491/600
+Banco: 629 itens (ideal 800) · A1 156/150 · A2 183/250 · B1 290/400 · ascolto 124/200 · lettura 505/600
 ```
 
 - **IDEAL (alvo)**: 800 itens — 150 A1, 250 A2, 400 B1; 200 de ascolto, 600 de lettura.

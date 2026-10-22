@@ -16,5 +16,6 @@ export const APP_VERSION = '1.1.0'
  * v5: lote 3 de prática (mais textos e exercícios) — banco com 322 itens.
  * v6: banco de estudo em volume (padrões de gramática + vocabulário) e
  * lote 4 (ascolto) — banco com 477 itens.
+ * v7: lotes 5 e 6 (mais ascolto e leitura) + vocabulário A1/A2 — 629 itens.
  */
-export const BANK_VERSION = 6
+export const BANK_VERSION = 7

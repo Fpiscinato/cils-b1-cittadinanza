@@ -185,6 +185,10 @@ export const TASK_WEIGHTS: Readonly<Record<string, number>> = {
   'ascolto-p2-e3': ASCOLTO_P2_POINTS_PER_ITEM,
   'lettura-p1-e4': LETTURA_P1_POINTS_PER_ITEM,
   'lettura-p2-e5': LETTURA_P2_POINTS_PER_ITEM,
+  'ascolto-p1-f1': ASCOLTO_P1_POINTS_PER_ITEM,
+  'ascolto-p2-f2': ASCOLTO_P2_POINTS_PER_ITEM,
+  'lettura-p1-f3': LETTURA_P1_POINTS_PER_ITEM,
+  'lettura-p2-f4': LETTURA_P2_POINTS_PER_ITEM,
 }
 
 /**
