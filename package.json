@@ -19,7 +19,8 @@
     "version:bump": "tsx scripts/bump-version.ts",
     "audit:exam": "tsx scripts/audit-exam.ts",
     "audit:content": "tsx scripts/audit-content.ts",
-    "audit": "npm run audit:exam && npm run audit:content && npm run test"
+    "audit": "npm run audit:exam && npm run audit:content && npm run test",
+    "ci": "npm run audit && npm run build"
   },
   "dependencies": {
     "dexie": "^4.4.6",

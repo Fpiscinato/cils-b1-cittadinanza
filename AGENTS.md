@@ -232,12 +232,18 @@ Padrão do ElevenSpark `src/services/gistSync.ts` / do Memoriza `src/lib/github-
 ## 6. GitHub + Cloudflare (deploy)
 
 - Repo: `git@github.com:Fpiscinato/cils-b1-cittadinanza.git`, branch `main`.
-- CI/CD: `.github/workflows/deploy.yml` — **espelhar exatamente** o do ElevenSpark:
-  `actions/checkout@v4` → `actions/setup-node@v4` (node 22, cache npm) → `npm ci` →
-  **`npm run audit`** (gate: um banco de questões quebrado nunca chega à aluna) →
-  `npm run build` → checagem de credenciais com mensagem acionável → `cloudflare/wrangler-action@v3`
-  → `deploy` → resumo no `$GITHUB_STEP_SUMMARY`.
-- Secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
+- Deploy: **integração Git da Cloudflare (Workers Builds)** — o mesmo padrão dos outros
+  projetos do dono (`memoriza`, `darts-tournament`, `quase-profissionais`). A Cloudflare
+  observa o repositório e builda a cada push para `main`; **não há workflow do GitHub e não
+  há secrets** (`CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` não são necessários aqui —
+  a Cloudflare autentica o build sozinha com o token que ela própria cria).
+- Configuração no painel (Workers & Pages → Create → Workers → Connect to Git):
+  - Build command: `npm run ci` (= `npm run audit` + `npm run build`)
+  - Deploy command: `npx wrangler deploy`
+  - Root directory: `/`; Node 22.
+- O gate de qualidade **continua igual**: `npm run ci` roda `audit:exam`, `audit:content` e
+  os testes antes do build. Banco de questões quebrado não é publicado.
+- Não recriar `.github/workflows/deploy.yml`: com a integração Git isso causaria deploy duplicado.
 - `wrangler.jsonc` (formato do ElevenSpark, non-CLI): `assets.directory: "./dist"`,
   `not_found_handling: "single-page-application"`, `observability.enabled: true`.
 - `npm run deploy` local = `npm run build && wrangler deploy` (precisa de `wrangler login`).
@@ -308,7 +314,8 @@ npm run icons          # regenera os ícones depois de um bump de APP_VERSION
 npm run version:bump   # sobe a versão (base-10, dígito a dígito)
 ```
 
-`npm run audit` é **gate no CI** — se os audit falharem, o deploy não sai.
+`npm run ci` (= `npm run audit` + `npm run build`) é o **build command da Cloudflare**: se os
+audits falharem, o deploy não sai.
 
 O `audit:content` é o mais importante: ele **recalcula as respostas do banco e compara com as
 chaves oficiais do CILS** ("Chiavi di soluzione delle prove"). As 36 perguntas da prova de
@@ -351,13 +358,10 @@ gabarito oficial garantido, por isso é o primeiro conteúdo do banco.
 
 ## 12. Estado do deploy
 
-O repo está pronto para o GitHub e para a Cloudflare, mas **dois passos são manuais** (não há
-tokens no servidor):
-
-1. Criar o repo `Fpiscinato/cils-b1-cittadinanza` (vazio, sem README) no GitHub.
-2. Adicionar os secrets do repo em *Settings → Secrets and variables → Actions*:
-   `CLOUDFLARE_API_TOKEN` (Workers Scripts: Edit + Account Settings: Read) e
-   `CLOUDFLARE_ACCOUNT_ID`.
-
-Depois disso, cada push para `main` passa pelos audits e é publicado no Worker da Cloudflare.
-Para deploy local: `npm run deploy` (precisa de `wrangler login`).
+- Repo criado e `main` publicado: `git@github.com:Fpiscinato/cils-b1-cittadinanza.git`.
+- O workflow `.github/workflows/deploy.yml` foi **removido** de propósito: o deploy é feito
+  pela integração Git da Cloudflare (ver §6), igual aos outros projetos do dono.
+- **Passo manual que falta (feito uma única vez):** conectar o repositório em
+  *Workers & Pages → Create → Workers → Connect to Git*, com build command `npm run ci` e
+  deploy command `npx wrangler deploy`. A partir daí, cada push para `main` publica sozinho.
+- Deploy local alternativo: `npm run deploy` (precisa de `wrangler login`).
