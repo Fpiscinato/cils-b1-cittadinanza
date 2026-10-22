@@ -112,6 +112,7 @@ export function ProgressPage({
                     max={12}
                     threshold={PASS_THRESHOLD_PER_SKILL}
                     thresholdLabel={`sufficienza ${PASS_THRESHOLD_PER_SKILL}`}
+                    height={130}
                     emptyText="Sem provas desta habilidade ainda."
                   />
                 </div>

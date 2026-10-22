@@ -33,8 +33,11 @@ Padrão copiado e validado de `/root/projetos/ElevenSpark` (mesmo dono, mesma co
 - **Tailwind CSS 4** (`@tailwindcss/vite`, sem `tailwind.config.js`).
 - **Dexie.js 4** (IndexedDB) — persistência 100% offline. Sem servidor, sem backend.
 - **Zod 4** — validação de schema de todo dado que entra no banco (backup/import são Zod-validati).
-- **vite-plugin-pwa** com `registerType: 'autoUpdate'` e `injectRegister: null` (o próprio app
-  controla o banner de nova versão).
+- **vite-plugin-pwa** com `registerType: 'prompt'` e `injectRegister: null` — o registo do
+  service worker é feito pela app (`src/App.tsx`, `registerSW` de `virtual:pwa-register`) e o
+  banner de "nova versão" é o `src/components/UpdateBanner.tsx`. `'prompt'` e não
+  `'autoUpdate'`: recarregar a app a meio de uma prova é pior do que pedir "Actualizar".
+  **Sem este registo a app não funciona offline** — é o requisito nº 1 do projeto.
 - **Vitest** para a lógica de negócio: `scoring.ts`, `readiness.ts`, `roadmapCalculator.ts`,
   `timing.ts`, `wordCount.ts`. Regras de prova são testadas, não "testadas à mão".
 - **oxlint** para lint (mesmo tool do ElevenSpark).
@@ -236,17 +239,18 @@ do Memoriza `src/lib/github-sync.ts`:
   conteúdo do banco — o que viaja entre aparelhos é o progresso, não as perguntas.
 - O merge está em `src/lib/merge.ts` (regras testadas em `src/lib/merge.test.ts`).
 
-## 5-bis. Módulos introduzidos na v1.0.1
+## 5-bis. Módulos introduzidos na v1.0.1 / v1.0.2
 
 | Módulo | Ficheiro | Papel |
 | --- | --- | --- |
 | Rotas | `src/lib/routes.ts` | Fonte única das rotas (`dashboard`, `practice`, `mock`, `progress`, `guide`, `settings`) lidas do hash — evita dependências circulares entre UI e lógica. |
-| Onboarding | `src/lib/onboarding.ts` + `src/components/OnboardingChecklist.tsx` | "O que faço agora?" — 4 passos mínimos derivados do estado real (data da prova, provas concluídas, backup, sync). |
+| Onboarding | `src/lib/onboarding.ts` + `src/components/OnboardingChecklist.tsx` | "O que faço agora?" — 5 passos mínimos derivados do estado real (data da prova, 1ª prática, 1º simulado, backup, sync). No painel mostra só os 3 primeiros pendentes (com "ver os N passos"). |
 | Tema | `src/lib/theme.ts` + `src/components/ThemeToggle.tsx` | Tema claro/escuro, com a escolha persistida e aplicada sem flash. |
 | Gráfico | `src/lib/chart.ts` + `src/components/ProgressChart.tsx` | Gráfico de evolução do score por abilità, desenhado em SVG (sem dependência nova). |
 | Guia | `src/pages/GuidePage.tsx` | Página de ajuda: como usar a app, como se preparar, o que levar para a prova. |
 | Sync | `src/services/gistSync.ts` + `src/components/SyncBadge.tsx` | Sync opcional por Gist (§5.4). |
 | Snapshots | `src/lib/snapshot.ts` + `src/services/snapshots.ts` | Cópias de segurança locais (§5.3). |
+| PWA | `src/App.tsx` + `src/components/UpdateBanner.tsx` | Registo do service worker e aviso de "nova versão" / "pronto para offline" (v1.0.2). |
 
 ## 6. GitHub + Cloudflare (deploy)
 
@@ -286,8 +290,14 @@ do Memoriza `src/lib/github-sync.ts`:
    e "🧠 Aprenda a resolver" (o conceito, um método de 3 passos, a armadilha comum).
 6. **Uma única confirmação para parar**: um alertdialog com exatamente dois botões —
    "Continuar estudando" e "Encerrar sessão" — e a mensagem "As respostas já foram salvas".
-7. **No celular, o menu inferior sempre mostra onde você está**.
-8. **Erros de conteúdo**: `childSafetyGuard` não se aplica (app adulto), mas vale o equivalente
+7. **O menu está SEMPRE visível**: no telemóvel é o menu inferior fixo (6 itens, aba ativa
+   marcada); no portátil/tablet (`md:`) é um **menu lateral fixo** no `AppShell`. Nenhum ecrã
+   pode ficar sem navegação. O ícone da app fica no **canto superior esquerdo** (link para o
+   Painel), com o botão de tema e o badge de sync à direita.
+8. **"Voltar ao painel" em todos os ecrãs secundários**: `BackButton` (`src/components/ui.tsx`)
+   no topo de Prática, Simulado, Progresso, Guia e Ajustes. A navegação é por hash
+   (`src/lib/routes.ts`) — o botão tem de mudar o hash, nunca só refrescar dados.
+9. **Erros de conteúdo**: `childSafetyGuard` não se aplica (app adulto), mas vale o equivalente
    de **integridade de conteúdo**: nenhuma questão pode ter duas opções corretas, nenhum texto
    pode ficar invisível (mesma cor de fundo e de letra, em light **e** dark mode).
 
@@ -380,7 +390,19 @@ gabarito oficial garantido, por isso é o primeiro conteúdo do banco.
 - Repo criado e `main` publicado: `git@github.com:Fpiscinato/cils-b1-cittadinanza.git`.
 - O workflow `.github/workflows/deploy.yml` foi **removido** de propósito: o deploy é feito
   pela integração Git da Cloudflare (ver §6), igual aos outros projetos do dono.
-- **Passo manual que falta (feito uma única vez):** conectar o repositório em
-  *Workers & Pages → Create → Workers → Connect to Git*, com build command `npm run ci` e
-  deploy command `npx wrangler deploy`. A partir daí, cada push para `main` publica sozinho.
+- Integração Git **já conectada** (2026-10-22): build command `npm run ci`, deploy command
+  `npx wrangler deploy`, root `/`. Cada push para `main` publica sozinho.
+- O build token da Cloudflare chama-se `workers build 2026-10-22` (nome automático). É só um
+  rótulo: o Worker affectedo é o `cils-b1-cittadinanza` (nome vem do `wrangler.jsonc`).
 - Deploy local alternativo: `npm run deploy` (precisa de `wrangler login`).
+
+## 13. Verificação visual (obrigatória antes de cada push)
+
+A app é usada em telemóvel e portátil. Antes de dar push, auditar o layout em pelo menos
+três tamanhos — **1440×900 (portátil), 834×1112 (tablet), 390×844 (telemóvel)** — e navegar
+por todas as rotas (`#/dashboard`, `#/practice`, `#/mock`, `#/progress`, `#/guide`,
+`#/settings`).
+
+Ferramenta usada: Chromium headless + CDP (`Emulation.setDeviceMetricsOverride` +
+`Page.captureScreenshot`). O `--virtual-time-budget` do Chromium **não** serve para isto: o
+IndexedDB não avança com o tempo virtual e a app fica eternamente no ecrã "A carregar…".

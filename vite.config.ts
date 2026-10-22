@@ -15,11 +15,14 @@ export default defineConfig({
     },
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
-      // The app registers the worker itself (src/components/brand/UpdateBanner.tsx)
-      // so it can show a friendly "new version ready" banner.
+      // 'prompt': a nova versão fica à espera e a app oferece a actualização no
+      // banner (src/components/UpdateBanner.tsx). Nada de recarregamentos
+      // surpresa a meio de uma prova.
+      registerType: 'prompt',
+      // O registo do service worker é feito pela app (src/App.tsx) para o
+      // banner de nova versão — o plugin não injecta o script sozinho.
       injectRegister: null,
-      includeAssets: ['favicon.svg', 'favicon.ico', 'favicon-32.png', 'icon.svg', 'app-icons/**/*.{png,svg,ico}'],
+      includeAssets: ['favicon.svg', 'favicon-32.png', 'icon.svg', 'app-icons/**/*.{png,svg,ico}'],
       manifest: {
         name: 'CILS B1 Cittadinanza — Prep',
         short_name: 'CILS B1',

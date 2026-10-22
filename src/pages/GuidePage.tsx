@@ -235,7 +235,7 @@ export function GuidePage({ onNavigate }: { onNavigate: (route: Route) => void }
           5 · Detalhes que contam na prova
         </p>
 
-        <CollapsibleCard title="🎧 O protocolo do ascolto (2 reproduções)" icon={<Headphones size={16} />}>
+        <CollapsibleCard title="O protocolo do ascolto (2 reproduções)" icon={<Headphones size={16} />}>
           <ol className="flex list-decimal flex-col gap-1 pl-4 text-xs font-semibold text-slate-600 dark:text-slate-300">
             <li>Ascoltas a Prova 1 (1ª vez).</li>
             <li>2 minutos para ler as perguntas.</li>
@@ -251,7 +251,7 @@ export function GuidePage({ onNavigate }: { onNavigate: (route: Route) => void }
           </p>
         </CollapsibleCard>
 
-        <CollapsibleCard title="✍️ A scrittura (80-120 palavras)" icon={<PenLine size={16} />}>
+        <CollapsibleCard title="A scrittura (80-120 palavras)" icon={<PenLine size={16} />}>
           <p className="text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
             Escolhes 1 dos 2 temas (os dois aparecem juntos, como no foglio oficial). A app conta as
             palavras em tempo real e avisa se ficares fora do intervalo — mas deixa submeter na
@@ -261,7 +261,7 @@ export function GuidePage({ onNavigate }: { onNavigate: (route: Route) => void }
           </p>
         </CollapsibleCard>
 
-        <CollapsibleCard title="🎤 A orale (1 min + 2-3 min)" icon={<MessageSquare size={16} />}>
+        <CollapsibleCard title="A orale (1 min + 2-3 min)" icon={<MessageSquare size={16} />}>
           <p className="text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
             Não é um monólogo. Primeiro apresentas-te (nome, idade, de onde vieste, onde vives,
             trabalho ou estudos) em ~1 minuto; depois o examinador escolhe um tema e faz-te mais

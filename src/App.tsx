@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { registerSW } from 'virtual:pwa-register'
 import { AppShell } from './components/AppShell'
+import { UpdateBanner, type PwaBannerState } from './components/UpdateBanner'
 import { DashboardPage } from './pages/DashboardPage'
 import { PracticePage } from './pages/PracticePage'
 import { MockPage } from './pages/MockPage'
@@ -33,6 +35,8 @@ export default function App() {
   const [theme, setTheme] = useState<Theme>(() => readStoredTheme())
   const [syncStatus, setSyncStatus] = useState<SyncStatus>(INITIAL_SYNC_STATUS)
   const [hasBackup, setHasBackup] = useState(false)
+  const [pwaState, setPwaState] = useState<PwaBannerState>('none')
+  const updateWorker = useRef<((reload?: boolean) => Promise<void>) | null>(null)
   const autoSynced = useRef(false)
 
   const refresh = useCallback(async () => {
@@ -88,6 +92,28 @@ export default function App() {
     query.addEventListener('change', listener)
     return () => query.removeEventListener('change', listener)
   }, [theme])
+
+  /* ---------------------------------------------------------------------- */
+  /* PWA — registo do service worker                                        */
+  /* ---------------------------------------------------------------------- */
+
+  /**
+   * O `vite-plugin-pwa` está configurado com `injectRegister: null`: o
+   * registo é feito aqui, para a app controlar a mensagem de "nova versão".
+   * Sem este registo a app NÃO funciona offline — o requisito do projeto.
+   */
+  useEffect(() => {
+    if (import.meta.env.DEV) return
+    updateWorker.current = registerSW({
+      immediate: true,
+      onNeedRefresh() {
+        setPwaState('update-available')
+      },
+      onOfflineReady() {
+        setPwaState('offline-ready')
+      },
+    })
+  }, [])
 
   /* ---------------------------------------------------------------------- */
   /* Navegação (hash)                                                       */
@@ -211,6 +237,14 @@ export default function App() {
           onSyncNow={runSync}
         />
       ) : null}
+
+      <UpdateBanner
+        state={pwaState}
+        onApply={() => {
+          void updateWorker.current?.(true)
+        }}
+        onDismiss={() => setPwaState('none')}
+      />
     </AppShell>
   )
 }

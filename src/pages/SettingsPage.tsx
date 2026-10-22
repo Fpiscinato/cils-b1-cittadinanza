@@ -22,7 +22,7 @@ import {
   triggerDownload,
 } from '../lib/backup'
 import { resetAbandonedMocks, updateProfile } from '../lib/admin'
-import { PASS_THRESHOLD_PER_SKILL, THRESHOLD_DISCLAIMER } from '../lib/scoring'
+import { THRESHOLD_DISCLAIMER } from '../lib/scoring'
 import type { Profile } from '../db/schemas'
 import type { Route } from '../lib/routes'
 import type { Theme } from '../lib/theme'
@@ -442,8 +442,7 @@ export function SettingsPage({
         <p className="text-xs font-black uppercase tracking-wide text-slate-500">Sobre a prova</p>
         <div className="mt-2">
           <Alert tone="teal" title="Limiar de aprovação em uso">
-            {PASS_THRESHOLD_PER_SKILL}/12 por habilidade ({PASS_THRESHOLD_PER_SKILL * 4}/48 no
-            total). {THRESHOLD_DISCLAIMER}
+            {THRESHOLD_DISCLAIMER}
           </Alert>
         </div>
       </Card>

@@ -11,12 +11,15 @@ export function ProgressChart({
   max,
   threshold,
   thresholdLabel,
+  height = 200,
   emptyText = 'Ainda não há provas concluídas para desenhar o gráfico.',
 }: {
   points: SeriesPoint[]
   max: number
   threshold?: number
   thresholdLabel?: string
+  /** Altura do SVG (viewBox 600 x height). */
+  height?: number
   emptyText?: string
 }) {
   if (points.length === 0) {
@@ -28,7 +31,6 @@ export function ProgressChart({
   }
 
   const width = 600
-  const height = 200
   const padding = { top: 16, right: 16, bottom: 28, left: 34 }
   const innerW = width - padding.left - padding.right
   const innerH = height - padding.top - padding.bottom
@@ -88,9 +90,9 @@ export function ProgressChart({
           />
           {thresholdLabel ? (
             <text
-              x={width - padding.right}
+              x={padding.left + 4}
               y={y(threshold) - 5}
-              textAnchor="end"
+              textAnchor="start"
               className="fill-rose-500 text-[10px] font-black"
             >
               {thresholdLabel}
