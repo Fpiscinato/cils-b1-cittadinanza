@@ -227,12 +227,12 @@ O banco tem **duas origens**, misturadas só onde é seguro:
 O audit imprime o estado do banco e **falha** se o banco for menor do que o mínimo:
 
 ```
-Banco: 629 itens (ideal 800) · A1 156/150 · A2 183/250 · B1 290/400 · ascolto 124/200 · lettura 505/600
+Banco: 801 itens (ideal 800) · A1 178/150 · A2 237/250 · B1 386/400 · ascolto 172/200 · lettura 629/600
 ```
 
 - **IDEAL (alvo)**: 800 itens — 150 A1, 250 A2, 400 B1; 200 de ascolto, 600 de lettura.
   É o que dá ~20 "provas" completas por habilidade: a aluna pode estudar 3 meses
-  (~15 min/dia) sem repetir as mesmas perguntas. **Atingido em 2026-10-22 (v1.3.0).**
+  (~15 min/dia) sem repetir as mesmas perguntas. **Atingido em 2026-10-23 (v1.3.0, BANK_VERSION 8).**
 - **MÍNIMO (garantido pelo audit)**: 780 itens, com piso por nível e por habilidade.
 - O menu **secundário** (Clínica de erros, Foglio risposte) só aparece no menu lateral
   do portátil — no telemóvel a barra de baixo fica com os 6 ecrãs principais.
@@ -326,9 +326,24 @@ do Memoriza `src/lib/github-sync.ts`:
 - Ícones: `public/app-icons/v<APP_VERSION>/`, gerados por `node scripts/generate-icons.mjs`
   (mesmo script do ElevenSpark). Bump de `APP_VERSION` regenera os ícones.
 
+## 6-bis. Segurança e segredos (não negociável)
+
+- **Nunca** commitar `.env`, `.env.*`, `opencode.json`, `.dev.vars`, `*.key`, `*.pem` ou
+  qualquer token. O `.gitignore` já bloqueia; **nunca** usar `git add -f` nesses ficheiros.
+- `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` só existem em GitHub Actions secrets ou
+  no painel da Cloudflare — **nunca** no código, no `wrangler.jsonc` ou na documentação.
+  Este repo usa a integração Git da Cloudflare e **não** deve ter workflow com token.
+- O token do Gist é digitado pela usuária em runtime e fica **só** no `localStorage`;
+  nunca hardcodar, logar ou incluir em backup/Gist.
+- Os dados de estudo (IndexedDB) e as exportações JSON são locais e **não** são
+  criptografados: não os anexar a issues/PRs.
+- Antes de cada push: `git status --short` + `git diff --cached`. Se um segredo vazar,
+  **revogar primeiro** (Cloudflare/GitHub) e só depois limpar o histórico — apagar o
+  commit sozinho não resolve.
+
 ## 7. UX — as regras que vêm do ElevenSpark (validadas em produção)
 
-1. **Um único runner.** `src/components/exam/PracticeRunner.tsx` é o **único** runner de sessão
+1. **Um único runner.** `src/components/exam/ExamSession.tsx` (que usa o `ExamRunner.tsx` por baixo) é o **único** caminho de sessão
    (prática, clínica de erros, banco de erros e mock). Nunca criar um segundo runner — a
    consistência de layout, timer e footer fixo passa a ser **por construção**.
 2. **Tela de prática "action-first"**: o botão ▶️ Iniciar e o ⚡ Mix Rápido ficam no **primeiro
@@ -389,7 +404,7 @@ do Memoriza `src/lib/github-sync.ts`:
 npm run dev            # vite dev
 npm run build          # tsc -b && vite build   <- único type-check confiável
 npm run lint           # oxlint
-npm run test           # vitest run  (53 testes em 7 ficheiros)
+npm run test           # vitest run  (92 testes em 12 ficheiros)
 npm run audit          # a porta de qualidade: audit:exam + audit:content + test
 npm run audit:exam     # a configuração das provas bate com a especificação oficial?
 npm run audit:content  # integridade do banco (opções, pesos, ordem) E o gabarito oficial do CILS
