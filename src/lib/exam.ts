@@ -218,12 +218,12 @@ export const EXAM_CONFIGS: Record<ExamMode, ExamConfig> = {
     skill: 'all',
     title: 'Studio per livello',
     titlePt: 'Estudo por nível (A1 / A2 / B1)',
-    subtitlePt: '10-15 itens aleatórios · sem pressão de tempo',
+    subtitlePt: 'Exercícios do nível · sem pressão de tempo',
     blurbPt:
-      'Um exercício curto e ALEATÓRIO do nível que escolheres: as perguntas são sempre ' +
-      'baralhadas e tiradas do banco grande (oficial + conteúdo extra + exercícios de ' +
-      'gramática e vocabulário). Cada dia é um dia novo.',
-    timeSeconds: 15 * MINUTE,
+      'Um bloco curto e ALEATÓRIO do nível que escolheres: exercícios de completar frases, ' +
+      'vocabulário, escuta ou leitura. As perguntas são sempre baralhadas e tiradas do banco ' +
+      'grande, por isso cada dia é um dia novo.',
+    timeSeconds: 45 * MINUTE,
     tasks: [],
     omrEligible: false,
   },

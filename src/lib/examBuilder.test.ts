@@ -68,9 +68,40 @@ describe('montagem das provas', () => {
     }
   })
 
-  it('o banco "all" acrescenta o conteúdo extra ao banco oficial', async () => {
-    const official = await buildExam('ascolto', { bank: 'official' })
-    const all = await buildExam('ascolto', { bank: 'all' })
+  it('a prática de uma habilidade é UMA prova (18 itens), não o banco inteiro', async () => {
+    for (const mode of ['ascolto', 'lettura'] as const) {
+      const built = await buildExam(mode, { bank: 'all' })
+      const stage = built?.stages[0]
+      if (stage?.kind !== 'objective') throw new Error('stage inválido')
+      expect(stage.questions.length).toBeLessThanOrEqual(18)
+      expect(stage.questions.length).toBeGreaterThan(0)
+      // Sem limite explícito, o banco misto tem muito mais do que uma prova.
+      const wholeBank = await buildExam(mode, { bank: 'all', limit: 500 })
+      const fullStage = wholeBank?.stages[0]
+      if (fullStage?.kind !== 'objective') throw new Error('stage inválido')
+      expect(fullStage.questions.length).toBeGreaterThan(18)
+    }
+  })
+
+  it('a prática mantém as perguntas do mesmo texto juntas (não corta o áudio a meio)', async () => {
+    const built = await buildExam('ascolto', { bank: 'all', random: () => 0.42 })
+    const stage = built?.stages[0]
+    if (stage?.kind !== 'objective') throw new Error('stage inválido')
+    const taskIds = stage.questions.map((question) => question.taskId)
+    const seen = new Set<string>()
+    let previous = ''
+    for (const taskId of taskIds) {
+      if (taskId !== previous) {
+        expect(seen.has(taskId)).toBe(false)
+        seen.add(taskId)
+        previous = taskId
+      }
+    }
+  })
+
+  it('o banco "all" tem mais material do que o oficial', async () => {
+    const official = await buildExam('ascolto', { bank: 'official', limit: 500 })
+    const all = await buildExam('ascolto', { bank: 'all', limit: 500 })
     const officialCount = official?.stages[0]?.kind === 'objective' ? official.stages[0].questions.length : 0
     const allCount = all?.stages[0]?.kind === 'objective' ? all.stages[0].questions.length : 0
     expect(officialCount).toBe(18)
@@ -148,6 +179,43 @@ describe('montagem das provas', () => {
     expect(stage.questions.length).toBeLessThanOrEqual(10)
     for (const question of stage.questions) {
       expect(question.level).toBe('A1')
+    }
+  })
+
+  it('o estudo de exercícios usa só o banco de apostila (lacunas e vocabulário)', async () => {
+    const built = await buildExam('studio', {
+      bank: 'all',
+      level: 'A1',
+      skill: 'lettura',
+      origin: 'study',
+      shuffle: true,
+      limit: 12,
+      random: () => 0.42,
+    })
+    const stage = built?.stages[0]
+    if (stage?.kind !== 'objective') throw new Error('stage inválido')
+    expect(stage.questions.length).toBeGreaterThan(0)
+    for (const question of stage.questions) {
+      expect(question.taskId.startsWith('studio-')).toBe(true)
+      expect(question.level).toBe('A1')
+    }
+  })
+
+  it('a prática de perguntas exclui o banco de exercícios', async () => {
+    const built = await buildExam('studio', {
+      bank: 'all',
+      level: 'A1',
+      skill: 'lettura',
+      origin: 'practice',
+      shuffle: true,
+      limit: 10,
+      random: () => 0.42,
+    })
+    const stage = built?.stages[0]
+    if (stage?.kind !== 'objective') throw new Error('stage inválido')
+    expect(stage.questions.length).toBeGreaterThan(0)
+    for (const question of stage.questions) {
+      expect(question.taskId.startsWith('studio-')).toBe(false)
     }
   })
 

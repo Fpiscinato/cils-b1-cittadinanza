@@ -104,6 +104,10 @@ export async function loadProfileHistory(profileId: string): Promise<{
 /**
  * Histórico por habilidade, para o veredito de prontidão.
  * Cada amostra é o resultado de uma prova (ou treino) concluída.
+ *
+ * O estudo por nível (`mode: 'studio'`) fica DE FORA: são exercícios de
+ * apostila, não uma prova no formato do exame, e misturá-los distorceria o
+ * veredito. A evolução do estudo tem o seu próprio gráfico no Progresso.
  */
 export function buildSkillHistory(sessions: Session[]): Record<Skill, SkillSample[]> {
   const history: Record<Skill, SkillSample[]> = {
@@ -113,7 +117,10 @@ export function buildSkillHistory(sessions: Session[]): Record<Skill, SkillSampl
     orale: [],
   }
   const completed = sessions
-    .filter((session) => session.status === 'completed' && session.perSkill)
+    .filter(
+      (session) =>
+        session.status === 'completed' && session.perSkill && session.mode !== 'studio',
+    )
     .sort((a, b) => a.startedAt - b.startedAt)
 
   for (const session of completed) {

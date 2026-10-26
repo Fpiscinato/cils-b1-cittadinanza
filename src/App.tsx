@@ -28,6 +28,7 @@ import {
 } from './services/gistSync'
 import { createSnapshotIfChanged } from './services/snapshots'
 import { BACKUP_EXPORTED_KEY } from './lib/backup'
+import { buildStudyOptions } from './lib/study'
 
 export default function App() {
   const [route, setRoute] = useState<Route>(() => routeFromHash(window.location.hash))
@@ -257,6 +258,11 @@ export default function App() {
             setPendingSession({ mode })
             navigate(mode === 'mock_cittadinanza' ? 'mock' : 'practice')
           }}
+          onStartStudy={(request) => {
+            // A tarefa do dia começa o estudo DIRECTAMENTE no ecrã de prática.
+            setPendingSession({ mode: 'studio', buildOptions: buildStudyOptions(request) })
+            navigate('practice')
+          }}
           onNavigate={navigate}
         />
       ) : null}
@@ -264,6 +270,7 @@ export default function App() {
       {route === 'practice' ? (
         <PracticePage
           profileId={profileId}
+          attempts={attempts}
           onCompleted={() => void afterSession()}
           onNavigate={navigate}
           pending={pendingSession}

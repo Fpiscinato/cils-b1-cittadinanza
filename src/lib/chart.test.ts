@@ -29,6 +29,14 @@ describe('séries para o gráfico', () => {
     expect(series[0]?.id).toBe('a')
   })
 
+  it('ignora as sessões de estudo (o gráfico é das provas)', () => {
+    const series = buildScoreSeries([
+      session({ id: 'prova' }),
+      session({ id: 'estudo', mode: 'studio', score: 9, perSkill: { lettura: 9 } }),
+    ])
+    expect(series.map((point) => point.id)).toEqual(['prova'])
+  })
+
   it('ordena da mais antiga para a mais recente', () => {
     const series = buildScoreSeries([
       session({ id: 'novo', startedAt: 5000, completedAt: 6000, score: 40 }),

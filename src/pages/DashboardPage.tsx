@@ -1,33 +1,37 @@
-import { useMemo } from 'react'
-import type { Session, Attempt, Profile } from '../db/schemas'
+import { useMemo, useState } from 'react'
+import type { Session, Attempt, Profile, Level } from '../db/schemas'
 import { ReadinessCard } from '../components/ReadinessCard'
 import { PhaseCards } from '../components/PhaseCards'
 import { OnboardingChecklist } from '../components/OnboardingChecklist'
 import { Bug } from 'lucide-react'
 import { Card, CollapsibleCard, Stat } from '../components/ui'
 import { computeReadiness } from '../lib/readiness'
-import { computeDailyTask, computeRoadmap } from '../lib/roadmapCalculator'
+import { computeRoadmap } from '../lib/roadmapCalculator'
 import { buildSkillHistory } from '../services/sessions'
 import { formatDuration } from '../lib/timing'
+import { TOTAL_POINTS } from '../lib/scoring'
 import { buildOnboardingSteps, pendingSteps } from '../lib/onboarding'
+import { buildLevelProgress, buildTodayPlan, countOpenMistakes } from '../lib/studyPlan'
+import { readStudyLevel } from '../lib/studyLevel'
+import type { StudyRequest } from '../lib/study'
 import type { Route } from '../lib/routes'
 
 /**
- * Painel — o ecrã que responde a "se eu fizesse a prova amanhã, passaria?".
+ * Painel — o ecrã que responde a "o que faço hoje?".
  *
- * A ordem é intencional e simples:
- * 1. Primeiros passos (só enquanto houver coisas por fazer);
- * 2. Começar agora (o botão principal está no PRIMEIRO card);
- * 3. Tarefa de hoje;
- * 4. Prontidão (o veredito);
- * 5. Fases e histórico — em cards colapsáveis, para o painel não virar um
- *    muro de informação.
+ * A ordem é intencional:
+ * 1. **Tarefa de hoje** (o estudo + a revisão) — o botão principal começa a
+ *    sessão directamente, sem passar por outro ecrã;
+ * 2. **Provas e simulados** — o treino no formato do exame;
+ * 3. **Primeiros passos** — recolhido, só para quem está a configurar;
+ * 4. Prontidão, clínica de erros, fases e histórico.
  */
 export function DashboardPage({
   profile,
   sessions,
   attempts,
   onStart,
+  onStartStudy,
   onNavigate,
   hasBackup,
   hasSync,
@@ -36,10 +40,13 @@ export function DashboardPage({
   sessions: Session[]
   attempts: Attempt[]
   onStart: (mode: 'mock_cittadinanza' | 'ascolto' | 'lettura' | 'scrittura' | 'orale') => void
+  onStartStudy: (request: StudyRequest) => void
   onNavigate: (route: Route) => void
   hasBackup: boolean
   hasSync: boolean
 }) {
+  const [level] = useState<Level>(() => readStudyLevel())
+
   const history = useMemo(() => buildSkillHistory(sessions), [sessions])
   const readiness = useMemo(() => computeReadiness({ history }), [history])
   const roadmap = useMemo(
@@ -60,46 +67,96 @@ export function DashboardPage({
       }),
     [attempts, sessions, profile],
   )
-  const task = computeDailyTask(roadmap)
 
-  const completed = sessions.filter((session) => session.status === 'completed')
-  const best = completed.reduce((top, session) => Math.max(top, session.score ?? 0), 0)
+  // Só as provas contam para as estatísticas de exame; o estudo tem o seu
+  // próprio percurso (nível, precisão e evolução no Progresso).
+  const completedExams = sessions.filter(
+    (session) => session.status === 'completed' && session.mode !== 'studio',
+  )
+  const best = completedExams.reduce((top, session) => Math.max(top, session.score ?? 0), 0)
+
+  const levelProgress = useMemo(() => buildLevelProgress({ attempts }), [attempts])
+  const plan = useMemo(
+    () => buildTodayPlan({ attempts, sessions, level }),
+    [attempts, sessions, level],
+  )
 
   const onboarding = useMemo(
     () =>
       buildOnboardingSteps({
         examDate: profile?.examDate ?? '',
-        completedSessions: completed.length,
+        completedSessions: completedExams.length,
         hasBackup,
         hasSync,
       }),
-    [profile, completed.length, hasBackup, hasSync],
+    [profile, completedExams.length, hasBackup, hasSync],
   )
   const pending = pendingSteps(onboarding)
-
-  // Erros por rever (última tentativa errada, por pergunta).
-  const wrongQuestions = useMemo(() => {
-    const lastByQuestion = new Map<string, Attempt>()
-    for (const attempt of attempts) {
-      const current = lastByQuestion.get(attempt.questionId)
-      if (!current || attempt.timestamp >= current.timestamp) {
-        lastByQuestion.set(attempt.questionId, attempt)
-      }
-    }
-    return [...lastByQuestion.values()].filter((attempt) => !attempt.isCorrect).length
-  }, [attempts])
+  const wrongQuestions = useMemo(() => countOpenMistakes(attempts), [attempts])
 
   return (
     <div className="flex flex-col gap-4">
-      {pending.length > 0 ? (
-        <OnboardingChecklist steps={onboarding} onNavigate={onNavigate} />
-      ) : null}
-
-      {/* 1. Action-first: começar está no primeiro card */}
+      {/* 1. Tarefa de hoje — o primeiro cartão e o botão principal */}
       <Card>
-        <p className="text-xs font-black uppercase tracking-wide text-slate-500">Começar</p>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-xs font-black uppercase tracking-wide text-slate-500">Hoje</p>
+            <p className="mt-1 text-base font-black text-slate-900 dark:text-slate-100">
+              {plan.items[0]?.title}
+            </p>
+            <p className="mt-0.5 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
+              {plan.items[0]?.detail}
+            </p>
+          </div>
+          <span className="shrink-0 rounded-full bg-teal-100 px-2.5 py-1 text-xs font-black text-teal-900 dark:bg-teal-950/60 dark:text-teal-200">
+            {plan.items[0]?.minutes} min
+          </span>
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => onStartStudy({ level, kind: 'exercises' })}
+            className="rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-black text-white hover:bg-teal-800"
+          >
+            ▶️ {plan.items[0]?.cta}
+          </button>
+          {plan.items.slice(1).map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => {
+                if (item.id === 'mistakes') onNavigate('mistakes')
+                else onStart('mock_cittadinanza')
+              }}
+              className="rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-800 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-100"
+            >
+              {item.cta}
+            </button>
+          ))}
+        </div>
+
+        <p className="mt-2 text-[11px] font-semibold text-slate-500">
+          {`Nível ${level} · ${
+            levelProgress[level].answered > 0
+              ? `${levelProgress[level].accuracy}% de acerto em ${levelProgress[level].answered} respostas`
+              : 'ainda sem respostas — começa pelo básico'
+          }. O progresso do estudo aparece em Progresso.`}
+        </p>
+        {plan.recommendAdvance && plan.next ? (
+          <p className="mt-1 text-[11px] font-black text-emerald-700 dark:text-emerald-300">
+            Já dominas o {level} — podes subir para {plan.next} na Prática.
+          </p>
+        ) : null}
+      </Card>
+
+      {/* 2. Provas e simulados */}
+      <Card>
+        <p className="text-xs font-black uppercase tracking-wide text-slate-500">
+          Provas e simulados
+        </p>
         <p className="mt-1 text-base font-black text-slate-900 dark:text-slate-100">
-          O que queres treinar agora?
+          O que queres começar?
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <button
@@ -138,31 +195,22 @@ export function DashboardPage({
             🎤 Orale
           </button>
         </div>
-        <div className="mt-3 grid gap-2 sm:grid-cols-3">
-          <Stat label="Provas feitas" value={String(completed.length)} />
-          <Stat label="Melhor resultado" value={best > 0 ? `${best}/48` : '—'} />
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <Stat label="Provas feitas" value={String(completedExams.length)} />
+          <Stat label="Melhor resultado" value={best > 0 ? `${best}/${TOTAL_POINTS}` : '—'} />
           <Stat label="Perguntas respondidas" value={String(attempts.length)} />
         </div>
       </Card>
 
-      {/* 2. Tarefa de hoje */}
-      <Card>
-        <p className="text-xs font-black uppercase tracking-wide text-slate-500">Tarefa de hoje</p>
-        <p className="mt-1 text-base font-black text-slate-900 dark:text-slate-100">{task.title}</p>
-        <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">{task.detail}</p>
-        <button
-          type="button"
-          onClick={() => onNavigate('practice')}
-          className="mt-3 rounded-xl bg-slate-100 px-3 py-2 text-xs font-black text-slate-800 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-100"
-        >
-          🎲 Fazer o estudo de hoje (aleatório)
-        </button>
-      </Card>
+      {/* 3. Primeiros passos — recolhido por omissão */}
+      {pending.length > 0 ? (
+        <OnboardingChecklist steps={onboarding} onNavigate={onNavigate} />
+      ) : null}
 
-      {/* 3. O veredito */}
+      {/* 4. O veredito */}
       <ReadinessCard report={readiness} />
 
-      {/* 3-bis. Clínica de erros */}
+      {/* 5. Clínica de erros */}
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -188,7 +236,7 @@ export function DashboardPage({
         </div>
       </Card>
 
-      {/* 4. Fases (colapsável) */}
+      {/* 6. Fases (colapsável) */}
       <CollapsibleCard title="As 3 fases de preparação">
         <PhaseCards
           phases={roadmap.phases}
@@ -197,16 +245,16 @@ export function DashboardPage({
         />
       </CollapsibleCard>
 
-      {/* 5. Histórico (colapsável) */}
+      {/* 7. Histórico (colapsável) */}
       <CollapsibleCard title="Últimas provas">
-        {completed.length === 0 ? (
+        {completedExams.length === 0 ? (
           <p className="text-xs font-semibold text-slate-500">
             Ainda não há provas concluídas. Faz o simulado oficial de exemplo para teres a primeira
             leitura da tua pontuação.
           </p>
         ) : (
           <ul className="flex flex-col gap-1">
-            {[...completed]
+            {[...completedExams]
               .sort((a, b) => b.startedAt - a.startedAt)
               .slice(0, 5)
               .map((session) => (
@@ -216,7 +264,7 @@ export function DashboardPage({
                 >
                   <span className="truncate">{session.title || session.mode}</span>
                   <span className="tabular-nums text-slate-500">
-                    {session.score ?? 0}/48 · {formatDuration(session.totalTimeSeconds)}
+                    {session.score ?? 0}/{TOTAL_POINTS} · {formatDuration(session.totalTimeSeconds)}
                   </span>
                 </li>
               ))}

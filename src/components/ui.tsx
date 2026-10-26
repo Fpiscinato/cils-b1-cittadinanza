@@ -76,14 +76,17 @@ export function CollapsibleCard({
   title,
   icon,
   badge,
+  defaultOpen = false,
   children,
 }: {
   title: string
   icon?: ReactNode
   badge?: ReactNode
+  /** Abre já expandido (usa-se só na ação principal do ecrã). */
+  defaultOpen?: boolean
   children: ReactNode
 }) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(defaultOpen)
   return (
     <section className={cardClass}>
       <button

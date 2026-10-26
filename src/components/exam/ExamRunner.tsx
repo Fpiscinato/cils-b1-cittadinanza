@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react'
+import { AlertTriangle, ChevronRight } from 'lucide-react'
 import type { Passage, Question, Skill } from '../../db/schemas'
 import { Button } from '../ui'
 import { AnswerHelp } from './AnswerHelp'
@@ -9,6 +9,7 @@ import { OralPanel, type OralTopic } from './OralPanel'
 import { WritingPanel, type WritingPrompt } from './WritingPanel'
 import { formatDuration } from '../../lib/timing'
 import { scoreStageFromCounts } from '../../lib/scoring'
+import { buildStageCounts, type StageCounts } from '../../lib/stageCounts'
 
 export type Stage =
   | {
@@ -46,7 +47,16 @@ export type Stage =
     }
 
 export interface RunnerCallbacks {
-  onFinish: (perSkill: Record<string, number>, totalTimeSeconds: number) => void
+  /**
+   * Fim da sessão: pontuação por habilidade (escala 0-12) e, por habilidade,
+   * quantos itens saíram certos de quantos — é o que o estudo mostra ("acertaste
+   * 9 de 12") em vez de uma nota de prova que não se aplica.
+   */
+  onFinish: (
+    perSkill: Record<string, number>,
+    totalTimeSeconds: number,
+    counts: Partial<Record<Skill, StageCounts>>,
+  ) => void
   onAttempt: (
     question: Question,
     isCorrect: boolean,
@@ -90,6 +100,7 @@ export function ExamRunner({
   passages,
   callbacks,
   mode = 'practice',
+  timed = true,
 }: {
   stages: Stage[]
   passages: Map<string, Passage>
@@ -97,9 +108,11 @@ export function ExamRunner({
   /**
    * `exam` = como na prova a sério (o simulado): sem "aprende a resolver",
    * sem voltar atrás (section lock), sem repetir a resposta.
-   * `practice` = modo estudo, com explicação e retry.
+   * `practice` = modo estudo, com explicação e resposta fechada (sem retry).
    */
   mode?: 'exam' | 'practice'
+  /** `false` = estudo sem cronómetro (o tempo continua a ser medido). */
+  timed?: boolean
 }) {
   const isExam = mode === 'exam'
   const [stageIndex, setStageIndex] = useState(0)
@@ -112,6 +125,7 @@ export function ExamRunner({
   const [confirmStop, setConfirmStop] = useState(false)
 
   const correctByTask = useRef<Record<string, number>>({})
+  const correctById = useRef<Record<string, boolean>>({})
   const perSkill = useRef<Record<string, number>>({})
   const startedAt = useRef(Date.now())
   const questionStartedAt = useRef(Date.now())
@@ -126,7 +140,7 @@ export function ExamRunner({
   const question = questions[questionIndex] ?? null
 
   useEffect(() => {
-    if (finished) return
+    if (finished || !timed) return
     const timer = window.setInterval(() => {
       setSecondsLeft((value) => {
         if (value <= 1) {
@@ -137,15 +151,15 @@ export function ExamRunner({
       })
     }, 1000)
     return () => window.clearInterval(timer)
-  }, [finished, stageIndex])
+  }, [finished, stageIndex, timed])
 
   // Tempo esgotado: avança para a próxima prova (como no exame, sem penalização).
   useEffect(() => {
-    if (secondsLeft === 0 && !finished && stage) {
+    if (timed && secondsLeft === 0 && !finished && stage) {
       advanceStage()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [secondsLeft])
+  }, [secondsLeft, timed])
 
   const advanceStage = useCallback(() => {
     if (!stage) return
@@ -154,6 +168,7 @@ export function ExamRunner({
       callbacks.onFinish(
         { ...perSkill.current },
         Math.round((Date.now() - startedAt.current) / 1000),
+        buildStageCounts(stages, correctById.current),
       )
       return
     }
@@ -172,6 +187,7 @@ export function ExamRunner({
     const isCorrect = selected === question.correctIndex
     const seconds = Math.round((Date.now() - questionStartedAt.current) / 1000)
     answered.current.add(question.id)
+    correctById.current[question.id] = isCorrect
     correctByTask.current[question.taskId] =
       (correctByTask.current[question.taskId] ?? 0) + (isCorrect ? 1 : 0)
     callbacks.onAttempt(question, isCorrect, false, seconds, selected)
@@ -208,11 +224,6 @@ export function ExamRunner({
     questionStartedAt.current = Date.now()
   }
 
-  function handleRetry(): void {
-    setSelected(null)
-    setRevealed(false)
-  }
-
   if (finished) {
     return (
       <div className="rounded-2xl border border-teal-200 bg-teal-50 p-6 text-center dark:border-teal-800 dark:bg-teal-950/40">
@@ -243,12 +254,14 @@ export function ExamRunner({
           ) : null}
           <span
             className={`rounded-full px-2.5 py-1 text-xs font-black tabular-nums ${
-              secondsLeft <= 60
-                ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
-                : 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300'
+              !timed
+                ? 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-200'
+                : secondsLeft <= 60
+                  ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
+                  : 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300'
             }`}
           >
-            {formatDuration(secondsLeft)}
+            {timed ? formatDuration(secondsLeft) : 'sem tempo'}
           </span>
         </div>
       </header>
@@ -305,14 +318,15 @@ export function ExamRunner({
                 }}
                 index={questionIndex + 1}
                 total={questions.length}
+                revealed={revealed}
               />
             ) : null}
 
             {revealed && !isExam && question ? (
               <AnswerHelp
                 correct={selected === question.correctIndex}
+                correctAnswer={question.options[question.correctIndex] ?? ''}
                 explanation={question.explanation}
-                onRetry={handleRetry}
               />
             ) : null}
           </div>
@@ -351,15 +365,6 @@ export function ExamRunner({
         </Button>
         {stage.kind === 'objective' ? (
           <div className="flex items-center gap-2">
-            {isExam ? null : (
-              <Button
-                variant="secondary"
-                onClick={() => setQuestionIndex((index) => Math.max(0, index - 1))}
-                disabled={questionIndex === 0}
-              >
-                <ChevronLeft size={16} />
-              </Button>
-            )}
             {revealed ? (
               <Button onClick={handleNext}>
                 {questionIndex >= questions.length - 1 ? 'Terminar prova' : 'Próxima'}

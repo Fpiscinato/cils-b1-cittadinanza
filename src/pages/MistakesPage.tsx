@@ -88,15 +88,16 @@ export function MistakesPage({
       <ExamSession
         mode="studio"
         profileId={profileId}
+        title="Treino de erros"
         buildOptions={{
           bank: 'all',
           questionIds: mistakes.map((mistake) => mistake.question.id),
           shuffle: true,
         }}
+        onSaved={onCompleted}
         onExit={() => setTraining(false)}
         onCompleted={() => {
           setTraining(false)
-          onCompleted()
           onNavigate('dashboard')
         }}
       />

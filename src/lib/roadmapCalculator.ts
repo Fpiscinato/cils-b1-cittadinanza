@@ -102,7 +102,11 @@ export function computeRoadmap(input: RoadmapInput): RoadmapSnapshot {
   }
   const openMistakes = [...seen.values()].filter((value) => !value).length
 
-  const mocksDone = sessions.filter((session) => session.status === 'completed').length
+  // "Simulados completos" conta só o simulado completo — uma prática de
+  // estudo não é um simulado.
+  const mocksDone = sessions.filter(
+    (session) => session.status === 'completed' && session.mode === 'mock_cittadinanza',
+  ).length
 
   const foundationGoals: PhaseGoal[] = [
     { label: 'Perguntas respondidas', achieved: totalAnswered, target: 200, met: totalAnswered >= 200, unit: 'questions' },

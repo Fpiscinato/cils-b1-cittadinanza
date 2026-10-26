@@ -290,20 +290,22 @@ do Memoriza `src/lib/github-sync.ts`:
 | Módulo | Ficheiro | Papel |
 | --- | --- | --- |
 | Rotas | `src/lib/routes.ts` | Fonte única das rotas (`dashboard`, `practice`, `mock`, `progress`, `guide`, `settings`) lidas do hash — evita dependências circulares entre UI e lógica. |
-| Onboarding | `src/lib/onboarding.ts` + `src/components/OnboardingChecklist.tsx` | "O que faço agora?" — 5 passos mínimos derivados do estado real (data da prova, 1ª prática, 1º simulado, backup, sync). No painel mostra só os 3 primeiros pendentes (com "ver os N passos"). |
+| Onboarding | `src/lib/onboarding.ts` + `src/components/OnboardingChecklist.tsx` | "O que faço agora?" — 5 passos mínimos derivados do estado real (data da prova, 1ª prática, 1º simulado, backup, sync). No painel fica **recolhido** por omissão (com "Ver passos"). |
 | Tema | `src/lib/theme.ts` + `src/components/ThemeToggle.tsx` | Tema claro/escuro, com a escolha persistida e aplicada sem flash. |
 | Gráfico | `src/lib/chart.ts` + `src/components/ProgressChart.tsx` | Gráfico de evolução do score por abilità, desenhado em SVG (sem dependência nova). |
 | Guia | `src/pages/GuidePage.tsx` | Página de ajuda: como usar a app, como se preparar, o que levar para a prova. |
 | Sync | `src/services/gistSync.ts` + `src/components/SyncBadge.tsx` | Sync opcional por Gist (§5.4). |
 | Snapshots | `src/lib/snapshot.ts` + `src/services/snapshots.ts` | Cópias de segurança locais (§5.3). |
 | PWA | `src/App.tsx` + `src/components/UpdateBanner.tsx` | Registo do service worker e aviso de "nova versão" / "pronto para offline" (v1.0.2). |
-| Estudo por nível | `src/components/StudyPicker.tsx` + `src/data/studyBank.ts` | Quiz curto e **aleatório** por nível (A1/A2/B1) e por tipo de material (exercícios, ascolto, lettura). Vive dentro do ecrã de Prática. |
+| Estudo por nível | `src/components/StudyPicker.tsx` + `src/lib/studyPlan.ts` + `src/lib/studyLevel.ts` + `src/data/studyBank.ts` | Percurso A1 → A2 → B1: exercícios de apostila (completar frases e vocabulário), ascolto e lettura. O nível escolhido persiste em `localStorage`; o progresso usa respostas + precisão. Vive dentro do ecrã de Prática. |
+| Evolução do estudo | `src/components/StudyActivityChart.tsx` + `src/pages/ProgressPage.tsx` | Atividade dos últimos 14 dias (estudo / prática / simulado), percurso por nível, precisão e dias seguidos. |
 | Reset total | `src/services/wipe.ts` + Ajustes | Apagar TUDO do aparelho (com confirmação escrita "APAGAR"). |
 | Padrões de gramática | `src/data/grammarPatterns.ts` | 60 lacunas de gramática no formato da Prova 2 do CILS. |
 | Relatório da prova | `src/components/exam/ReportPage.tsx` + `src/services/reports.ts` | Rever a prova e imprimir/guardar em PDF para enviar à professora. |
 | Clínica de erros | `src/pages/MistakesPage.tsx` | Banco de erros (derivado de `attempts`) com a resposta certa e a explicação; treina só esses erros (`buildExam` com `questionIds`). |
 | Foglio delle risposte | `src/pages/AnswerSheetPage.tsx` | Folha de respostas A4 imprimível, com o layout do foglio oficial (4 provas + caixa de texto). |
 | Checklist de consegna | `src/components/exam/WritingPanel.tsx` | 5 critérios a rever antes de entregar a produção escrita. |
+| Fim da sessão de estudo | `src/lib/stageCounts.ts` + `src/components/exam/ExamSession.tsx` | O estudo termina com "acertaste X de Y" por habilidade (não com a nota /48 nem com as 4 habilidades da prova). O item não respondido conta como errado. |
 
 ## 6. GitHub + Cloudflare (deploy)
 
@@ -346,16 +348,18 @@ do Memoriza `src/lib/github-sync.ts`:
 1. **Um único runner.** `src/components/exam/ExamSession.tsx` (que usa o `ExamRunner.tsx` por baixo) é o **único** caminho de sessão
    (prática, clínica de erros, banco de erros e mock). Nunca criar um segundo runner — a
    consistência de layout, timer e footer fixo passa a ser **por construção**.
-2. **Tela de prática "action-first"**: o botão ▶️ Iniciar e o ⚡ Mix Rápido ficam no **primeiro
-   card**, com o resumo da seleção logo abaixo ("Italiano • Temas mistos • 10 questões").
-   O resto vive em cards **colapsáveis, fechados por padrão**.
+2. **Tela de prática "action-first"**: o cartão **Estudar** abre por omissão com o nível atual,
+   o tipo de material e o botão ▶️ Começar; as restantes opções (perguntas de prova, fases,
+   como funciona) ficam em cartões **colapsáveis e fechados**. O percurso é por nível
+   (A1 → A2 → B1): um nível fica dominado com 20 respostas e 80% de acerto.
 3. **Prática sem scroll**: coluna flex de altura fixa, header compacto (progresso / timer /
    abilità), área da pergunta com scroll, e **footer sempre visível** com o botão de confirmar.
    A página **nunca** rola em tablet ou laptop.
 4. **Timer congela na última resposta**: responder a última questão finaliza o relógio, para o
    tempo exibido e o tempo gravado serem idênticos.
-5. **Dois níveis de ajuda após erro**: "💡 Explicação rápida" (por que esta resposta está certa)
-   e "🧠 Aprenda a resolver" (o conceito, um método de 3 passos, a armadilha comum).
+5. **Resposta fechada após erro**: mostra-se a resposta certa e a explicação ("Porquê"), mas
+   **não** há "tentar de novo" nem voltar à pergunta anterior. A resposta confirmada não muda
+   (é assim na prova real; o treino é ler a explicação e seguir).
 6. **Uma única confirmação para parar**: um alertdialog com exatamente dois botões —
    "Continuar estudando" e "Encerrar sessão" — e a mensagem "As respostas já foram salvas".
 7. **O menu está SEMPRE visível**: no telemóvel é o menu inferior fixo (6 itens, aba ativa
@@ -368,6 +372,10 @@ do Memoriza `src/lib/github-sync.ts`:
 9. **Erros de conteúdo**: `childSafetyGuard` não se aplica (app adulto), mas vale o equivalente
    de **integridade de conteúdo**: nenhuma questão pode ter duas opções corretas, nenhum texto
    pode ficar invisível (mesma cor de fundo e de letra, em light **e** dark mode).
+10. **Estado fresco ao gravar a sessão**: `ExamSession` chama `onSaved` logo que a sessão fica
+    `completed` (antes de mostrar o resultado). Sem isso, quem termina a sessão e clica em
+    "Progresso" no menu via números antigos — o Painel e o Progresso só eram recarregados no
+    botão "Voltar ao painel".
 
 ### Extras específicos deste app
 
@@ -386,6 +394,14 @@ do Memoriza `src/lib/github-sync.ts`:
     (Dexie v3) e reproduzível no relatório da prova.
 13. **Readiness dashboard**: 4 barre di punteggio per abilità, media mobile, margine sul limiar,
     "abilità a rischio #1" e la regola di capitalizzazione in evidenza.
+14. **Percurso de estudo por nível** (A1 → A2 → B1): cartão "Estudar" aberto na Prática, com
+    exercícios de apostila (completar frases + vocabulário), ascolto e lettura. O estudo não
+    entra no veredito de prontidão (é exercício, não prova); a evolução dele vive no Progresso.
+15. **Uma prova é uma prova (18 itens), não o banco inteiro**: a prática de uma habilidade
+    (`ascolto` / `lettura`) usa o limite da configuração oficial (6+12 e 12+6) e baralha
+    **por task**, para o áudio de um texto não ser cortado a meio. O simulado continua a usar
+    o banco oficial na ordem oficial. Sem este limite, "Lettura" abria 629 perguntas com 40
+    minutos de cronómetro.
 
 ## 8. Standard di codice
 
@@ -393,7 +409,7 @@ do Memoriza `src/lib/github-sync.ts`:
 - Niente `TODO` / funzioni incomplete / placeholder: ogni deliverable è finito o non entra.
 - Zod per ogni dato che entra nel DB o da fuori (backup, import, config).
 - Testi Vitest per **tutta** la logica di business: `scoring`, `readiness`, `roadmap`,
-  `timing`, `wordCount`, `rubric`. Un bug no scoring reprova a aluna na prova real.
+  `timing`, `wordCount`, `rubric`, `studyPlan`, `stageCounts`, `examBuilder`. Un bug no scoring reprova a aluna na prova real.
 - Italiano nei **dati**, português nos **textos de interface**. Nomes de código em inglês.
 - Sem dependência de CDN em runtime. O app tem que funcionar **100% offline** depois do
   primeiro load (é uma PWA para studying em casa,UK, com internet instável).
@@ -404,7 +420,7 @@ do Memoriza `src/lib/github-sync.ts`:
 npm run dev            # vite dev
 npm run build          # tsc -b && vite build   <- único type-check confiável
 npm run lint           # oxlint
-npm run test           # vitest run  (92 testes em 12 ficheiros)
+npm run test           # vitest run  (115 testes em 14 ficheiros)
 npm run audit          # a porta de qualidade: audit:exam + audit:content + test
 npm run audit:exam     # a configuração das provas bate com a especificação oficial?
 npm run audit:content  # integridade do banco (opções, pesos, ordem) E o gabarito oficial do CILS

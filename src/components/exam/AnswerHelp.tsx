@@ -1,17 +1,21 @@
 import { Lightbulb } from 'lucide-react'
 
 /**
- * Dois níveis de ajuda depois de uma resposta errada (regra herdada do
- * ElevenSpark): a explicação rápida E o "aprende a resolver".
+ * Explicação depois de confirmar a resposta.
+ *
+ * Não existe "tentar de novo": a resposta fica fechada (é assim na prova e é
+ * assim que a explicação serve para alguma coisa). Mostra-se a resposta certa
+ * e o porquê.
  */
 export function AnswerHelp({
   correct,
+  correctAnswer,
   explanation,
-  onRetry,
 }: {
   correct: boolean
+  /** Texto da opção correta (para quem errou ver logo a resposta). */
+  correctAnswer: string
   explanation: string
-  onRetry: () => void
 }) {
   return (
     <div
@@ -24,21 +28,17 @@ export function AnswerHelp({
       <p className="text-sm font-black text-slate-900 dark:text-slate-100">
         {correct ? '✅ Correto!' : '❌ Não é essa.'}
       </p>
+      {!correct ? (
+        <p className="mt-1 text-xs font-black text-slate-800 dark:text-slate-100">
+          Resposta certa: <span className="text-emerald-700 dark:text-emerald-300">{correctAnswer}</span>
+        </p>
+      ) : null}
       <p className="mt-1 flex items-start gap-2 text-xs font-semibold leading-relaxed text-slate-700 dark:text-slate-200">
         <Lightbulb size={16} className="mt-0.5 shrink-0" />
         <span>
-          <strong className="font-black">Explicação rápida:</strong> {explanation}
+          <strong className="font-black">Porquê:</strong> {explanation}
         </span>
       </p>
-      {!correct ? (
-        <button
-          type="button"
-          onClick={onRetry}
-          className="mt-2 text-xs font-black text-teal-800 underline dark:text-teal-300"
-        >
-          🧠 Aprende a resolver → tentar de novo
-        </button>
-      ) : null}
     </div>
   )
 }

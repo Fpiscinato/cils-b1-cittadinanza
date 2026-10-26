@@ -38,6 +38,7 @@ export function MockPage({
         mode={mode}
         profileId={profileId}
         onReview={onReview}
+        onSaved={onCompleted}
         onExit={() => {
           setMode(null)
           onPendingConsumed()
@@ -45,7 +46,6 @@ export function MockPage({
         onCompleted={() => {
           setMode(null)
           onPendingConsumed()
-          onCompleted()
           onNavigate('dashboard')
         }}
       />

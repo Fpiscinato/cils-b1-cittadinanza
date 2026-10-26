@@ -13,6 +13,8 @@
  * OPÇÕES:
  * - `phase`: só o material de uma fase do plano de estudos;
  * - `level`: só o material de um nível (A1 / A2 / B1);
+ * - `origin`: `study` = só os exercícios de apostila/vocabulário (`taskId`
+ *   começado por `studio-`); `practice` = só o material no formato da prova;
  * - `shuffle` + `limit`: baralha os itens e fica só com N — é o que faz cada
  *   dia de estudo ser diferente (e o que permite repetir sem repetir sempre
  *   as mesmas perguntas).
@@ -35,10 +37,22 @@ export interface BuildOptions {
   level?: Level
   /** Só uma habilidade (usado pelo modo `studio`). */
   skill?: Skill
+  /**
+   * De onde vêm os itens:
+   * - `study`: o banco de estudo (exercícios de completar frases e vocabulário);
+   * - `practice`: o material de prática/prova (textos de escuta e leitura).
+   */
+  origin?: 'study' | 'practice'
   /** Só estes ids de pergunta (usado pela "clínica de erros"). */
   questionIds?: string[]
   /** Baralha os itens (a prática e o estudo são sempre aleatórios). */
   shuffle?: boolean
+  /**
+   * Mantém os itens da mesma task (o mesmo texto/áudio) juntos quando baralha.
+   * É o que a prática de uma habilidade usa: assim ouve-se um texto inteiro de
+   * seguida, em vez de saltar entre textos a cada pergunta.
+   */
+  groupByTask?: boolean
   /** Número máximo de itens por prova (o simulado completo não tem limite). */
   limit?: number
   /** Gerador de aleatoriedade injectável (para os testes). */
@@ -70,13 +84,20 @@ function filterQuestions(
   if (options.skill) {
     filtered = filtered.filter((question) => question.skill === options.skill)
   }
+  if (options.origin === 'study') {
+    filtered = filtered.filter((question) => question.taskId.startsWith('studio-'))
+  } else if (options.origin === 'practice') {
+    filtered = filtered.filter((question) => !question.taskId.startsWith('studio-'))
+  }
   if (options.questionIds && options.questionIds.length > 0) {
     const wanted = new Set(options.questionIds)
     filtered = filtered.filter((question) => wanted.has(question.id))
   }
 
   if (options.shuffle) {
-    filtered = shuffle(filtered, random)
+    filtered = options.groupByTask
+      ? shuffleTaskGroups(filtered, random)
+      : shuffle(filtered, random)
   } else {
     filtered = [...filtered].sort((a, b) => {
       if (a.taskId !== b.taskId) return a.taskId.localeCompare(b.taskId)
@@ -88,6 +109,26 @@ function filterQuestions(
     filtered = filtered.slice(0, options.limit)
   }
   return filtered
+}
+
+/**
+ * Baralha os grupos (tasks) e devolve os itens com os grupos contíguos.
+ * O `limit` é aplicado depois, por isso o último grupo pode ficar incompleto.
+ */
+function shuffleTaskGroups(questions: Question[], random: () => number): Question[] {
+  const groups = new Map<string, Question[]>()
+  for (const question of questions) {
+    const group = groups.get(question.taskId)
+    if (group) group.push(question)
+    else groups.set(question.taskId, [question])
+  }
+  const ordered: Question[] = []
+  for (const taskId of shuffle([...groups.keys()], random)) {
+    const group = groups.get(taskId)
+    if (!group) continue
+    ordered.push(...[...group].sort((a, b) => a.order - b.order))
+  }
+  return ordered
 }
 
 async function loadQuestions(
@@ -122,11 +163,27 @@ export async function buildExam(
   options: BuildOptions = {},
 ): Promise<BuiltExam | null> {
   const bank: ContentBank = options.bank ?? 'official'
-  const resolved: BuildOptions = { ...options, bank }
+  const config = EXAM_CONFIGS[mode]
   const passages = await db.passages.toArray()
   const passageMap = new Map(passages.map((passage) => [passage.id, passage]))
-  const config = EXAM_CONFIGS[mode]
   const stages: Stage[] = []
+
+  /**
+   * Uma "prova completa de uma habilidade" é uma prova a sério: 18 itens
+   * (ascolto: 6 + 12; lettura: 12 + 6) e não o banco inteiro (600+ itens). Sem
+   * este limite, clicar em "Lettura" abria uma sessão de 629 perguntas — com o
+   * cronómetro de 40 minutos.
+   */
+  const provaItemCount = config.tasks.reduce((sum, task) => sum + task.itemCount, 0)
+  const isSingleSkillPractice = mode === 'ascolto' || mode === 'lettura'
+  const practiceLimit = isSingleSkillPractice && provaItemCount > 0 ? provaItemCount : undefined
+  const resolved: BuildOptions = {
+    ...options,
+    bank,
+    limit: options.limit ?? practiceLimit,
+    shuffle: options.shuffle ?? practiceLimit !== undefined,
+    groupByTask: options.groupByTask ?? practiceLimit !== undefined,
+  }
 
   if (mode === 'ascolto' || mode === 'mock_cittadinanza') {
     const questions = await loadQuestions('ascolto', resolved)
@@ -168,8 +225,13 @@ export async function buildExam(
         kind: 'objective',
         id: 'studio',
         skill,
-        title: skill === 'ascolto' ? 'Studio — ascolto' : 'Studio — lettura e grammatica',
-        subtitle: '10-15 itens aleatorios · livello selezionato',
+        title:
+          options.origin === 'study'
+            ? 'Studio — esercizi'
+            : skill === 'ascolto'
+              ? 'Studio — ascolto'
+              : 'Studio — lettura e grammatica',
+        subtitle: 'Sem cronómetro · explicação depois de cada resposta',
         timeSeconds: config.timeSeconds,
         questions,
         audioByTask: skill === 'ascolto' ? audioByTask(passages, questions) : undefined,

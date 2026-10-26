@@ -29,7 +29,7 @@ function formatLabel(at: number): string {
 /** Provas concluídas, da mais antiga para a mais recente. */
 export function completedSessions(sessions: Session[]): Session[] {
   return sessions
-    .filter((session) => session.status === 'completed')
+    .filter((session) => session.status === 'completed' && session.mode !== 'studio')
     .sort((a, b) => sessionTimestamp(a) - sessionTimestamp(b))
 }
 
