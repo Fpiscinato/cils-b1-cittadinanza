@@ -19,6 +19,7 @@ import { readStudyLevel, storeStudyLevel } from '../lib/studyLevel'
 import { Button, Card, CollapsibleCard } from '../components/ui'
 import { EXAM_CONFIGS } from '../lib/exam'
 import type { BuildOptions } from '../lib/examBuilder'
+import { SESSION_KIND_THEME, type SessionKind } from '../lib/sessionSummary'
 import type { Attempt, ExamMode, Level, Phase } from '../db/schemas'
 import type { Route } from '../lib/routes'
 import { PHASE_FOCUS, PHASE_TITLES } from '../lib/phases'
@@ -66,8 +67,8 @@ export function PracticePage({
   onPendingConsumed: () => void
   /** Abra o relatório da prova (rever e enviar à professora). */
   onReview?: (sessionId: string) => void
-  /** Avisa o App de que há uma sessão a correr (para a barra "Continuar"). */
-  onSessionChange?: (active: boolean) => void
+  /** Avisa o App do tipo de sessão a correr (para a barra "Continuar" com a cor certa). */
+  onSessionChange?: (kind: SessionKind | null) => void
 }) {
   // A prova pedida noutra tela entra pelo estado inicial: a tela é montada
   // quando se chega do painel, por isso o arranque é imediato (sem flash).
@@ -107,10 +108,11 @@ export function PracticePage({
     onPendingConsumed()
   }, [pending, onPendingConsumed])
 
-  const inSession = (mode !== null || study !== null) && !finished
+  const sessionKind: SessionKind | null =
+    mode !== null && !finished ? 'practice' : study !== null && !finished ? 'study' : null
   useEffect(() => {
-    onSessionChange?.(inSession)
-  }, [inSession, onSessionChange])
+    onSessionChange?.(sessionKind)
+  }, [sessionKind, onSessionChange])
 
   function chooseLevel(next: Level): void {
     setLevel(next)
@@ -162,7 +164,10 @@ export function PracticePage({
           setFinished(true)
           onCompleted()
         }}
-        onExit={clearExam}
+        onExit={() => {
+          clearExam()
+          onCompleted()
+        }}
         onCompleted={() => {
           clearExam()
           onNavigate('dashboard')
@@ -177,7 +182,10 @@ export function PracticePage({
         mode="studio"
         profileId={profileId}
         buildOptions={buildStudyOptions(study)}
-        onExit={() => setStudy(null)}
+        onExit={() => {
+          setStudy(null)
+          onCompleted()
+        }}
         onSaved={() => {
           setFinished(true)
           onCompleted()
@@ -208,9 +216,24 @@ export function PracticePage({
           O que quer fazer hoje?
         </p>
         <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
-          Continue seu percurso por nível — ou treine perguntas no formato do exame. Só a
-          seção que você precisa fica aberta.
+          Aqui há duas atividades, cada uma com a sua cor: <strong>Estudo</strong> (apostila,
+          vocabulário e leitura do seu nível) e <strong>Prática</strong> (perguntas no formato da
+          prova, cronometradas). Só a seção que você precisa fica aberta.
         </p>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-black ${SESSION_KIND_THEME.study.chip}`}
+          >
+            <span className={`h-2 w-2 rounded-full ${SESSION_KIND_THEME.study.dot}`} /> Estudo —
+            apostila e palavras
+          </span>
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-black ${SESSION_KIND_THEME.practice.chip}`}
+          >
+            <span className={`h-2 w-2 rounded-full ${SESSION_KIND_THEME.practice.dot}`} /> Prática —
+            perguntas de prova
+          </span>
+        </div>
         <div className="mt-3 flex flex-wrap gap-2">
           <span className="rounded-full bg-teal-100 px-3 py-1 text-xs font-black text-teal-900 dark:bg-teal-950/60 dark:text-teal-200">
             Nível atual: {level}
@@ -238,8 +261,11 @@ export function PracticePage({
         defaultOpen
         icon={<GraduationCap size={16} />}
         badge={
-          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-600 dark:bg-slate-700 dark:text-slate-200">
-            {levelProgress[level].percent}%
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-black ${SESSION_KIND_THEME.study.chip}`}
+          >
+            <span className={`h-1.5 w-1.5 rounded-full ${SESSION_KIND_THEME.study.dot}`} />
+            Estudo · {levelProgress[level].percent}%
           </span>
         }
       >
@@ -254,7 +280,7 @@ export function PracticePage({
           type="button"
           onClick={() => setLearnOpen((value) => !value)}
           aria-expanded={learnOpen}
-          className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-teal-300 bg-teal-50 px-3 py-2.5 text-xs font-black text-teal-900 hover:bg-teal-100 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-200 dark:hover:bg-teal-950"
+          className={`mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-xl border px-3 py-2.5 text-xs font-black ${SESSION_KIND_THEME.study.border} ${SESSION_KIND_THEME.study.soft} ${SESSION_KIND_THEME.study.text} hover:opacity-90`}
         >
           <BookOpenCheck size={15} />
           {learnOpen ? 'Fechar as palavras' : `Aprender palavras de ${level} (com tradução)`}
@@ -271,8 +297,11 @@ export function PracticePage({
         title="Perguntas de prova"
         icon={<ClipboardCheck size={16} />}
         badge={
-          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-600 dark:bg-slate-700 dark:text-slate-200">
-            cronometrado
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-black ${SESSION_KIND_THEME.practice.chip}`}
+          >
+            <span className={`h-1.5 w-1.5 rounded-full ${SESSION_KIND_THEME.practice.dot}`} />
+            Prática · cronometrado
           </span>
         }
       >
@@ -284,7 +313,7 @@ export function PracticePage({
         <button
           type="button"
           onClick={startMix}
-          className="mt-3 w-full rounded-xl bg-teal-700 px-4 py-3 text-sm font-black text-white hover:bg-teal-800"
+          className={`mt-3 w-full rounded-xl px-4 py-3 text-sm font-black ${SESSION_KIND_THEME.practice.button}`}
         >
           <Dices size={16} className="mr-1 inline" /> Mix rápido — perguntas de {level}
         </button>
@@ -304,7 +333,7 @@ export function PracticePage({
                   setBuildOptions(undefined)
                   setMode(item)
                 }}
-                className="rounded-xl border border-slate-200 p-3 text-left transition hover:border-teal-500 dark:border-slate-700"
+                className="rounded-xl border border-slate-200 p-3 text-left transition hover:border-indigo-400 dark:border-slate-700"
               >
                 <p className="text-sm font-black text-slate-900 dark:text-slate-100">
                   {config.titlePt}

@@ -113,14 +113,20 @@ export function Stat({
   label,
   value,
   hint,
+  dot,
 }: {
   label: string
   value: string
   hint?: string
+  /** Bolinha da cor do tipo de sessão (estudo / prática / simulado). */
+  dot?: string
 }) {
   return (
     <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-700/50">
-      <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">{label}</p>
+      <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-slate-500">
+        {dot ? <span aria-hidden="true" className={`h-2 w-2 shrink-0 rounded-full ${dot}`} /> : null}
+        {label}
+      </p>
       <p className="text-xl font-black text-slate-900 dark:text-slate-100">{value}</p>
       {hint ? <p className="text-[11px] font-semibold text-slate-500">{hint}</p> : null}
     </div>

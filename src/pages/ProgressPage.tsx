@@ -9,6 +9,7 @@ import { buildSkillHistory } from '../services/sessions'
 import { computeReadiness, skillPercent } from '../lib/readiness'
 import { PASS_THRESHOLD_PER_SKILL, PASS_THRESHOLD_TOTAL, SKILL_LABELS, TOTAL_POINTS } from '../lib/scoring'
 import { averageTrackedTime, formatDuration } from '../lib/timing'
+import { SESSION_KIND_THEME } from '../lib/sessionSummary'
 import { buildScoreSeries, buildSkillSeries, summarizeSeries } from '../lib/chart'
 import {
   LEVEL_FOCUS,
@@ -64,6 +65,16 @@ export function ProgressPage({
         .filter((session) => session.status === 'completed' && session.mode !== 'studio')
         .sort((a, b) => b.startedAt - a.startedAt),
     [sessions],
+  )
+
+  const completedPractices = useMemo(
+    () => completedExams.filter((session) => session.mode !== 'mock_cittadinanza'),
+    [completedExams],
+  )
+
+  const completedMocks = useMemo(
+    () => completedExams.filter((session) => session.mode === 'mock_cittadinanza'),
+    [completedExams],
   )
 
   const studySessions = useMemo(
@@ -126,10 +137,22 @@ export function ProgressPage({
           Em cima você vê o estudo (exercícios, escuta e leitura). Mais abaixo ficam as notas das
           provas e simulados, que dizem se você passaria hoje.
         </p>
+        <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-black">
+          {(['study', 'practice', 'mock'] as const).map((kind) => (
+            <span key={kind} className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+              <span className={`h-2 w-2 rounded-full ${SESSION_KIND_THEME[kind].dot}`} />
+              {SESSION_KIND_THEME[kind].label}
+            </span>
+          ))}
+        </p>
       </Card>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label="Sessões de estudo" value={String(studySessions.length)} />
+        <Stat
+          label="Sessões de estudo"
+          value={String(studySessions.length)}
+          dot={SESSION_KIND_THEME.study.dot}
+        />
         <Stat label="Exercícios respondidos" value={String(studyAttempts.length)} />
         <Stat label="Precisão nos exercícios" value={`${studyAccuracy}%`} />
         <Stat
@@ -153,6 +176,8 @@ export function ProgressPage({
           <StudyActivityChart days={activity} />
         </div>
       </Card>
+
+      <SessionHistory sessions={sessions} attempts={attempts} onReview={onReview} />
 
       <Card>
         <p className="text-xs font-black uppercase tracking-wide text-slate-500">
@@ -190,14 +215,21 @@ export function ProgressPage({
         </div>
       </Card>
 
-      <SessionHistory sessions={sessions} attempts={attempts} onReview={onReview} />
-
       {/* Provas e simulados */}
       <p className="mt-2 text-xs font-black uppercase tracking-wide text-slate-500">
         Provas e simulados
       </p>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <Stat label="Provas concluídas" value={String(completedExams.length)} />
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Stat
+          label="Práticas concluídas"
+          value={String(completedPractices.length)}
+          dot={SESSION_KIND_THEME.practice.dot}
+        />
+        <Stat
+          label="Simulados concluídos"
+          value={String(completedMocks.length)}
+          dot={SESSION_KIND_THEME.mock.dot}
+        />
         <Stat label="Precisão global" value={`${accuracy}%`} />
         <Stat label="Tempo médio por pergunta" value={formatDuration(avgTime)} />
       </div>

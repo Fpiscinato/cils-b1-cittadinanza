@@ -15,6 +15,7 @@ import type { Theme } from '../lib/theme'
 import { SyncBadge } from './SyncBadge'
 import { ThemeToggle } from './ThemeToggle'
 import { APP_VERSION } from '../config/version'
+import { SESSION_KIND_THEME } from '../lib/sessionSummary'
 
 export type { Route } from '../lib/routes'
 
@@ -22,6 +23,10 @@ interface NavItem {
   id: Route
   label: string
   icon: ReactNode
+  /** Bolinhas das cores das atividades que vivem nesta tela. */
+  markers?: string[]
+  /** Texto de ajuda das bolinhas (tooltip). */
+  markerLabel?: string
 }
 
 /**
@@ -41,8 +46,20 @@ const EXTRA_NAV: NavItem[] = [
 
 const NAV: NavItem[] = [
   { id: 'dashboard', label: 'Painel', icon: <Target size={20} /> },
-  { id: 'practice', label: 'Prática', icon: <GraduationCap size={20} /> },
-  { id: 'mock', label: 'Simulado', icon: <ClipboardCheck size={20} /> },
+  {
+    id: 'practice',
+    label: 'Prática',
+    icon: <GraduationCap size={20} />,
+    markers: [SESSION_KIND_THEME.study.dot, SESSION_KIND_THEME.practice.dot],
+    markerLabel: 'Estudo (verde) + Prática (azul)',
+  },
+  {
+    id: 'mock',
+    label: 'Simulado',
+    icon: <ClipboardCheck size={20} />,
+    markers: [SESSION_KIND_THEME.mock.dot],
+    markerLabel: 'Simulado (âmbar)',
+  },
   { id: 'progress', label: 'Progresso', icon: <BarChart3 size={20} /> },
   { id: 'guide', label: 'Guia', icon: <BookOpen size={20} /> },
   { id: 'settings', label: 'Ajustes', icon: <Settings size={20} /> },
@@ -176,7 +193,22 @@ export function AppShell({
                       >
                         {item.icon}
                       </span>
-                      {item.label}
+                      <span className="min-w-0 flex-1 truncate text-left">{item.label}</span>
+                      {item.markers ? (
+                        <span
+                          className="flex shrink-0 items-center gap-1"
+                          title={item.markerLabel}
+                          aria-label={item.markerLabel}
+                        >
+                          {item.markers.map((marker) => (
+                            <span
+                              key={marker}
+                              aria-hidden="true"
+                              className={`h-1.5 w-1.5 rounded-full ${marker}`}
+                            />
+                          ))}
+                        </span>
+                      ) : null}
                     </button>
                   </li>
                 )
@@ -242,7 +274,20 @@ export function AppShell({
                   >
                     {item.icon}
                   </span>
-                  {item.label}
+                  <span className="flex items-center gap-1" title={item.markerLabel}>
+                    {item.label}
+                    {item.markers ? (
+                      <span className="flex items-center gap-0.5">
+                        {item.markers.map((marker) => (
+                          <span
+                            key={marker}
+                            aria-hidden="true"
+                            className={`h-1 w-1 rounded-full ${marker}`}
+                          />
+                        ))}
+                      </span>
+                    ) : null}
+                  </span>
                 </button>
               </li>
             )

@@ -9,6 +9,7 @@ import { computeReadiness } from '../lib/readiness'
 import { computeRoadmap } from '../lib/roadmapCalculator'
 import { buildSkillHistory } from '../services/sessions'
 import { formatDuration } from '../lib/timing'
+import { SESSION_KIND_THEME, sessionKind } from '../lib/sessionSummary'
 import { TOTAL_POINTS } from '../lib/scoring'
 import { buildOnboardingSteps, pendingSteps } from '../lib/onboarding'
 import { buildLevelProgress, buildTodayPlan, countOpenMistakes } from '../lib/studyPlan'
@@ -100,7 +101,15 @@ export function DashboardPage({
       <Card>
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0">
-            <p className="text-xs font-black uppercase tracking-wide text-slate-500">Hoje</p>
+            <p className="flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-wide text-slate-500">
+              Hoje
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-black normal-case tracking-normal ${SESSION_KIND_THEME.study.chip}`}
+              >
+                <span className={`h-1.5 w-1.5 rounded-full ${SESSION_KIND_THEME.study.dot}`} />
+                Estudo
+              </span>
+            </p>
             <p className="mt-1 text-base font-black text-slate-900 dark:text-slate-100">
               {plan.items[0]?.title}
             </p>
@@ -117,7 +126,7 @@ export function DashboardPage({
           <button
             type="button"
             onClick={() => onStartStudy({ level, kind: 'exercises' })}
-            className="rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-black text-white hover:bg-teal-800"
+            className={`rounded-xl px-4 py-2.5 text-sm font-black ${SESSION_KIND_THEME.study.button}`}
           >
             ▶️ {plan.items[0]?.cta}
           </button>
@@ -129,7 +138,7 @@ export function DashboardPage({
                 if (item.id === 'mistakes') onNavigate('mistakes')
                 else onStart('mock_cittadinanza')
               }}
-              className="rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-800 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-100"
+              className="rounded-xl bg-indigo-50 px-4 py-2.5 text-sm font-bold text-indigo-900 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:text-indigo-200 dark:hover:bg-indigo-950"
             >
               {item.cta}
             </button>
@@ -145,15 +154,27 @@ export function DashboardPage({
         </p>
         {plan.recommendAdvance && plan.next ? (
           <p className="mt-1 text-[11px] font-black text-emerald-700 dark:text-emerald-300">
-            Já dominas o {level} — pode subir para {plan.next} na Prática.
+            Você já domina o {level} — pode subir para {plan.next} na Prática.
           </p>
         ) : null}
       </Card>
 
       {/* 2. Provas e simulados */}
       <Card>
-        <p className="text-xs font-black uppercase tracking-wide text-slate-500">
+        <p className="flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-wide text-slate-500">
           Provas e simulados
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-black normal-case tracking-normal ${SESSION_KIND_THEME.mock.chip}`}
+          >
+            <span className={`h-1.5 w-1.5 rounded-full ${SESSION_KIND_THEME.mock.dot}`} />
+            Simulado
+          </span>
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-black normal-case tracking-normal ${SESSION_KIND_THEME.practice.chip}`}
+          >
+            <span className={`h-1.5 w-1.5 rounded-full ${SESSION_KIND_THEME.practice.dot}`} />
+            Prática
+          </span>
         </p>
         <p className="mt-1 text-base font-black text-slate-900 dark:text-slate-100">
           O que quer começar?
@@ -162,35 +183,35 @@ export function DashboardPage({
           <button
             type="button"
             onClick={() => onStart('mock_cittadinanza')}
-            className="rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-black text-white hover:bg-teal-800"
+            className={`rounded-xl px-4 py-2.5 text-sm font-black ${SESSION_KIND_THEME.mock.button}`}
           >
             ▶️ Simular exame completo
           </button>
           <button
             type="button"
             onClick={() => onStart('ascolto')}
-            className="rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-800 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-100"
+            className="rounded-xl bg-indigo-50 px-4 py-2.5 text-sm font-bold text-indigo-900 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:text-indigo-200 dark:hover:bg-indigo-950"
           >
             ⚡ Ascolto
           </button>
           <button
             type="button"
             onClick={() => onStart('lettura')}
-            className="rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-800 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-100"
+            className="rounded-xl bg-indigo-50 px-4 py-2.5 text-sm font-bold text-indigo-900 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:text-indigo-200 dark:hover:bg-indigo-950"
           >
             📖 Lettura
           </button>
           <button
             type="button"
             onClick={() => onStart('scrittura')}
-            className="rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-800 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-100"
+            className="rounded-xl bg-indigo-50 px-4 py-2.5 text-sm font-bold text-indigo-900 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:text-indigo-200 dark:hover:bg-indigo-950"
           >
             ✍️ Scrittura
           </button>
           <button
             type="button"
             onClick={() => onStart('orale')}
-            className="rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-800 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-100"
+            className="rounded-xl bg-indigo-50 px-4 py-2.5 text-sm font-bold text-indigo-900 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:text-indigo-200 dark:hover:bg-indigo-950"
           >
             🎤 Orale
           </button>
@@ -249,7 +270,7 @@ export function DashboardPage({
       <CollapsibleCard title="Últimas provas">
         {completedExams.length === 0 ? (
           <p className="text-xs font-semibold text-slate-500">
-            Ainda não há provas concluídas. Faça o simulado oficial de exemplo para teres a primeira
+            Ainda não há provas concluídas. Faça o simulado oficial de exemplo para ter a primeira
             leitura da sua pontuação.
           </p>
         ) : (
@@ -262,7 +283,15 @@ export function DashboardPage({
                   key={session.id}
                   className="flex items-center justify-between gap-2 text-xs font-bold text-slate-600 dark:text-slate-300"
                 >
-                  <span className="truncate">{session.title || session.mode}</span>
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span
+                      aria-hidden="true"
+                      className={`h-2 w-2 shrink-0 rounded-full ${
+                        SESSION_KIND_THEME[sessionKind(session.mode)].dot
+                      }`}
+                    />
+                    <span className="truncate">{session.title || session.mode}</span>
+                  </span>
                   <span className="tabular-nums text-slate-500">
                     {session.score ?? 0}/{TOTAL_POINTS} · {formatDuration(session.totalTimeSeconds)}
                   </span>
@@ -270,6 +299,13 @@ export function DashboardPage({
               ))}
           </ul>
         )}
+        <button
+          type="button"
+          onClick={() => onNavigate('progress')}
+          className="mt-3 inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1.5 text-[11px] font-black text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
+        >
+          Ver todas as sessões em Progresso →
+        </button>
       </CollapsibleCard>
     </div>
   )

@@ -5,6 +5,7 @@ import { ExamSession } from '../components/exam/ExamSession'
 import { Card, CollapsibleCard, Stat } from '../components/ui'
 import type { Attempt, Question } from '../db/schemas'
 import type { Route } from '../lib/routes'
+import type { SessionKind } from '../lib/sessionSummary'
 import { SKILL_LABELS } from '../lib/scoring'
 import { formatDuration } from '../lib/timing'
 
@@ -31,8 +32,8 @@ export function MistakesPage({
   profileId: string
   onNavigate: (route: Route) => void
   onCompleted: () => void
-  /** Avisa o App de que há um treino a correr (para a barra "Continuar"). */
-  onSessionChange?: (active: boolean) => void
+  /** Avisa o App do tipo de treino a correr (para a barra "Continuar" com a cor certa). */
+  onSessionChange?: (kind: SessionKind | null) => void
 }) {
   const [mistakes, setMistakes] = useState<Mistake[]>([])
   const [loading, setLoading] = useState(true)
@@ -41,7 +42,7 @@ export function MistakesPage({
 
   const inSession = training && mistakes.length > 0 && !finished
   useEffect(() => {
-    onSessionChange?.(inSession)
+    onSessionChange?.(inSession ? 'practice' : null)
   }, [inSession, onSessionChange])
 
   useEffect(() => {
@@ -110,6 +111,7 @@ export function MistakesPage({
         onExit={() => {
           setTraining(false)
           setFinished(false)
+          onCompleted()
         }}
         onCompleted={() => {
           setTraining(false)

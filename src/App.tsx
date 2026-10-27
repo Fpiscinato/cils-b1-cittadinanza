@@ -16,6 +16,7 @@ import { initializeDatabase } from './db/database'
 import { syncQuestionBank } from './db/seed'
 import { ensureDefaultProfile, getActiveProfileId } from './lib/admin'
 import { loadProfileHistory } from './services/sessions'
+import { SESSION_KIND_THEME, type SessionKind } from './lib/sessionSummary'
 import type { Attempt, Profile, Session } from './db/schemas'
 import { routeFromHash, type Route } from './lib/routes'
 import { applyTheme, prefersDark, readStoredTheme, storeTheme, type Theme } from './lib/theme'
@@ -43,7 +44,9 @@ export default function App() {
   const [pwaState, setPwaState] = useState<PwaBannerState>('none')
   const [pendingSession, setPendingSession] = useState<PendingSession | null>(null)
   const [reportSessionId, setReportSessionId] = useState<string | null>(null)
-  const [activeSessionRoute, setActiveSessionRoute] = useState<Route | null>(null)
+  const [activeSession, setActiveSession] = useState<{ route: Route; kind: SessionKind } | null>(
+    null,
+  )
   const updateWorker = useRef<((reload?: boolean) => Promise<void>) | null>(null)
   const autoSynced = useRef(false)
 
@@ -51,17 +54,23 @@ export default function App() {
    * Uma sessão a correr continua montada quando a aluna muda de aba (o menu
    * não pode fechar a prova). O aviso "Sessão em curso" leva-a de volta.
    */
-  const markPracticeSession = useCallback((active: boolean) => {
-    setActiveSessionRoute((current) =>
-      active ? 'practice' : current === 'practice' ? null : current,
+  const markPracticeSession = useCallback((kind: SessionKind | null) => {
+    setActiveSession((current) =>
+      kind
+        ? { route: 'practice', kind }
+        : current?.route === 'practice'
+          ? null
+          : current,
     )
   }, [])
-  const markMockSession = useCallback((active: boolean) => {
-    setActiveSessionRoute((current) => (active ? 'mock' : current === 'mock' ? null : current))
+  const markMockSession = useCallback((kind: SessionKind | null) => {
+    setActiveSession((current) =>
+      kind ? { route: 'mock', kind } : current?.route === 'mock' ? null : current,
+    )
   }, [])
-  const markMistakesSession = useCallback((active: boolean) => {
-    setActiveSessionRoute((current) =>
-      active ? 'mistakes' : current === 'mistakes' ? null : current,
+  const markMistakesSession = useCallback((kind: SessionKind | null) => {
+    setActiveSession((current) =>
+      kind ? { route: 'mistakes', kind } : current?.route === 'mistakes' ? null : current,
     )
   }, [])
 
@@ -369,13 +378,14 @@ export default function App() {
         />
       ) : null}
 
-      {activeSessionRoute && activeSessionRoute !== route ? (
+      {activeSession && activeSession.route !== route ? (
         <button
           type="button"
-          onClick={() => navigate(activeSessionRoute)}
-          className="fixed bottom-24 left-1/2 z-40 -translate-x-1/2 whitespace-nowrap rounded-full bg-sky-600 px-4 py-2.5 text-xs font-black text-white shadow-lg shadow-sky-900/30 hover:bg-sky-700 md:bottom-6"
+          onClick={() => navigate(activeSession.route)}
+          className={`fixed bottom-24 left-1/2 z-40 flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2.5 text-xs font-black shadow-lg md:bottom-6 ${SESSION_KIND_THEME[activeSession.kind].button}`}
         >
-          ⏱️ Sessão em curso — continuar
+          <span aria-hidden="true">⏱️</span>
+          Sessão em curso — continuar
         </button>
       ) : null}
 

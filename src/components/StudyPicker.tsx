@@ -4,6 +4,9 @@ import { LEVELS, type Level } from '../db/schemas'
 import { LEVEL_FOCUS, LEVEL_LABELS, nextLevel, type LevelProgress } from '../lib/studyPlan'
 import type { StudyKind, StudyRequest } from '../lib/study'
 import { Alert, ProgressBar } from './ui'
+import { SESSION_KIND_THEME } from '../lib/sessionSummary'
+
+const STUDY = SESSION_KIND_THEME.study
 
 /**
  * O percurso de estudo por nível (A1 → A2 → B1).
@@ -71,8 +74,8 @@ export function StudyPicker({
                 aria-pressed={active}
                 className={`rounded-xl border p-2.5 text-left transition ${
                   active
-                    ? 'border-teal-600 bg-teal-50 dark:bg-teal-950/30'
-                    : 'border-slate-200 hover:border-teal-400 dark:border-slate-700'
+                    ? `${STUDY.border} ${STUDY.soft}`
+                    : 'border-slate-200 hover:border-emerald-400 dark:border-slate-700'
                 }`}
               >
                 <span className="flex items-center justify-between gap-1">
@@ -113,14 +116,14 @@ export function StudyPicker({
                 aria-pressed={active}
                 className={`rounded-xl border p-2.5 text-left transition ${
                   active
-                    ? 'border-teal-600 bg-teal-50 dark:bg-teal-950/30'
-                    : 'border-slate-200 hover:border-teal-400 dark:border-slate-700'
+                    ? `${STUDY.border} ${STUDY.soft}`
+                    : 'border-slate-200 hover:border-emerald-400 dark:border-slate-700'
                 }`}
               >
                 <span
                   className={`flex h-7 w-7 items-center justify-center rounded-lg ${
                     active
-                      ? 'bg-teal-700 text-white'
+                      ? 'bg-emerald-700 text-white'
                       : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300'
                   }`}
                 >
@@ -158,7 +161,7 @@ export function StudyPicker({
       <button
         type="button"
         onClick={() => onStart({ level, kind })}
-        className="w-full rounded-xl bg-teal-700 px-4 py-3 text-sm font-black text-white hover:bg-teal-800"
+        className={`w-full rounded-xl px-4 py-3 text-sm font-black ${STUDY.button}`}
       >
         ▶️ Começar {kindLabel} de {level}
       </button>

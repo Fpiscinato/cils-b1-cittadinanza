@@ -419,9 +419,13 @@ do Memoriza `src/lib/github-sync.ts`:
     efeito. Enquanto há sessão a correr e a rota ativa é outra, aparece a barra fixa
     "⏱️ Sessão em curso — continuar", que volta ao ecrã da sessão sem a reiniciar.
 19. **Histórico do Progresso** (`src/components/SessionHistory.tsx` + `src/lib/sessionSummary.ts`):
-    uma linha por sessão concluída (Estudo, Prática ou Simulado) com a **bolinha da cor do
-    gráfico**, hora, cronómetro, acertos/erros e, nos simulados, o score por habilidade.
-    Agrupado **por dia** e recolhido: só os 2 dias mais recentes abrem; os antigos abrem num clique.
+    uma linha por sessão encerrada (Estudo, Prática ou Simulado) com a **cor do tipo**, hora,
+    cronómetro, acertos/erros e, nos simulados, o score por habilidade. O cartão abre **sempre
+    recolhido**: todos os dias fechados, cada um abre num clique, e há "Abrir todos". Os filtros
+    (Todas / Estudo / Prática / Simulado, com contagem) são também a legenda das cores e, ao
+    filtrar, os dias com esse tipo abrem já expandidos.
+    **Sessões interrompidas aparecem** (etiqueta "Interrompida" e nota "não conta como prova"):
+    o gráfico conta as respostas dadas, por isso escondê-las fazia o laranja/azul aparecer "do nada".
 20. **Legenda do gráfico clicável**: no "Evolução do estudo · 14 dias", cada cor (Estudo, Prática,
     Simulado) tem tooltip e, ao clicar/tocar, mostra a descrição exata do que conta.
 21. **Anti-repetição**: a prática e o estudo empurram para o fim (e por isso não escolhem enquanto
@@ -432,6 +436,12 @@ do Memoriza `src/lib/github-sync.ts`:
 22. **Áudio do ascolto na sequência certa**: o player aparece **antes** das opções, cada texto
     tem exatamente **2 reproduções** (o contador sobe no início da reprodução, não no fim), e a
     transcrição só é revelada **depois de confirmar a resposta**.
+23. **Uma cor por tipo de sessão, em todo o app** (`SESSION_KIND_THEME` em
+    `src/lib/sessionSummary.ts`): **verde = Estudo**, **azul-índigo = Prática**,
+    **âmbar = Simulado**. A mesma cor aparece no gráfico de 14 dias, no histórico, nas bolinhas do
+    menu (Prática tem duas: verde + azul), nas etiquetas das telas, na barra de progresso do
+    `ExamRunner` e na barra "Sessão em curso — continuar". Nunca usar o teal da marca para marcar
+    um tipo de atividade (era o que fazia Estudo e Prática parecerem iguais).
 
 ## 8. Standard di codice
 
@@ -450,7 +460,7 @@ do Memoriza `src/lib/github-sync.ts`:
 npm run dev            # vite dev
 npm run build          # tsc -b && vite build   <- único type-check confiável
 npm run lint           # oxlint
-npm run test           # vitest run  (122 testes em 15 ficheiros)
+npm run test           # vitest run  (124 testes em 15 ficheiros)
 npm run audit          # a porta de qualidade: audit:exam + audit:content + test
 npm run audit:exam     # a configuração das provas bate com a especificação oficial?
 npm run audit:content  # integridade do banco (opções, pesos, ordem) E o gabarito oficial do CILS

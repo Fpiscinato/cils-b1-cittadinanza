@@ -10,6 +10,7 @@ import { WritingPanel, type WritingPrompt } from './WritingPanel'
 import { formatDuration } from '../../lib/timing'
 import { scoreStageFromCounts } from '../../lib/scoring'
 import { buildStageCounts, type StageCounts } from '../../lib/stageCounts'
+import { SESSION_KIND_THEME } from '../../lib/sessionSummary'
 
 export type Stage =
   | {
@@ -80,7 +81,8 @@ export interface RunnerCallbacks {
   ) => void
   /** A gravação de áudio da prova oral (opcional). */
   onOralAudio?: (blob: Blob) => void
-  onAbort: () => void
+  /** Encerrar a sessão: recebe o tempo decorrido (para o histórico não mostrar 0:00). */
+  onAbort: (totalTimeSeconds: number) => void
 }
 
 /**
@@ -114,27 +116,20 @@ export function ExamRunner({
   mode?: 'exam' | 'practice'
   /** `false` = estudo sem cronómetro (o tempo continua a ser medido). */
   timed?: boolean
-  /** Cor da barra: estudo = verde, prática = azul, simulado = verde-escuro. */
+  /**
+   * Cor da sessão, sempre a mesma do histórico e dos menus:
+   * estudo = verde, prática = azul-índigo, simulado = âmbar.
+   */
   tone?: 'study' | 'practice' | 'exam'
 }) {
   const isExam = mode === 'exam'
+  const kind = tone === 'study' ? 'study' : tone === 'exam' ? 'mock' : 'practice'
+  const theme = SESSION_KIND_THEME[kind]
   const accent = {
-    study: {
-      done: 'bg-teal-600',
-      current: 'bg-teal-400',
-      chip: 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300',
-    },
-    practice: {
-      done: 'bg-sky-600',
-      current: 'bg-sky-400',
-      chip: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300',
-    },
-    exam: {
-      done: 'bg-teal-600',
-      current: 'bg-teal-400',
-      chip: 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300',
-    },
-  }[tone]
+    done: theme.bar,
+    current: theme.barSoft,
+    chip: theme.chip,
+  }
   const [stageIndex, setStageIndex] = useState(0)
   const [questionIndex, setQuestionIndex] = useState(0)
   const [selected, setSelected] = useState<number | null>(null)
@@ -246,7 +241,7 @@ export function ExamRunner({
 
   if (finished) {
     return (
-      <div className="rounded-2xl border border-teal-200 bg-teal-50 p-6 text-center dark:border-teal-800 dark:bg-teal-950/40">
+      <div className={`rounded-2xl border p-6 text-center ${theme.border} ${theme.soft}`}>
         <p className="text-lg font-black text-slate-900 dark:text-slate-100">Prova terminada ✅</p>
       </div>
     )
@@ -427,7 +422,12 @@ export function ExamRunner({
               voltar a treinar quando quiser.
             </p>
             <div className="mt-4 flex flex-col gap-2 sm:flex-row-reverse">
-              <Button variant="danger" onClick={() => callbacks.onAbort()}>
+              <Button
+                variant="danger"
+                onClick={() =>
+                  callbacks.onAbort(Math.round((Date.now() - startedAt.current) / 1000))
+                }
+              >
                 Encerrar sessão
               </Button>
               <Button variant="secondary" onClick={() => setConfirmStop(false)}>

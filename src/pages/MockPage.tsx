@@ -6,6 +6,7 @@ import { EXAM_CONFIGS } from '../lib/exam'
 import type { ExamMode } from '../db/schemas'
 import type { Route } from '../lib/routes'
 import type { PendingSession } from './PracticePage'
+import { SESSION_KIND_THEME, type SessionKind } from '../lib/sessionSummary'
 
 /**
  * Página de simulados. O simulado completo replica a prova escrita real:
@@ -28,8 +29,8 @@ export function MockPage({
   pending: PendingSession | null
   onPendingConsumed: () => void
   onReview?: (sessionId: string) => void
-  /** Avisa o App de que há uma sessão a correr (para a barra "Continuar"). */
-  onSessionChange?: (active: boolean) => void
+  /** Avisa o App do tipo de sessão a correr (para a barra "Continuar" com a cor certa). */
+  onSessionChange?: (kind: SessionKind | null) => void
 }) {
   const [mode, setMode] = useState<ExamMode | null>(
     pending?.mode === 'mock_cittadinanza' ? 'mock_cittadinanza' : null,
@@ -45,7 +46,7 @@ export function MockPage({
   }, [pending, onPendingConsumed])
 
   useEffect(() => {
-    onSessionChange?.(mode !== null && !finished)
+    onSessionChange?.(mode !== null && !finished ? 'mock' : null)
   }, [mode, finished, onSessionChange])
 
   if (mode) {
@@ -62,6 +63,7 @@ export function MockPage({
           setMode(null)
           setFinished(false)
           onPendingConsumed()
+          onCompleted()
         }}
         onCompleted={() => {
           setMode(null)
@@ -84,11 +86,25 @@ export function MockPage({
         >
           <ArrowLeft size={14} /> Voltar ao painel
         </button>
-        <p className="text-xs font-black uppercase tracking-wide text-slate-500">Simulado completo</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-xs font-black uppercase tracking-wide text-slate-500">
+            Simulado completo
+          </p>
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-black ${SESSION_KIND_THEME.mock.chip}`}
+          >
+            <span className={`h-2 w-2 rounded-full ${SESSION_KIND_THEME.mock.dot}`} /> Simulado
+          </span>
+        </div>
         <p className="mt-1 text-base font-black text-slate-900 dark:text-slate-100">{full.titlePt}</p>
         <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">{full.subtitlePt}</p>
         <p className="mt-2 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
           {full.blurbPt}
+        </p>
+        <p className="mt-1 text-[11px] font-semibold leading-relaxed text-slate-500">
+          O simulado é sempre <strong className="text-amber-700 dark:text-amber-300">âmbar</strong> em
+          todo o app (gráfico, histórico e menus) — é a única atividade que conta para o veredito de
+          prontidão.
         </p>
         <button
           type="button"
@@ -96,7 +112,7 @@ export function MockPage({
             setFinished(false)
             setMode('mock_cittadinanza')
           }}
-          className="mt-3 w-full rounded-xl bg-teal-700 px-4 py-3 text-sm font-black text-white hover:bg-teal-800 sm:w-auto"
+          className={`mt-3 w-full rounded-xl px-4 py-3 text-sm font-black sm:w-auto ${SESSION_KIND_THEME.mock.button}`}
         >
           ▶️ Começar o simulado completo
         </button>
@@ -133,7 +149,7 @@ export function MockPage({
                   setFinished(false)
                   setMode(item)
                 }}
-                className="rounded-xl border border-slate-200 p-3 text-left transition hover:border-teal-500 dark:border-slate-700"
+                className="rounded-xl border border-slate-200 p-3 text-left transition hover:border-amber-400 dark:border-slate-700"
               >
                 <p className="text-sm font-black text-slate-900 dark:text-slate-100">
                   {config.titlePt}

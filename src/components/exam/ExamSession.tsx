@@ -14,6 +14,7 @@ import {
 } from '../../services/sessions'
 import { saveOral, saveWriting } from '../../services/productions'
 import { evaluateExam, SKILL_LABELS } from '../../lib/scoring'
+import { SESSION_KIND_THEME } from '../../lib/sessionSummary'
 
 /**
  * Título legível de uma sessão de estudo (aparece no histórico e no relatório).
@@ -128,6 +129,7 @@ export function ExamSession({
   if (result) {
     const isStudy = mode === 'studio'
     const isMock = mode === 'mock_cittadinanza'
+    const theme = SESSION_KIND_THEME[isStudy ? 'study' : isMock ? 'mock' : 'practice']
     const studyRows = Object.entries(counts)
     const studyCorrect = studyRows.reduce((sum, [, entry]) => sum + entry.correct, 0)
     const studyTotal = studyRows.reduce((sum, [, entry]) => sum + entry.total, 0)
@@ -144,7 +146,10 @@ export function ExamSession({
       (entry) => isMock || practicedSkills.includes(entry.skill),
     )
     return (
-      <Card className="flex flex-col gap-3">
+      <Card className={`flex flex-col gap-3 border-l-4 ${theme.border}`}>
+        <p className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-slate-500">
+          <span className={`h-2 w-2 rounded-full ${theme.dot}`} /> {theme.label}
+        </p>
         <h2 className="text-lg font-black text-slate-900 dark:text-slate-100">
           {isStudy
             ? 'Sessão de estudo terminada ✅'
@@ -154,7 +159,7 @@ export function ExamSession({
         </h2>
         {isStudy ? (
           <>
-            <p className="text-3xl font-black tabular-nums text-teal-700 dark:text-teal-300">
+            <p className={`text-3xl font-black tabular-nums ${theme.text}`}>
               {studyCorrect} de {studyTotal}
             </p>
             <p className="text-xs font-bold text-slate-600 dark:text-slate-300">
@@ -283,9 +288,11 @@ export function ExamSession({
               timeSpentSeconds: seconds,
             })
           },
-          onAbort: () => {
-            void abandonSession(sessionId, 0)
-            onExit()
+          onAbort: (totalTimeSeconds) => {
+            // Só sai depois de gravar: se saísse antes, o App recarregava o
+            // histórico antes de a sessão ficar "abandonada" no banco e o
+            // Progresso aparecia vazio até recarregar a página.
+            void abandonSession(sessionId, totalTimeSeconds).then(() => onExit())
           },
         }}
       />

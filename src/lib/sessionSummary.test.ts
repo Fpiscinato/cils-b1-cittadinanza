@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 import type { Attempt, Session } from '../db/schemas'
 import {
   buildSessionSummaries,
+  countSessionsByKind,
   groupSummariesByDay,
+  kindsInGroup,
   sessionKind,
 } from './sessionSummary'
 
@@ -63,9 +65,44 @@ describe('resumo das sessões', () => {
     expect(s2).toMatchObject({ kind: 'practice', correct: 0, wrong: 1, answered: 1 })
   })
 
-  it('ignora sessões não concluídas', () => {
+  it('ignora sessões ainda a decorrer', () => {
     const open = { ...session('open', 'lettura', NOW), status: 'in_progress' as const }
     expect(buildSessionSummaries([open], [])).toEqual([])
+  })
+
+  it('mostra as sessões interrompidas, marcadas como não concluídas', () => {
+    const abandoned = {
+      ...session('parada', 'mock_cittadinanza', NOW),
+      status: 'abandoned' as const,
+      score: null,
+    }
+    const summaries = buildSessionSummaries(
+      [abandoned],
+      [attempt('parada', true, 1), attempt('parada', false, 2)],
+    )
+    expect(summaries).toHaveLength(1)
+    expect(summaries[0]).toMatchObject({
+      kind: 'mock',
+      completed: false,
+      correct: 1,
+      wrong: 1,
+    })
+  })
+
+  it('conta as sessões por tipo e os tipos de cada dia', () => {
+    const summaries = buildSessionSummaries(
+      [
+        session('estudo', 'studio', NOW),
+        session('pratica', 'lettura', NOW - 1000),
+        session('simulado', 'mock_cittadinanza', NOW - 2000),
+        session('outro-estudo', 'studio', NOW - DAY),
+      ],
+      [],
+    )
+    expect(countSessionsByKind(summaries)).toEqual({ study: 2, practice: 1, mock: 1 })
+    const groups = groupSummariesByDay(summaries, NOW)
+    expect(kindsInGroup(groups[0]?.summaries ?? [])).toEqual(['study', 'practice', 'mock'])
+    expect(kindsInGroup(groups[1]?.summaries ?? [])).toEqual(['study'])
   })
 
   it('agrupa por dia, mais recente primeiro, com Hoje e Ontem', () => {
