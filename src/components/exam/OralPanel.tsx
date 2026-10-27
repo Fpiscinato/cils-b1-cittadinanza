@@ -26,13 +26,13 @@ type RecordState = 'idle' | 'recording' | 'ready' | 'error'
 /**
  * Painel da prova oral.
  *
- * A prova real é INDIVIDUAL e registada: 1 minuto de apresentação pessoal
- * (com as perguntas fixas do examiner) + 2 a 3 minutos de CONVERSA (não monólogo)
+ * A prova real é INDIVIDUAL e registrada: 1 minuto de apresentação pessoal
+ * (com as perguntas fixas do examinador) + 2 a 3 minutos de CONVERSA (não monólogo)
  * sobre um tema que a candidata escolhe. Aqui simulamos com timers e a grelha
  * oficial de 4 critérios.
  *
  * A GRAVAÇÃO é real (MediaRecorder): pede o microfone, grava, deixa ouvir e
- * descarregar o ficheiro. É opcional — na prova real o examiner regista a voz.
+ * baixar o arquivo. É opcional — na prova real o examinador registra a voz.
  */
 export function OralPanel({
   topics,
@@ -88,7 +88,7 @@ export function OralPanel({
     if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
       setRecordState('error')
       setRecordError(
-        'Este browser não permite gravar áudio. Abre a app em https (ou em localhost) e volta a tentar.',
+        'Este browser não permite gravar áudio. Abra a app em https (ou em localhost) e volta a tentar.',
       )
       return
     }
@@ -115,7 +115,7 @@ export function OralPanel({
       }
       recorder.onerror = () => {
         setRecordState('error')
-        setRecordError('A gravação falhou. Verifica as permissões do microfone.')
+        setRecordError('A gravação falhou. Verifique as permissões do microfone.')
         stream.getTracks().forEach((track) => track.stop())
       }
 
@@ -128,7 +128,7 @@ export function OralPanel({
       setRecordError(
         cause instanceof DOMException && cause.name === 'NotAllowedError'
           ? 'Permissão de microfone recusada. Permite o microfone nas definições do site para gravar.'
-          : 'Não foi possível aceder ao microfone. Tenta outra vez.',
+          : 'Não foi possível aceder ao microfone. Tente outra vez.',
       )
     }
   }
@@ -143,9 +143,9 @@ export function OralPanel({
   if (submitted) {
     return (
       <div className="rounded-xl border border-emerald-300 bg-emerald-50 p-4 dark:border-emerald-700 dark:bg-emerald-950/40">
-        <p className="text-base font-black text-slate-900 dark:text-slate-100">Prova oral registada ✅</p>
+        <p className="text-base font-black text-slate-900 dark:text-slate-100">Prova oral registrada ✅</p>
         <p className="mt-1 text-xs font-semibold text-slate-700 dark:text-slate-200">
-          Na prova real o examiner ouve-te e preenche a grelha oficial. Confere a tua auto-avaliação
+          Na prova real o examinador ouve você e preenche a grelha oficial. Confira a sua autoavaliação
           e repete com outro tema.
         </p>
       </div>
@@ -227,13 +227,13 @@ export function OralPanel({
               download="prova-oral-cils-b1.webm"
               className="inline-flex items-center gap-1.5 self-start rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-black text-slate-700 shadow-sm hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-200"
             >
-              <Download size={13} /> Guardar a gravação
+              <Download size={13} /> Salvar a gravação
             </a>
           </div>
         ) : null}
 
         <p className="mt-2 text-[11px] font-semibold text-slate-500">
-          A gravação é opcional e fica só neste dispositivo — na prova real o examiner regista a tua
+          A gravação é opcional e fica só neste dispositivo — na prova real o examinador registra a sua
           voz.
         </p>
       </div>

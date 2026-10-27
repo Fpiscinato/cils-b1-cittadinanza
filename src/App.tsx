@@ -43,8 +43,27 @@ export default function App() {
   const [pwaState, setPwaState] = useState<PwaBannerState>('none')
   const [pendingSession, setPendingSession] = useState<PendingSession | null>(null)
   const [reportSessionId, setReportSessionId] = useState<string | null>(null)
+  const [activeSessionRoute, setActiveSessionRoute] = useState<Route | null>(null)
   const updateWorker = useRef<((reload?: boolean) => Promise<void>) | null>(null)
   const autoSynced = useRef(false)
+
+  /**
+   * Uma sessão a correr continua montada quando a aluna muda de aba (o menu
+   * não pode fechar a prova). O aviso "Sessão em curso" leva-a de volta.
+   */
+  const markPracticeSession = useCallback((active: boolean) => {
+    setActiveSessionRoute((current) =>
+      active ? 'practice' : current === 'practice' ? null : current,
+    )
+  }, [])
+  const markMockSession = useCallback((active: boolean) => {
+    setActiveSessionRoute((current) => (active ? 'mock' : current === 'mock' ? null : current))
+  }, [])
+  const markMistakesSession = useCallback((active: boolean) => {
+    setActiveSessionRoute((current) =>
+      active ? 'mistakes' : current === 'mistakes' ? null : current,
+    )
+  }, [])
 
   const refresh = useCallback(async () => {
     const profileId = getActiveProfileId()
@@ -71,14 +90,14 @@ export default function App() {
 
     async function bootstrap() {
       applyTheme(readStoredTheme())
-      // O arranque não pode ficar eternamente no "A carregar…": se a base de
+      // O arranque não pode ficar eternamente no "Carregando…": se a base de
       // dados estiver bloqueada (outro separador com a versão antiga da app
       // aberta) ou a semear o conteúdo falhar, mostramos o erro e deixamos
       // a aluna tentar de novo.
       const timeout = window.setTimeout(() => {
         if (!cancelled) {
           setBootError(
-            'A app está a demorar a abrir. Se tens outro separador desta app aberto, fecha-o e toca em "Tentar de novo".',
+            'O app está demorando a abrir. Se você tem outra aba deste app aberta, feche-a e toque em "Tentar de novo".',
           )
         }
       }, 15000)
@@ -132,13 +151,13 @@ export default function App() {
   }, [theme])
 
   /* ---------------------------------------------------------------------- */
-  /* PWA — registo do service worker                                        */
+  /* PWA — registro do service worker                                        */
   /* ---------------------------------------------------------------------- */
 
   /**
    * O `vite-plugin-pwa` está configurado com `injectRegister: null`: o
-   * registo é feito aqui, para a app controlar a mensagem de "nova versão".
-   * Sem este registo a app NÃO funciona offline — o requisito do projeto.
+   * registro é feito aqui, para a app controlar a mensagem de "nova versão".
+   * Sem este registro a app NÃO funciona offline — o requisito do projeto.
    */
   useEffect(() => {
     if (import.meta.env.DEV) return
@@ -164,7 +183,7 @@ export default function App() {
   }, [])
 
   function navigate(next: Route): void {
-    // Um pedido de prova só vale para a entrada immediate: ao sair do ecrã
+    // Um pedido de prova só vale para a entrada immediate: ao sair da tela
     // que o recebeu, o pedido é limpo.
     if (next !== 'practice' && next !== 'mock') setPendingSession(null)
     window.location.hash = `#/${next}`
@@ -219,7 +238,7 @@ export default function App() {
             </button>
           </>
         ) : (
-          <p className="text-sm font-bold text-slate-500">A carregar…</p>
+          <p className="text-sm font-bold text-slate-500">Carregando…</p>
         )}
       </div>
     )
@@ -259,7 +278,7 @@ export default function App() {
             navigate(mode === 'mock_cittadinanza' ? 'mock' : 'practice')
           }}
           onStartStudy={(request) => {
-            // A tarefa do dia começa o estudo DIRECTAMENTE no ecrã de prática.
+            // A tarefa do dia começa o estudo DIRECTAMENTE na tela de prática.
             setPendingSession({ mode: 'studio', buildOptions: buildStudyOptions(request) })
             navigate('practice')
           }}
@@ -267,7 +286,7 @@ export default function App() {
         />
       ) : null}
 
-      {route === 'practice' ? (
+      <div className={route === 'practice' ? '' : 'hidden'}>
         <PracticePage
           profileId={profileId}
           attempts={attempts}
@@ -275,26 +294,28 @@ export default function App() {
           onNavigate={navigate}
           pending={pendingSession}
           onPendingConsumed={() => setPendingSession(null)}
+          onSessionChange={markPracticeSession}
           onReview={(sessionId) => {
             setReportSessionId(sessionId)
             navigate('report')
           }}
         />
-      ) : null}
+      </div>
 
-      {route === 'mock' ? (
+      <div className={route === 'mock' ? '' : 'hidden'}>
         <MockPage
           profileId={profileId}
           onCompleted={() => void afterSession()}
           onNavigate={navigate}
           pending={pendingSession}
           onPendingConsumed={() => setPendingSession(null)}
+          onSessionChange={markMockSession}
           onReview={(sessionId) => {
             setReportSessionId(sessionId)
             navigate('report')
           }}
         />
-      ) : null}
+      </div>
 
       {route === 'progress' ? (
         <ProgressPage
@@ -308,13 +329,14 @@ export default function App() {
         />
       ) : null}
 
-      {route === 'mistakes' ? (
+      <div className={route === 'mistakes' ? '' : 'hidden'}>
         <MistakesPage
           profileId={profileId}
           onNavigate={navigate}
           onCompleted={() => void afterSession()}
+          onSessionChange={markMistakesSession}
         />
-      ) : null}
+      </div>
 
       {route === 'foglio' ? <AnswerSheetPage onNavigate={navigate} /> : null}
 
@@ -345,6 +367,16 @@ export default function App() {
           syncStatus={displaySyncStatus}
           onSyncNow={runSync}
         />
+      ) : null}
+
+      {activeSessionRoute && activeSessionRoute !== route ? (
+        <button
+          type="button"
+          onClick={() => navigate(activeSessionRoute)}
+          className="fixed bottom-24 left-1/2 z-40 -translate-x-1/2 whitespace-nowrap rounded-full bg-sky-600 px-4 py-2.5 text-xs font-black text-white shadow-lg shadow-sky-900/30 hover:bg-sky-700 md:bottom-6"
+        >
+          ⏱️ Sessão em curso — continuar
+        </button>
       ) : null}
 
       <UpdateBanner

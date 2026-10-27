@@ -1,7 +1,7 @@
 /**
  * Snapshots locais de segurança (o "undo" do dia a dia).
  *
- * A app é offline-first: o histórico vive no IndexedDB deste aparelho. Se o
+ * A app é offline-first: o histórico vive no IndexedDB deste dispositivo. Se o
  * browser limpar os dados, perde-se tudo. Por isso, de tempos em tempos, o
  * progresso é copiado para `localStorage` (que sobrevive ao "limpar dados do
  * site" na maioria dos browsers) e pode ser restaurado a partir dos Ajustes.
@@ -72,7 +72,7 @@ export async function createSnapshotNow(): Promise<SnapshotMeta> {
 
 /**
  * Restaura um snapshot.
- * O merge é "o registo mais novo vence" — restaurar um snapshot antigo nunca
+ * O merge é "o registro mais novo vence" — restaurar um snapshot antigo nunca
  * apaga trabalho mais recente.
  */
 export async function restoreSnapshot(id: string): Promise<{ added: number; updated: number }> {
@@ -113,11 +113,11 @@ export async function restoreSnapshot(id: string): Promise<{ added: number; upda
   }
 }
 
-/** Valida um texto de snapshot (usado quando se importa um ficheiro à mão). */
+/** Valida um texto de snapshot (usado quando se importa um arquivo à mão). */
 export function parseSnapshotPayload(text: string): SnapshotPayload {
   const parsed = snapshotPayloadSchema.safeParse(JSON.parse(text))
   if (!parsed.success) {
-    throw new Error('Esse ficheiro não é um snapshot válido do CILS B1.')
+    throw new Error('Esse arquivo não é um snapshot válido do CILS B1.')
   }
   return parsed.data
 }

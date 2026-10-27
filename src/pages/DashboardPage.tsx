@@ -17,11 +17,11 @@ import type { StudyRequest } from '../lib/study'
 import type { Route } from '../lib/routes'
 
 /**
- * Painel — o ecrã que responde a "o que faço hoje?".
+ * Painel — a tela que responde a "o que faço hoje?".
  *
  * A ordem é intencional:
  * 1. **Tarefa de hoje** (o estudo + a revisão) — o botão principal começa a
- *    sessão directamente, sem passar por outro ecrã;
+ *    sessão directamente, sem passar por outra tela;
  * 2. **Provas e simulados** — o treino no formato do exame;
  * 3. **Primeiros passos** — recolhido, só para quem está a configurar;
  * 4. Prontidão, clínica de erros, fases e histórico.
@@ -140,12 +140,12 @@ export function DashboardPage({
           {`Nível ${level} · ${
             levelProgress[level].answered > 0
               ? `${levelProgress[level].accuracy}% de acerto em ${levelProgress[level].answered} respostas`
-              : 'ainda sem respostas — começa pelo básico'
+              : 'ainda sem respostas — comece pelo básico'
           }. O progresso do estudo aparece em Progresso.`}
         </p>
         {plan.recommendAdvance && plan.next ? (
           <p className="mt-1 text-[11px] font-black text-emerald-700 dark:text-emerald-300">
-            Já dominas o {level} — podes subir para {plan.next} na Prática.
+            Já dominas o {level} — pode subir para {plan.next} na Prática.
           </p>
         ) : null}
       </Card>
@@ -156,7 +156,7 @@ export function DashboardPage({
           Provas e simulados
         </p>
         <p className="mt-1 text-base font-black text-slate-900 dark:text-slate-100">
-          O que queres começar?
+          O que quer começar?
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <button
@@ -249,8 +249,8 @@ export function DashboardPage({
       <CollapsibleCard title="Últimas provas">
         {completedExams.length === 0 ? (
           <p className="text-xs font-semibold text-slate-500">
-            Ainda não há provas concluídas. Faz o simulado oficial de exemplo para teres a primeira
-            leitura da tua pontuação.
+            Ainda não há provas concluídas. Faça o simulado oficial de exemplo para teres a primeira
+            leitura da sua pontuação.
           </p>
         ) : (
           <ul className="flex flex-col gap-1">

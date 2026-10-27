@@ -1,19 +1,19 @@
 /**
- * Merge de registos entre dispositivos.
+ * Merge de registros entre dispositivos.
  *
- * Regra única (a mesma do `db/merge.ts` do Memoriza): **o registo mais novo
+ * Regra única (a mesma do `db/merge.ts` do Memoriza): **o registro mais novo
  * vence** e **nada local é apagado**. Um sync nunca pode destruir trabalho
- * feito offline — no máximo, o registo local mais antigo é substituído por uma
- * versão mais recente vinda do outro aparelho.
+ * feito offline — no máximo, o registro local mais antigo é substituído por uma
+ * versão mais recente vinda do outro dispositivo.
  */
 
 export interface MergeResult<T> {
   merged: T[]
-  /** Registos que só existiam no lado remoto. */
+  /** Registros que só existiam no lado remoto. */
   added: number
-  /** Registos locais substituídos por uma versão mais recente. */
+  /** Registros locais substituídos por uma versão mais recente. */
   updated: number
-  /** Registos locais mantidos porque eram mais novos. */
+  /** Registros locais mantidos porque eram mais novos. */
   kept: number
 }
 

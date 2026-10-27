@@ -27,11 +27,11 @@ interface NavItem {
 /**
  * Menu da app.
  *
- * ORDEM FIXA (a mesma no telemóvel e no portátil) — é a sequência que a aluna
+ * ORDEM FIXA (a mesma no celular e no notebook) — é a sequência que a aluna
  * deve seguir: Painel → Prática → Simulado → Progresso → Guia → Ajustes.
  */
 /**
- * Menu secundário: só aparece no menu lateral do portátil (no telemóvel
+ * Menu secundário: só aparece no menu lateral do notebook (no celular
  * ficariam 9 itens na barra de baixo e nenhum seria legível).
  */
 const EXTRA_NAV: NavItem[] = [
@@ -98,9 +98,9 @@ export function AppIcon({ size = 36 }: { size?: number }) {
 /**
  * Shell da app.
  *
- * - Telemóvel: menu inferior fixo, sempre visível, com a aba ativa marcada.
- * - Portátil/tablet: menu lateral fixo, sempre visível (a app nunca fica
- *   "sem menus" em ecrã grande).
+ * - Celular: menu inferior fixo, sempre visível, com a aba ativa marcada.
+ * - Notebook/tablet: menu lateral fixo, sempre visível (a app nunca fica
+ *   "sem menus" em tela grande).
  * - Topo: ícone da app (canto superior esquerdo), tema e estado do sync.
  */
 export function AppShell({
@@ -149,7 +149,7 @@ export function AppShell({
       </header>
 
       <div className="mx-auto flex w-full max-w-6xl flex-1 gap-4 px-3 pb-24 sm:px-4 md:pb-8">
-        {/* Menu lateral (portátil e tablet) */}
+        {/* Menu lateral (notebook e tablet) */}
         <aside className="hidden md:block md:w-52 md:shrink-0 md:py-4">
           <nav aria-label="Menu principal" className="sticky top-[60px]">
             <ul className="flex flex-col gap-1">
@@ -215,7 +215,7 @@ export function AppShell({
         <main className="min-w-0 flex-1 py-4">{children}</main>
       </div>
 
-      {/* Menu inferior (telemóvel) */}
+      {/* Menu inferior (celular) */}
       <nav
         aria-label="Menu principal"
         className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] dark:border-slate-700 dark:bg-slate-800 md:hidden"

@@ -16,6 +16,7 @@ export function AudioPlayer({
   passesUsed,
   onPassUsed,
   locked,
+  revealTranscript = false,
 }: {
   transcript: string
   taskLabel: string
@@ -23,6 +24,8 @@ export function AudioPlayer({
   onPassUsed: () => void
   /** Quando true, o áudio não pode ser mais reproduzido (protocolo cumprido). */
   locked: boolean
+  /** A transcrição só aparece depois de responder (como na prova real). */
+  revealTranscript?: boolean
 }) {
   const [playing, setPlaying] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -44,10 +47,7 @@ export function AudioPlayer({
     const ok = speak(transcript, {
       rate: 1,
       onEnd: () => {
-        if (mounted.current) {
-          setPlaying(false)
-          onPassUsed()
-        }
+        if (mounted.current) setPlaying(false)
       },
       onError: (message) => {
         if (mounted.current) {
@@ -58,6 +58,8 @@ export function AudioPlayer({
     })
     if (ok) {
       setPlaying(true)
+      // Conta a reprodução no INÍCIO (como na prova: ouvir já gastou a vez) e
+      // só uma vez — o fim do áudio não volta a contar.
       onPassUsed()
     }
   }
@@ -102,11 +104,17 @@ export function AudioPlayer({
       ) : null}
       <details className="mt-2">
         <summary className="cursor-pointer text-xs font-bold text-slate-600 dark:text-slate-300">
-          Ver transcrição
+          {revealTranscript ? 'Ver transcrição' : 'Transcrição (só depois de responder)'}
         </summary>
-        <p className="mt-2 max-h-40 overflow-y-auto whitespace-pre-line text-xs leading-relaxed text-slate-700 dark:text-slate-200">
-          {transcript}
-        </p>
+        {revealTranscript ? (
+          <p className="mt-2 max-h-40 overflow-y-auto whitespace-pre-line text-xs leading-relaxed text-slate-700 dark:text-slate-200">
+            {transcript}
+          </p>
+        ) : (
+          <p className="mt-2 text-xs font-semibold text-slate-500">
+            Na prova real não tem o texto. Ele aparece aqui quando confirmar a resposta.
+          </p>
+        )}
       </details>
     </div>
   )

@@ -10,7 +10,7 @@ import type { Route } from '../lib/routes'
  *
  * Na prova real as respostas são escritas na folha oficial com caneta azul ou
  * preta. Esta folha é para a aluna treinar em casa (ou levar impressa).
- * É imprimível: "Imprimir / Guardar em PDF" + o CSS de impressão em
+ * É imprimível: "Imprimir / Salvar em PDF" + o CSS de impressão em
  * `src/index.css`.
  */
 export function AnswerSheetPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
@@ -37,7 +37,7 @@ export function AnswerSheetPage({ onNavigate }: { onNavigate: (route: Route) => 
           <ArrowLeft size={16} /> Voltar
         </Button>
         <Button onClick={() => window.print()}>
-          <Printer size={16} /> Imprimir / Guardar em PDF
+          <Printer size={16} /> Imprimir / Salvar em PDF
         </Button>
         <span className="text-[11px] font-bold text-slate-500">
           Folha em A4, com o mesmo layout do foglio oficial.

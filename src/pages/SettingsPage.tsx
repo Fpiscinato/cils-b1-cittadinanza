@@ -88,7 +88,7 @@ export function SettingsPage({
       } catch {
         /* modo privado */
       }
-      setMessage('Backup descarregado. Guardá-lo num sítio seguro.')
+      setMessage('Backup baixado. Guardá-lo num lugar seguro.')
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao exportar.')
     }
@@ -118,22 +118,22 @@ export function SettingsPage({
         avatar: profile.avatar,
         examDate,
       })
-      setMessage('Perfil guardado.')
+      setMessage('Perfil salvo.')
       onChanged()
     } catch {
-      setError('Não foi possível guardar o perfil.')
+      setError('Não foi possível salvar o perfil.')
     }
   }
 
   async function handleReset(): Promise<void> {
     if (!profile) return
     const confirmed = window.confirm(
-      'Isto remove as sessões por terminar. As provas CONCLUÍDAS são preservadas — são o teu histórico real.\n\nContinuar?',
+      'Isto remove as sessões em andamento. As provas CONCLUÍDAS são preservadas — são o seu histórico real.\n\nContinuar?',
     )
     if (!confirmed) return
     const result = await resetAbandonedMocks(profile.id)
     setMessage(
-      `Removidas ${result.sessionsRemoved} sessões por terminar. Preservadas ${result.sessionsKept} provas concluídas.`,
+      `Removidas ${result.sessionsRemoved} sessões em andamento. Preservadas ${result.sessionsKept} provas concluídas.`,
     )
     onChanged()
   }
@@ -164,11 +164,11 @@ export function SettingsPage({
     }
   }
 
-  /** Apaga TUDO neste aparelho (progresso, conteúdo, snapshots, sync). */
+  /** Apague TUDO neste dispositivo (progresso, conteúdo, snapshots, sync). */
   async function handleFullReset(): Promise<void> {
     if (resetText.trim().toUpperCase() !== 'APAGAR') return
     const confirmed = window.confirm(
-      'Isto apaga TUDO neste aparelho: todas as provas (inclusive as concluídas), os textos escritos, o banco de conteúdo, os snapshots e o token do GitHub.\n\nNão há como recuperar. Continua?',
+      'Isto apaga TUDO neste dispositivo: todas as provas (inclusive as concluídas), os textos escritos, o banco de conteúdo, os snapshots e o token do GitHub.\n\nNão há como recuperar. Continue?',
     )
     if (!confirmed) return
     setError(null)
@@ -189,7 +189,7 @@ export function SettingsPage({
   async function handleResetPractice(): Promise<void> {
     if (!profile) return
     const confirmed = window.confirm(
-      'Isto apaga as práticas que ainda estão a decorrer e as tentativas órfãs. As provas CONCLUÍDAS ficam intactas.\n\nContinuar?',
+      'Isto apaga as práticas que ainda estão em andamento e as tentativas órfãs. As provas CONCLUÍDAS ficam intactas.\n\nContinuar?',
     )
     if (!confirmed) return
     const result = await resetAllProgress(profile.id)
@@ -216,7 +216,7 @@ export function SettingsPage({
 
   async function handleRestoreSnapshot(id: string): Promise<void> {
     const confirmed = window.confirm(
-      'Restaurar este snapshot? Os registos mais recentes são preservados — nada é apagado.',
+      'Restaurar este snapshot? Os registros mais recentes são preservados — nada é apagado.',
     )
     if (!confirmed) return
     setError(null)
@@ -225,7 +225,7 @@ export function SettingsPage({
     try {
       const outcome = await restoreSnapshot(id)
       setMessage(
-        `Snapshot restaurado: ${outcome.added} registo(s) novo(s), ${outcome.updated} atualizado(s).`,
+        `Snapshot restaurado: ${outcome.added} registro(s) novo(s), ${outcome.updated} atualizado(s).`,
       )
       onChanged()
     } catch (cause) {
@@ -272,7 +272,7 @@ export function SettingsPage({
           As 3 fases de preparação são calculadas a partir desta data.
         </p>
         <div className="mt-3">
-          <Button onClick={() => void handleSave()}>Guardar</Button>
+          <Button onClick={() => void handleSave()}>Salvar</Button>
         </div>
       </Card>
 
@@ -280,7 +280,7 @@ export function SettingsPage({
       <Card>
         <p className="text-xs font-black uppercase tracking-wide text-slate-500">Aparência</p>
         <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
-          O tema fica guardado neste aparelho.
+          O tema fica salvo neste dispositivo.
         </p>
         <div className="mt-3 grid gap-2 sm:grid-cols-3">
           {(
@@ -315,7 +315,7 @@ export function SettingsPage({
       <Card>
         <div className="flex items-center justify-between gap-2">
           <p className="text-xs font-black uppercase tracking-wide text-slate-500">
-            Guardar noutro aparelho (GitHub Gist)
+            Salvar em outro dispositivo (GitHub Gist)
           </p>
           <span
             className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-black ${
@@ -328,8 +328,8 @@ export function SettingsPage({
           </span>
         </div>
         <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
-          O progresso é enviado para um Gist <strong>privado</strong> do teu GitHub. O token fica só
-          neste aparelho e é usado apenas para a permissão <code>gist</code>. Nada é enviado para
+          O progresso é enviado para um Gist <strong>privado</strong> do seu GitHub. O token fica só
+          neste dispositivo e é usado apenas para a permissão <code>gist</code>. Nada é enviado para
           servidores da app.
         </p>
         <label
@@ -380,9 +380,9 @@ export function SettingsPage({
       <Card>
         <p className="text-xs font-black uppercase tracking-wide text-slate-500">Cópia de segurança</p>
         <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
-          Os dados vivem só neste dispositivo (IndexedDB). Se limpares os dados do browser, perdes o
-          histórico — exporta um JSON com regularidade. Os snapshots abaixo são cópias automáticas
-          guardadas no próprio browser.
+          Os dados vivem só neste dispositivo (IndexedDB). Se você limpar os dados do browser, perde o
+          histórico — exporte um JSON com regularidade. Os snapshots abaixo são cópias automáticas
+          salvas no próprio browser.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Button variant="secondary" onClick={() => void handleExport()}>
@@ -460,25 +460,25 @@ export function SettingsPage({
         </div>
       </Card>
 
-      {/* Repor */}
+      {/* Restaurar */}
       <Card>
-        <p className="text-xs font-black uppercase tracking-wide text-slate-500">Repor a app</p>
+        <p className="text-xs font-black uppercase tracking-wide text-slate-500">Restaurar o app</p>
         <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
-          Escolhe o que queres apagar. As provas <strong>concluídas</strong> só se perdem no reset
+          Escolha o que quer apagar. As provas <strong>concluídas</strong> só se perdem no reset
           total (e só com confirmação escrita).
         </p>
 
         <div className="mt-3 flex flex-col gap-3">
           <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-700/40">
             <p className="text-xs font-black text-slate-900 dark:text-slate-100">
-              Só as sessões por terminar
+              Só as sessões em andamento
             </p>
             <p className="mt-0.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
               Remove práticas e simulados a meio. O histórico fica intacto.
             </p>
             <div className="mt-2">
               <Button variant="secondary" onClick={() => void handleReset()} disabled={busy}>
-                Limpar sessões por terminar
+                Limpar sessões em andamento
               </Button>
             </div>
           </div>
@@ -488,18 +488,18 @@ export function SettingsPage({
               Só o progresso de prática
             </p>
             <p className="mt-0.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-              Apaga as práticas e as tentativas órfãs. As provas concluídas ficam.
+              Apague as práticas e as tentativas órfãs. As provas concluídas ficam.
             </p>
             <div className="mt-2">
               <Button variant="secondary" onClick={() => void handleResetPractice()} disabled={busy}>
-                Repor só a prática
+                Restaurar só a prática
               </Button>
             </div>
           </div>
 
           <div className="rounded-xl border border-rose-300 bg-rose-50 p-3 dark:border-rose-800 dark:bg-rose-950/30">
             <p className="text-xs font-black text-rose-900 dark:text-rose-200">
-              Apagar tudo (este aparelho)
+              Apagar tudo (este dispositivo)
             </p>
             <p className="mt-0.5 text-[11px] font-semibold text-rose-800 dark:text-rose-300">
               Provas concluídas, textos escritos, banco de conteúdo, snapshots e token do GitHub.
@@ -509,7 +509,7 @@ export function SettingsPage({
               className="mt-2 block text-[11px] font-black uppercase tracking-wide text-rose-900 dark:text-rose-200"
               htmlFor="reset-confirm"
             >
-              Escreve APAGAR para confirmar
+              Escreva APAGAR para confirmar
             </label>
             <input
               id="reset-confirm"

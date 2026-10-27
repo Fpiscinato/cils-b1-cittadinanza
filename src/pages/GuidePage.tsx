@@ -15,7 +15,7 @@ import {
  * Guia de uso da app.
  *
  * A aluna abre a app para uma pergunta — "se fizesse a prova amanhã, passava?"
- * — e este ecrã responde à outra: "como é que uso isto?".
+ * — e esta tela responde à outra: "como é que uso isto?".
  *
  * Duas abas:
  * - "Como usar": o passo-a-passo e as regras do exame;
@@ -71,8 +71,8 @@ export function GuidePage({
           </h1>
         </div>
         <p className="mt-1 text-sm font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
-          Esta app não é um curso de italiano: é um simulador da prova oficial. Serve para te dizer
-          se passarias amanhã, qual é a tua abilità mais fraca e quanto tempo te falta.
+          Este app não é um curso de italiano: é um simulador da prova oficial. Ele serve para dizer
+          se você passaria amanhã, qual é a sua abilità mais fraca e quanto tempo falta.
         </p>
       </Card>
 
@@ -84,35 +84,35 @@ export function GuidePage({
         <ol className="mt-2 flex flex-col gap-2">
           {[
             {
-              title: 'Marca a data da prova',
+              title: 'Marque a data da prova',
               detail: 'Ajustes → Data da prova. As 3 fases de preparação são calculadas a partir dela.',
               route: 'settings' as Route,
               cta: 'Abrir Ajustes',
             },
             {
-              title: 'Escolhe o tema (claro / escuro / sistema)',
-              detail: 'O botão no canto superior direito muda o aspeto; a escolha fica guardada.',
+              title: 'Escolha o tema (claro / escuro / sistema)',
+              detail: 'O botão no canto superior direito muda o aspecto; a escolha fica salva.',
               route: 'settings' as Route,
               cta: 'Abrir Ajustes',
             },
             {
-              title: 'Treina uma habilidade',
+              title: 'Treine uma habilidade',
               detail:
                 'Prática → Ascolto (6 min). O áudio só pode ser ouvido 2 vezes, como na prova — a transcrição só aparece depois de responder.',
               route: 'practice' as Route,
               cta: 'Ir para Prática',
             },
             {
-              title: 'Faz o simulado completo',
+              title: 'Faça o simulado completo',
               detail:
                 'Simulado → começar. São 30 min de ascolto, 40 de lettura e 40 de scrittura, cronometrados, com a prova oficial de exemplo.',
               route: 'mock' as Route,
               cta: 'Ir para Simulado',
             },
             {
-              title: 'Lê o veredito no Painel',
+              title: 'Leia o veredito no Painel',
               detail:
-                'O Painel mostra a prontidão por abilità, o abilità de risco e o gráfico de evolução em Progresso.',
+                'O Painel mostra a prontidão por abilità, a abilità de risco e o gráfico de evolução em Progresso.',
               route: 'dashboard' as Route,
               cta: 'Voltar ao Painel',
             },
@@ -165,7 +165,7 @@ export function GuidePage({
               icon: <PenLine size={16} />,
               name: 'Produzione scritta',
               points: '40 min · 12 pontos',
-              detail: 'Escolhes 1 dos 2 temas. 80-120 palavras, grelha oficial de 5 critérios.',
+              detail: 'Você escolhe 1 dos 2 temas. 80-120 palavras, grelha oficial de 5 critérios.',
             },
             {
               icon: <MessageSquare size={16} />,
@@ -203,13 +203,13 @@ export function GuidePage({
         </p>
         <div className="mt-2 flex flex-col gap-2">
           <Alert tone="teal" title="Sufficienza em TODAS as abilità">
-            Precisas de pelo menos {PASS_THRESHOLD_PER_SKILL}/{POINTS_PER_SKILL} em cada uma das 4
+            Você precisa de pelo menos {PASS_THRESHOLD_PER_SKILL}/{POINTS_PER_SKILL} em cada uma das 4
             abilità (o que dá {PASS_THRESHOLD_TOTAL}/{TOTAL_POINTS} no total). Uma abilità abaixo do
             limiar não é "recuperável" — obriga a refazer a prova inteira.
           </Alert>
           <Alert tone="rose" title="Sem capitalização">
             Não se guardam as abilità que passaram. Por isso o Painel nunca mostra "3 de 4 ok" como
-            algo parcial: ou as quatro estão acima da sufficienza, ou tens de repetir tudo.
+            algo parcial: ou as quatro estão acima da sufficienza, ou tem de repetir tudo.
           </Alert>
           <Alert tone="amber" title="Erro e omissão valem 0">
             Não há penalização negativa, mas uma pergunta em branco é um ponto perdido.
@@ -217,24 +217,24 @@ export function GuidePage({
         </div>
       </Card>
 
-      {/* 4. Cada ecrã */}
+      {/* 4. Cada tela */}
       <div className="flex flex-col gap-3">
         <p className="text-xs font-black uppercase tracking-wide text-slate-500">
-          4 · O que há em cada ecrã
+          4 · O que há em cada tela
         </p>
 
         <CollapsibleCard title="Painel" icon={<Check size={16} />}>
           <ul className="flex list-disc flex-col gap-1 pl-4 text-xs font-semibold text-slate-600 dark:text-slate-300">
             <li>
               <strong>Primeiros passos</strong>: a sequência para ter a primeira leitura fiável da
-              tua pontuação.
+              sua pontuação.
             </li>
             <li>
               <strong>Prontidão para a prova</strong>: a média recente de cada abilità, a margem
               sobre a sufficienza e a abilità de risco.
             </li>
             <li>
-              <strong>Tarefa de hoje</strong>: o que fazer agora, consoante a fase em que estás.
+              <strong>Tarefa de hoje</strong>: o que fazer agora, consoante a fase em que está.
             </li>
             <li>
               <strong>As 3 fases</strong>: Fondazione (A1) → Struttura (A2) → Cittadinanza (B1),
@@ -245,8 +245,8 @@ export function GuidePage({
 
         <CollapsibleCard title="Prática" icon={<Check size={16} />}>
           <p className="text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
-            Treina uma abilità de cada vez, com os tempos e os pesos oficiais. Serve para
-            ambientar-te ao formato antes do simulado. Uma prática também conta como prova
+            Treine uma abilità de cada vez, com os tempos e os pesos oficiais. Serve para
+            ambientar você ao formato antes do simulado. Uma prática também conta como prova
             (fica no histórico).
           </p>
         </CollapsibleCard>
@@ -292,16 +292,16 @@ export function GuidePage({
           </ol>
           <p className="mt-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
             Na app o áudio é sintetizado pela voz italiana do sistema — é a transcrição oficial do
-            CILS que está a ser lida. A transcrição só aparece depois de responderes, como no
+            CILS que está sendo lida. A transcrição só aparece depois de responder, como no
             papel.
           </p>
         </CollapsibleCard>
 
         <CollapsibleCard title="A scrittura (80-120 palavras)" icon={<PenLine size={16} />}>
           <p className="text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
-            Escolhes 1 dos 2 temas (os dois aparecem juntos, como no foglio oficial). A app conta as
+            Você escolhe 1 dos 2 temas (os dois aparecem juntos, como no foglio oficial). A app conta as
             palavras em tempo real e avisa se ficares fora do intervalo — mas deixa submeter na
-            mesma, porque o examinador não recusa o texto, penaliza a clareza. Auto-avalias com a
+            mesma, porque o examinador não recusa o texto, penaliza a clareza. Você se autoavalia com a
             grelha oficial de 5 critérios (eficácia comunicativa, adequação estilística, correção
             morfosintática, riqueza lexical, ortografia e pontuação).
           </p>
@@ -309,8 +309,8 @@ export function GuidePage({
 
         <CollapsibleCard title="A orale (1 min + 2-3 min)" icon={<MessageSquare size={16} />}>
           <p className="text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
-            Não é um monólogo. Primeiro apresentas-te (nome, idade, de onde vieste, onde vives,
-            trabalho ou estudos) em ~1 minuto; depois o examinador escolhe um tema e faz-te mais
+            Não é um monólogo. Primeiro você se apresenta (nome, idade, de onde veio, onde mora,
+            trabalho ou estudos) em ~1 minuto; depois o examinador escolhe um tema e faz mais
             perguntas durante 2-3 minutos. Os temas oficiais incluem città/campagna, cultura,
             assistenza sanitaria e documenti per la cittadinanza.
           </p>
@@ -320,20 +320,20 @@ export function GuidePage({
       {/* 6. Dados */}
       <Card>
         <p className="text-xs font-black uppercase tracking-wide text-slate-500">
-          6 · Os teus dados
+          6 · Os seus dados
         </p>
         <ul className="mt-2 flex flex-col gap-1.5 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
           <li>
-            <strong>Tudo fica no aparelho.</strong> A app não tem servidor nem conta de utilizador.
+            <strong>Tudo fica no dispositivo.</strong> A app não tem servidor nem conta de usuário.
           </li>
           <li>
             <strong>Snapshots locais.</strong> O progresso é copiado automaticamente para o
-            browser (até 8 cópias). Se limpares os dados, consegues restaurar de Ajustes.
+            browser (até 8 cópias). Se você limpar os dados, pode restaurar nos Ajustes.
           </li>
           <li>
             <strong>Sync por Gist (opcional).</strong> Com um token do GitHub (permissão{' '}
             <code className="rounded bg-slate-100 px-1 dark:bg-slate-700">gist</code>) o progresso
-            viaja para o outro aparelho. O token só é guardado neste dispositivo e a nuvem fica
+            viaja para o outro dispositivo. O token só é salvo neste dispositivo e a nuvem fica
             <strong> verde</strong> quando o sync está OK, <strong> laranja</strong> quando não
             está.
           </li>

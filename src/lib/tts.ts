@@ -1,7 +1,7 @@
 /**
  * Síntese de voz do browser (Web Speech API).
  *
- * O app é 100% offline e não pode depender de ficheiros de áudio: o áudio do
+ * O app é 100% offline e não pode depender de arquivos de áudio: o áudio do
  * ascolto é sintetizado com a voz italiana do sistema. Na prova real o áudio é
  * uma gravação de estúdio com dois falantes — aqui o TTS é a aproximação
  * honesta e escalável (ver `docs/exam-spec.md` para o protocolo de 2 passagens).

@@ -246,9 +246,9 @@ export const oralSchema = z.object({
 })
 export type Oral = z.infer<typeof oralSchema>
 
-/** Gravação de áudio da prova oral (guardada só neste aparelho). */
+/** Gravação de áudio da prova oral (salva só neste dispositivo). */
 export const oralAudioSchema = z.object({
-  /** Id do registo da prova oral a que pertence. */
+  /** Id do registro da prova oral a que pertence. */
   id: z.string().min(1),
   blob: z.any(),
   createdAt: z.number().int(),
@@ -277,7 +277,7 @@ export type Backup = z.infer<typeof backupSchema>
  * Payload do sync por Gist.
  *
  * É o backup SEM o conteúdo do banco (passagens e perguntas), porque o
- * conteúdo é re-seedado localmente em cada aparelho — o que viaja entre
+ * conteúdo é re-seedado localmente em cada dispositivo — o que viaja entre
  * aparelhos é o progresso da aluna.
  */
 export const gistPayloadSchema = z.object({

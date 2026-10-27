@@ -5,12 +5,32 @@ import { db } from '../db/database'
 import { syncQuestionBank } from '../db/seed'
 import { buildExam } from './examBuilder'
 import { OFFICIAL_ORAL_TOPICS, OFFICIAL_WRITING_PROMPTS } from '../data/officialSample'
+import type { Attempt } from '../db/schemas'
+
+async function markAnswered(ids: string[], skill: Attempt['skill'], timestamp = Date.now()) {
+  await db.attempts.bulkPut(
+    ids.map((questionId, index) => ({
+      id: `attempt-${questionId}-${index}`,
+      profileId: 'p1',
+      sessionId: 's1',
+      questionId,
+      skill,
+      taskId: 'task',
+      isCorrect: false,
+      skipped: false,
+      selectedIndex: 0,
+      timeSpentSeconds: 3,
+      timestamp,
+    })),
+  )
+}
 
 describe('montagem das provas', () => {
   beforeEach(async () => {
     await db.open()
     await db.questions.clear()
     await db.passages.clear()
+    await db.attempts.clear()
     await syncQuestionBank()
   })
 
@@ -204,7 +224,7 @@ describe('montagem das provas', () => {
   it('a prática de perguntas exclui o banco de exercícios', async () => {
     const built = await buildExam('studio', {
       bank: 'all',
-      level: 'A1',
+      level: 'B1',
       skill: 'lettura',
       origin: 'practice',
       shuffle: true,
@@ -241,6 +261,79 @@ describe('montagem das provas', () => {
     expect(firstIds.length).toBeGreaterThan(0)
     expect(secondIds.length).toBeGreaterThan(0)
     expect(firstIds).not.toEqual(secondIds)
+  })
+
+  it('a prática não repete as perguntas respondidas recentemente', async () => {
+    const all = await db.questions.where('skill').equals('lettura').toArray()
+    const recent = all
+      .filter((question) => question.level === 'B1' && !question.taskId.startsWith('studio-'))
+      .slice(0, 20)
+    expect(recent.length).toBe(20)
+    await markAnswered(
+      recent.map((question) => question.id),
+      'lettura',
+    )
+
+    const built = await buildExam('studio', {
+      bank: 'all',
+      level: 'B1',
+      skill: 'lettura',
+      origin: 'practice',
+      shuffle: true,
+      limit: 10,
+    })
+    const stage = built?.stages[0]
+    if (stage?.kind !== 'objective') throw new Error('stage inválido')
+    const chosen = new Set(stage.questions.map((question) => question.id))
+    expect(stage.questions).toHaveLength(10)
+    for (const question of recent) {
+      expect(chosen.has(question.id)).toBe(false)
+    }
+  })
+
+  it('as perguntas respondidas há mais de 45 dias voltam a poder sair', async () => {
+    const options = {
+      bank: 'all' as const,
+      level: 'B1' as const,
+      skill: 'lettura' as const,
+      origin: 'practice' as const,
+      shuffle: true,
+      limit: 8,
+      random: () => 0.2,
+    }
+    const baseline = await buildExam('studio', options)
+    const baselineIds =
+      baseline?.stages[0]?.kind === 'objective'
+        ? baseline.stages[0].questions.map((question) => question.id)
+        : []
+
+    const all = await db.questions.where('skill').equals('lettura').toArray()
+    const old = all.filter((question) => question.level === 'B1').slice(0, 15)
+    const longAgo = Date.now() - 60 * 24 * 60 * 60 * 1000
+    await markAnswered(
+      old.map((question) => question.id),
+      'lettura',
+      longAgo,
+    )
+
+    const after = await buildExam('studio', options)
+    const afterIds =
+      after?.stages[0]?.kind === 'objective'
+        ? after.stages[0].questions.map((question) => question.id)
+        : []
+    expect(afterIds).toEqual(baselineIds)
+  })
+
+  it('o simulado completo ignora o histórico (usa a prova oficial na ordem)', async () => {
+    const official = await db.questions.where('skill').equals('ascolto').toArray()
+    await markAnswered(
+      official.map((question) => question.id),
+      'ascolto',
+    )
+    const built = await buildExam('mock_cittadinanza')
+    const stage = built?.stages[0]
+    if (stage?.kind !== 'objective') throw new Error('stage inválido')
+    expect(stage.questions).toHaveLength(18)
   })
 
   it('o mesmo seed dá sempre a mesma seleção (a app é determinística por dia)', async () => {

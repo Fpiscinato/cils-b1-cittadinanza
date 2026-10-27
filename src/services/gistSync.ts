@@ -1,7 +1,7 @@
 /**
  * Sync opcional por GitHub Gist.
  *
- * Como o app é 100% offline, o modo "guardar noutro aparelho" é feito com um
+ * Como o app é 100% offline, o modo "guardar noutro dispositivo" é feito com um
  * Gist privado do GitHub: o token é da aluna, vive só no `localStorage` deste
  * dispositivo e a comunicação é directa do browser para `api.github.com`
  * (sem backend nenhum).
@@ -9,7 +9,7 @@
  * Regras:
  * - o token só precisa do scope `gist`;
  * - o Gist é PRIVADO (`public: false`);
- * - o merge é "o registo mais novo vence" e nada local é apagado;
+ * - o merge é "o registro mais novo vence" e nada local é apagado;
  * - o conteúdo do banco de questões NÃO viaja (é re-seedado localmente).
  */
 
@@ -35,7 +35,7 @@ export interface SyncStatus {
   lastError: string | null
   /** Id do Gist em uso. */
   gistId: string | null
-  /** Quantos registos vieram do outro aparelho no último sync. */
+  /** Quantos registros vieram do outro dispositivo no último sync. */
   lastReceived: number
 }
 
@@ -177,7 +177,7 @@ export interface MergeOutcome {
 
 /**
  * Aplica um payload remoto no banco local.
- * Regra: o registo mais novo vence; nada local é apagado.
+ * Regra: o registro mais novo vence; nada local é apagado.
  */
 export async function mergePayload(payload: GistPayload): Promise<MergeOutcome> {
   const [localProfiles, localSessions, localAttempts, localWritings, localOrals] =
@@ -272,7 +272,7 @@ export async function pullGist(): Promise<GistPayload | null> {
 }
 
 /**
- * Sync completo: puxa o que existe no outro aparelho, funde, e volta a
+ * Sync completo: puxa o que existe no outro dispositivo, funde, e volta a
  * enviar o resultado (já com o merge feito).
  */
 export async function syncNow(): Promise<SyncStatus> {

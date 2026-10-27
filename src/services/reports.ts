@@ -8,7 +8,7 @@
  * - a pontuação por abilità e o veredito.
  *
  * É gerado 100% no browser (sem servidor): a aluna imprime ou guarda em PDF
- * ou envia o ficheiro como está.
+ * ou envia o arquivo como está.
  */
 
 import { db } from '../db/database'

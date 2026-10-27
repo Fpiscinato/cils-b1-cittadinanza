@@ -11,7 +11,7 @@ import { formatDuration } from '../lib/timing'
 /**
  * CLÍNICA DE ERROS — o banco de erros da aluna.
  *
- * As tentativas erradas ficam guardadas no histórico; aqui juntam-se por
+ * As tentativas erradas ficam salvas no histórico; aqui juntam-se por
  * pergunta (a última tentativa conta) e mostram a resposta certa com a
  * explicação. A aluna pode depois treinar SÓ esses erros.
  */
@@ -26,14 +26,23 @@ export function MistakesPage({
   profileId,
   onNavigate,
   onCompleted,
+  onSessionChange,
 }: {
   profileId: string
   onNavigate: (route: Route) => void
   onCompleted: () => void
+  /** Avisa o App de que há um treino a correr (para a barra "Continuar"). */
+  onSessionChange?: (active: boolean) => void
 }) {
   const [mistakes, setMistakes] = useState<Mistake[]>([])
   const [loading, setLoading] = useState(true)
   const [training, setTraining] = useState(false)
+  const [finished, setFinished] = useState(false)
+
+  const inSession = training && mistakes.length > 0 && !finished
+  useEffect(() => {
+    onSessionChange?.(inSession)
+  }, [inSession, onSessionChange])
 
   useEffect(() => {
     let cancelled = false
@@ -94,8 +103,14 @@ export function MistakesPage({
           questionIds: mistakes.map((mistake) => mistake.question.id),
           shuffle: true,
         }}
-        onSaved={onCompleted}
-        onExit={() => setTraining(false)}
+        onSaved={() => {
+          setFinished(true)
+          onCompleted()
+        }}
+        onExit={() => {
+          setTraining(false)
+          setFinished(false)
+        }}
         onCompleted={() => {
           setTraining(false)
           onNavigate('dashboard')
@@ -122,17 +137,17 @@ export function MistakesPage({
           <h1 className="text-lg font-black text-slate-900 dark:text-slate-100">Clínica de erros</h1>
         </div>
         <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
-          As perguntas que erraste (com a última tentativa). Revê a resposta certa e a explicação, e
-          depois treina só esses erros.
+          As perguntas que erraste (com a última tentativa). Reveja a resposta certa e a explicação, e
+          depois treine só esses erros.
         </p>
       </Card>
 
       {loading ? (
-        <p className="text-sm font-bold text-slate-500">A carregar…</p>
+        <p className="text-sm font-bold text-slate-500">Carregando…</p>
       ) : mistakes.length === 0 ? (
         <Card>
           <p className="text-sm font-bold text-slate-600 dark:text-slate-300">
-            Ainda não há erros registados. Faz uma prática ou um simulado e os erros aparecem aqui.
+            Ainda não há erros registrados. Faça uma prática ou um simulado e os erros aparecem aqui.
           </p>
         </Card>
       ) : (
@@ -153,7 +168,10 @@ export function MistakesPage({
 
           <button
             type="button"
-            onClick={() => setTraining(true)}
+            onClick={() => {
+              setFinished(false)
+              setTraining(true)
+            }}
             className="w-full rounded-xl bg-teal-700 px-4 py-3 text-sm font-black text-white hover:bg-teal-800"
           >
             <RefreshCw size={16} className="mr-1 inline" /> Treinar estes {mistakes.length} erros
@@ -190,7 +208,7 @@ export function MistakesPage({
                         >
                           {isCorrect ? '✔ ' : isGiven ? '✘ ' : '· '}
                           {option}
-                          {isGiven ? ' (a tua resposta)' : ''}
+                          {isGiven ? ' (a sua resposta)' : ''}
                         </li>
                       )
                     })}

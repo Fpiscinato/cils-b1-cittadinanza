@@ -38,7 +38,7 @@ function sessionTitle(
 }
 
 /**
- * Uma sessão de prova: cria o registo, corre o runner e grava o resultado.
+ * Uma sessão de prova: cria o registro, corre o runner e grava o resultado.
  *
  * Quando a prova termina, a sessão passa a `completed` e fica IMUTÁVEL
  * (ver `src/lib/admin.ts`).
@@ -66,7 +66,7 @@ export function ExamSession({
   onCompleted: () => void
   /** Chamado assim que a sessão fica gravada — antes de mostrar o resultado. */
   onSaved?: () => void
-  /** Abre o relatório da prova (para rever e enviar à professora). */
+  /** Abra o relatório da prova (para rever e enviar à professora). */
   onReview?: (sessionId: string) => void
 }) {
   const [stages, setStages] = useState<Stage[] | null>(null)
@@ -111,14 +111,14 @@ export function ExamSession({
   }, [mode, profileId, bank, phase, buildOptions, title])
 
   if (loading) {
-    return <p className="text-sm font-bold text-slate-500">A preparar a prova…</p>
+    return <p className="text-sm font-bold text-slate-500">Preparando a prova…</p>
   }
 
   if (!stages || !sessionId || !passages) {
     return (
       <Card>
         <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
-          Ainda não há conteúdo suficiente para esta prova. Faz primeiro a sincronização do banco
+          Ainda não há conteúdo suficiente para esta prova. Faça primeiro a sincronização do banco
           de conteúdo.
         </p>
       </Card>
@@ -180,7 +180,7 @@ export function ExamSession({
               ))}
             </ul>
             <p className="text-xs font-bold text-slate-600 dark:text-slate-300">
-              O percurso do teu nível e a evolução do estudo estão em Progresso.
+              O percurso do seu nível e a evolução do estudo estão em Progresso.
             </p>
           </>
         ) : (
@@ -242,6 +242,7 @@ export function ExamSession({
         stages={stages}
         passages={passages}
         mode={mode === 'mock_cittadinanza' ? 'exam' : 'practice'}
+        tone={mode === 'studio' ? 'study' : mode === 'mock_cittadinanza' ? 'exam' : 'practice'}
         timed={mode !== 'studio'}
         callbacks={{
           onFinish: async (perSkill, totalTimeSeconds, stageCounts) => {

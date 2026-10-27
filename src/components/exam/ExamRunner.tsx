@@ -31,7 +31,7 @@ export type Stage =
       subtitle: string
       timeSeconds: number
       prompts: WritingPrompt[]
-      /** Converte a auto-avaliação em pontos (usa a grelha oficial). */
+      /** Converte a autoavaliação em pontos (usa a grelha oficial). */
       rubricScore: (rubric: Record<string, number>) => number
     }
   | {
@@ -42,7 +42,7 @@ export type Stage =
       subtitle: string
       timeSeconds: number
       topics: OralTopic[]
-      /** Converte a auto-avaliação em pontos (usa a grelha oficial). */
+      /** Converte a autoavaliação em pontos (usa a grelha oficial). */
       rubricScore: (rubric: Record<string, number>) => number
     }
 
@@ -64,14 +64,14 @@ export interface RunnerCallbacks {
     seconds: number,
     selectedIndex: number,
   ) => void
-  /** A produção escrita (texto + auto-avaliação) — para guardar no histórico. */
+  /** A produção escrita (texto + autoavaliação) — para guardar no histórico. */
   onWriting?: (
     promptId: string,
     text: string,
     rubric: Record<string, number>,
     score: number,
   ) => void
-  /** A prova oral (tema + auto-avaliação + duração). */
+  /** A prova oral (tema + autoavaliação + duração). */
   onOral?: (
     topicId: string,
     rubric: Record<string, number>,
@@ -87,7 +87,7 @@ export interface RunnerCallbacks {
  * O ÚNICO runner de sessão do app.
  *
  * Prática, clínica de erros e simulados usam todos este componente — assim o
- * tamanho do ecrã, o footer fixo, o timer e o espaçamento são idênticos por
+ * tamanho da tela, o footer fixo, o timer e o espaçamento são idênticos por
  * construção (regra herdada e validada do ElevenSpark).
  *
  * Regras do exame implementadas aqui:
@@ -101,6 +101,7 @@ export function ExamRunner({
   callbacks,
   mode = 'practice',
   timed = true,
+  tone = mode === 'exam' ? 'exam' : 'practice',
 }: {
   stages: Stage[]
   passages: Map<string, Passage>
@@ -113,8 +114,27 @@ export function ExamRunner({
   mode?: 'exam' | 'practice'
   /** `false` = estudo sem cronómetro (o tempo continua a ser medido). */
   timed?: boolean
+  /** Cor da barra: estudo = verde, prática = azul, simulado = verde-escuro. */
+  tone?: 'study' | 'practice' | 'exam'
 }) {
   const isExam = mode === 'exam'
+  const accent = {
+    study: {
+      done: 'bg-teal-600',
+      current: 'bg-teal-400',
+      chip: 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300',
+    },
+    practice: {
+      done: 'bg-sky-600',
+      current: 'bg-sky-400',
+      chip: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300',
+    },
+    exam: {
+      done: 'bg-teal-600',
+      current: 'bg-teal-400',
+      chip: 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300',
+    },
+  }[tone]
   const [stageIndex, setStageIndex] = useState(0)
   const [questionIndex, setQuestionIndex] = useState(0)
   const [selected, setSelected] = useState<number | null>(null)
@@ -258,7 +278,7 @@ export function ExamRunner({
                 ? 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-200'
                 : secondsLeft <= 60
                   ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
-                  : 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300'
+                  : accent.chip
             }`}
           >
             {timed ? formatDuration(secondsLeft) : 'sem tempo'}
@@ -273,9 +293,9 @@ export function ExamRunner({
             key={item.id}
             className={`h-1.5 flex-1 rounded-full ${
               index < stageIndex
-                ? 'bg-teal-600'
+                ? accent.done
                 : index === stageIndex
-                  ? 'bg-teal-400'
+                  ? accent.current
                   : 'bg-slate-200 dark:bg-slate-700'
             }`}
           />
@@ -295,6 +315,7 @@ export function ExamRunner({
                   setPassesByTask((current) => ({ ...current, [taskId]: (current[taskId] ?? 0) + 1 }))
                 }
                 locked={passesUsed >= 2}
+                revealTranscript={revealed}
               />
             ) : null}
 
@@ -318,6 +339,7 @@ export function ExamRunner({
                 }}
                 index={questionIndex + 1}
                 total={questions.length}
+                pronounce={!isExam && !question.taskId.startsWith('studio-')}
                 revealed={revealed}
               />
             ) : null}
@@ -383,7 +405,7 @@ export function ExamRunner({
           </div>
         ) : (
           <span className="text-[11px] font-bold text-slate-500">
-            As respostas já foram salvas — podes sair e voltar.
+            As respostas já foram salvas — pode sair e voltar.
           </span>
         )}
       </footer>
@@ -401,8 +423,8 @@ export function ExamRunner({
               Encerrar a sessão?
             </p>
             <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
-              As respostas já foram salvas. A sessão fica marcada como abandonada e podes
-              voltar a treinar quando quiseres.
+              As respostas já foram salvas. A sessão fica marcada como abandonada e pode
+              voltar a treinar quando quiser.
             </p>
             <div className="mt-4 flex flex-col gap-2 sm:flex-row-reverse">
               <Button variant="danger" onClick={() => callbacks.onAbort()}>

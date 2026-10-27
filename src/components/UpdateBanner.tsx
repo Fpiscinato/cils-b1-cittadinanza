@@ -1,11 +1,11 @@
 /**
  * Banner de estado do PWA.
  *
- * A app regista o service worker ela própria (`virtual:pwa-register`), por isso
- * o banner é também o botão de "actualizar já" quando há uma versão nova.
+ * A app registra o service worker ela própria (`virtual:pwa-register`), por isso
+ * o banner é também o botão de "atualizar já" quando há uma versão nova.
  *
  * Regra de UX: o banner nunca bloqueia a app. Fica acima do menu inferior no
- * telemóvel e no canto inferior direito no portátil.
+ * celular e no canto inferior direito no notebook.
  */
 
 import { CloudDownload, RefreshCw } from 'lucide-react'
@@ -41,8 +41,8 @@ export function UpdateBanner({
           </p>
           <p className="text-[11px] font-semibold leading-snug text-slate-500">
             {isUpdate
-              ? 'Toca em actualizar para usar a versão mais recente.'
-              : 'Já podes estudar sem internet.'}
+              ? 'Toque em atualizar para usar a versão mais recente.'
+              : 'Já pode estudar sem internet.'}
           </p>
         </div>
         {isUpdate ? (

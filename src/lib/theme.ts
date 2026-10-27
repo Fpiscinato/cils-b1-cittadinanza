@@ -2,7 +2,7 @@
  * Tema claro / escuro / sistema.
  *
  * A app tem de funcionar offline e sem flicker no arranque: o `index.html`
- * aplica o tema guardado ANTES de o React montar (ver o script inline em
+ * aplica o tema salvo ANTES de o React montar (ver o script inline em
  * `index.html`), e este módulo é a fonte de verdade do comportamento.
  *
  * A classe `dark` é posta no `<html>`; o Tailwind usa a variante

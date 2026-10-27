@@ -15,7 +15,7 @@ import { APP_VERSION } from '../../config/version'
  * Relatório de uma prova: rever tudo e poder enviar à professora.
  *
  * O relatório é imprimível (`window.print()` → "Guardar em PDF"), por isso o
- * ecrã é limpo, sem botões na impressão.
+ * tela é limpa, sem botões na impressão.
  */
 export function ReportPage({
   sessionId,
@@ -48,7 +48,7 @@ export function ReportPage({
   }, [report])
 
   // TODOS os hooks têm de correr ANTES de qualquer return antecipado — caso
-  // contrário o React reclama (erro #310) e o ecrã fica em branco.
+  // contrário o React reclama (erro #310) e a tela fica em branco.
   const oralAudio = report?.oralAudio ?? null
   const audioUrl = useMemo(
     () => (oralAudio ? URL.createObjectURL(oralAudio) : null),
@@ -62,7 +62,7 @@ export function ReportPage({
   }, [audioUrl])
 
   if (loading) {
-    return <p className="text-sm font-bold text-slate-500">A carregar o relatório…</p>
+    return <p className="text-sm font-bold text-slate-500">Carregando o relatório…</p>
   }
 
   if (!report) {
@@ -90,10 +90,10 @@ export function ReportPage({
           <ArrowLeft size={16} /> Voltar
         </Button>
         <Button onClick={() => window.print()}>
-          <Printer size={16} /> Imprimir / Guardar em PDF
+          <Printer size={16} /> Imprimir / Salvar em PDF
         </Button>
         <span className="text-[11px] font-bold text-slate-500">
-          Imprime ou guarda em PDF e envia por email à professora.
+          Imprima ou guarda em PDF e envia por email à professora.
         </span>
       </div>
 
@@ -182,7 +182,7 @@ export function ReportPage({
                         >
                           {isCorrect ? '✔ ' : isGiven ? '✘ ' : '· '}
                           {option}
-                          {isGiven ? ' (a tua resposta)' : ''}
+                          {isGiven ? ' (a sua resposta)' : ''}
                         </li>
                       )
                     })}

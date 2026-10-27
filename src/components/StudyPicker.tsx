@@ -99,7 +99,7 @@ export function StudyPicker({
 
       <div>
         <p className="text-xs font-black uppercase tracking-wide text-slate-500">
-          O que queres treinar
+          O que quer treinar
         </p>
         <div className="mt-2 grid grid-cols-3 gap-2">
           {KINDS.map((item) => {
@@ -150,8 +150,8 @@ export function StudyPicker({
 
       {current.mastered && next ? (
         <Alert tone="teal" title={`Nível ${level} dominado`}>
-          Já tens respostas e precisão suficientes para subir. O próximo nível é <strong>{next}</strong>
-          — podes escolhê-lo acima quando quiseres.
+          Já tem respostas e precisão suficientes para subir. O próximo nível é <strong>{next}</strong>
+          — pode escolhê-lo acima quando quiser.
         </Alert>
       ) : null}
 

@@ -1,5 +1,5 @@
 /**
- * Rotas da app num único sítio.
+ * Rotas da app num único lugar.
  *
  * A rota vive aqui (e não no shell) porque tanto a lógica de negócio
  * (onboarding, atalhos do guia) como a UI precisam de a conhecer — sem criar

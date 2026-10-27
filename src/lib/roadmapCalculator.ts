@@ -131,7 +131,7 @@ export function computeRoadmap(input: RoadmapInput): RoadmapSnapshot {
       id: 'fondazione',
       title: 'Fase 1 — Fondazione (A1)',
       window: 'Primeiras 16 semanas',
-      headline: 'Verbi essere/avere, artigos, apresentação pessoal, vida quotidiana.',
+      headline: 'Verbi essere/avere, artigos, apresentação pessoal, vida cotidiana.',
       percent: phasePercent(foundationGoals),
       goals: foundationGoals,
     },
@@ -197,7 +197,7 @@ export function computeDailyTask(snapshot: RoadmapSnapshot): DailyTask {
     return {
       id: 'coverage',
       title: 'Cobrir uma habilidade nova',
-      detail: 'Ainda não praticaste todas as 4 habilidades. Escolhe a que falta.',
+      detail: 'Ainda não praticaste todas as 4 habilidades. Escolha a que falta.',
       minutes: 15,
       questions: 10,
     }

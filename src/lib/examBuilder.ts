@@ -55,9 +55,24 @@ export interface BuildOptions {
   groupByTask?: boolean
   /** Número máximo de itens por prova (o simulado completo não tem limite). */
   limit?: number
+  /** Ids que devem ficar para o fim (perguntas já respondidas recentemente). */
+  excludeQuestionIds?: string[]
+  /**
+   * Pede ao builder para evitar as perguntas respondidas nos últimos
+   * `RECENT_REPEAT_WINDOW_DAYS` dias. Por omissão só se aplica à prática e ao
+   * estudo (nunca ao simulado, que tem de usar a prova oficial na ordem).
+   */
+  excludeRecent?: boolean
   /** Gerador de aleatoriedade injectável (para os testes). */
   random?: () => number
 }
+
+/**
+ * Janela (em dias) em que uma pergunta já respondida deixa de ser escolhida
+ * enquanto houver perguntas novas no banco. Evita que a prática abra sempre
+ * com as mesmas 18 perguntas.
+ */
+export const RECENT_REPEAT_WINDOW_DAYS = 45
 
 export interface BuiltExam {
   stages: Stage[]
@@ -95,9 +110,29 @@ function filterQuestions(
   }
 
   if (options.shuffle) {
-    filtered = options.groupByTask
-      ? shuffleTaskGroups(filtered, random)
-      : shuffle(filtered, random)
+    /**
+     * As perguntas já respondidas recentemente vão para o FIM da lista: o
+     * `limit` corta primeiro as novas. Quando o banco já não tem material
+     * fresco suficiente, a prova enche-se com as antigas (nunca fica vazia).
+     */
+    if (options.groupByTask) {
+      // O texto/áudio é a unidade: se uma pergunta da task já foi vista, a task
+      // inteira vai para o fim (nunca se corta um texto a meio).
+      const excluded = new Set(options.excludeQuestionIds ?? [])
+      const seenTasks = new Set(
+        excluded.size > 0
+          ? filtered.filter((question) => excluded.has(question.id)).map((question) => question.taskId)
+          : [],
+      )
+      const fresh = filtered.filter((question) => !seenTasks.has(question.taskId))
+      const seen = filtered.filter((question) => seenTasks.has(question.taskId))
+      filtered = [...shuffleTaskGroups(fresh, random), ...shuffleTaskGroups(seen, random)]
+    } else {
+      const excluded = new Set(options.excludeQuestionIds ?? [])
+      const fresh = filtered.filter((question) => !excluded.has(question.id))
+      const seen = filtered.filter((question) => excluded.has(question.id))
+      filtered = [...shuffle(fresh, random), ...shuffle(seen, random)]
+    }
   } else {
     filtered = [...filtered].sort((a, b) => {
       if (a.taskId !== b.taskId) return a.taskId.localeCompare(b.taskId)
@@ -137,6 +172,18 @@ async function loadQuestions(
 ): Promise<Question[]> {
   const questions = await db.questions.where('skill').equals(skill as never).toArray()
   return filterQuestions(questions, options)
+}
+
+/**
+ * Ids de perguntas desta habilidade respondidas nos últimos dias. Só serve
+ * para as empurrar para o fim da seleção — não as elimina do banco.
+ */
+async function recentlyAnsweredIds(skill: Skill): Promise<string[]> {
+  const cutoff = Date.now() - RECENT_REPEAT_WINDOW_DAYS * 24 * 60 * 60 * 1000
+  const attempts = await db.attempts.where('timestamp').aboveOrEqual(cutoff).toArray()
+  return attempts
+    .filter((attempt) => attempt.skill === skill)
+    .map((attempt) => attempt.questionId)
 }
 
 /**
@@ -185,8 +232,28 @@ export async function buildExam(
     groupByTask: options.groupByTask ?? practiceLimit !== undefined,
   }
 
+  /**
+   * A prática e o estudo mandam para o fim as perguntas já respondidas nos
+   * últimos `RECENT_REPEAT_WINDOW_DAYS` dias (só quando há alternativa). O
+   * simulado NÃO: usa a prova oficial, na ordem oficial.
+   */
+  const avoidRepeats =
+    options.excludeRecent ??
+    (bank === 'all' &&
+      resolved.shuffle === true &&
+      resolved.limit !== undefined &&
+      !options.questionIds?.length)
+
+  async function practiceQuestions(skill: Skill): Promise<Question[]> {
+    const recent = avoidRepeats ? await recentlyAnsweredIds(skill) : []
+    return loadQuestions(skill, {
+      ...resolved,
+      excludeQuestionIds: [...(options.excludeQuestionIds ?? []), ...recent],
+    })
+  }
+
   if (mode === 'ascolto' || mode === 'mock_cittadinanza') {
-    const questions = await loadQuestions('ascolto', resolved)
+    const questions = await practiceQuestions('ascolto')
     if (questions.length > 0) {
       stages.push({
         kind: 'objective',
@@ -202,7 +269,7 @@ export async function buildExam(
   }
 
   if (mode === 'lettura' || mode === 'mock_cittadinanza') {
-    const questions = await loadQuestions('lettura', resolved)
+    const questions = await practiceQuestions('lettura')
     if (questions.length > 0) {
       stages.push({
         kind: 'objective',
@@ -219,7 +286,7 @@ export async function buildExam(
   // ESTUDO: uma única habilidade, itens aleatórios do nível escolhido.
   if (mode === 'studio') {
     const skill = options.skill ?? 'lettura'
-    const questions = await loadQuestions(skill, resolved)
+    const questions = await practiceQuestions(skill)
     if (questions.length > 0) {
       stages.push({
         kind: 'objective',

@@ -21,7 +21,7 @@ export const LEVEL_LABELS: Record<Level, string> = {
 
 /** O que se treina em cada nível (texto curto, em português). */
 export const LEVEL_FOCUS: Record<Level, string> = {
-  A1: 'Começa pelo essencial: ser e ter, artigos, apresentação pessoal e vida quotidiana.',
+  A1: 'Comece pelo essencial: ser e ter, artigos, apresentação pessoal e vida cotidiana.',
   A2: 'Passado, futuro, pronomes e preposições — com exercícios de completar frases.',
   B1: 'O nível do exame: condicional, conectores, burocracia e cidadania.',
 }
@@ -176,7 +176,7 @@ export interface TodayPlan {
 
 export interface TodayPlanInput extends LevelProgressInput {
   sessions: ReadonlyArray<Pick<Session, 'mode' | 'status'>>
-  /** Nível escolhido pela aluna (o que está guardado nas preferências). */
+  /** Nível escolhido pela aluna (o que está salvo nas preferências). */
   level: Level
 }
 

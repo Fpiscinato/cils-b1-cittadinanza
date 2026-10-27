@@ -42,7 +42,7 @@ export class CilsDatabase extends Dexie {
       grammarItems: 'id, phase, topic, level',
       vocabItems: 'id, phase, category, level',
     })
-    // v3: a gravação de áudio da prova oral (ficca só neste aparelho).
+    // v3: a gravação de áudio da prova oral (ficca só neste dispositivo).
     this.version(3).stores({
       oralAudios: 'id, createdAt',
     })
@@ -56,8 +56,8 @@ export const db = new CilsDatabase()
  *
  * O Dexie abre a base de dados com a versão do esquema. Se um separador
  * antigo da app (com o esquema v1) ficar aberto, a nova versão (v3) fica a
- * espera — o `open()` nunca resolve e a app fica eternamente no ecrã
- * "A carregar…". Com o evento `versionchange`, o separador antigo fecha a
+ * espera — o `open()` nunca resolve e a app fica eternamente na tela
+ * "Carregando…". Com o evento `versionchange`, o separador antigo fecha a
  * ligação e deixa o upgrade acontecer.
  */
 db.on('versionchange', () => {

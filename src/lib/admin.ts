@@ -102,7 +102,7 @@ export interface ProfileInput {
 export function validateProfileInput(input: ProfileInput): string | null {
   const name = input.name.trim()
   if (name.length === 0 || name.length > 40) return 'O nome deve ter entre 1 e 40 caracteres.'
-  if (input.avatar.trim().length === 0 || input.avatar.trim().length > 8) return 'Escolhe um emoji.'
+  if (input.avatar.trim().length === 0 || input.avatar.trim().length > 8) return 'Escolha um emoji.'
   if (input.examDate !== '' && !/^\d{4}-\d{2}-\d{2}$/.test(input.examDate)) {
     return 'A data da prova deve estar no formato AAAA-MM-DD.'
   }

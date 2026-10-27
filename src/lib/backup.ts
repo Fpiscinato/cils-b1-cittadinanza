@@ -9,7 +9,7 @@
 import { db } from '../db/database'
 import { backupSchema, type Backup } from '../db/schemas'
 
-/** Marca local de "já exportaste um backup" (usada nos primeiros passos). */
+/** Marque local de "já exportaste um backup" (usada nos primeiros passos). */
 export const BACKUP_EXPORTED_KEY = 'cils.backup.exported'
 
 export async function buildBackup(): Promise<Backup> {
@@ -63,12 +63,12 @@ export function parseBackup(text: string): Backup {
   try {
     raw = JSON.parse(text)
   } catch {
-    throw new Error('Esse ficheiro não é um JSON válido. Escolhe um ficheiro de backup do CILS B1.')
+    throw new Error('Esse arquivo não é um JSON válido. Escolha um arquivo de backup do CILS B1.')
   }
   const result = backupSchema.safeParse(raw)
   if (!result.success) {
     const first = result.error.issues[0]
-    const path = first.path.join('.') || 'ficheiro'
+    const path = first.path.join('.') || 'arquivo'
     throw new Error(`Este backup não é válido (${path}: ${first.message}).`)
   }
   return result.data

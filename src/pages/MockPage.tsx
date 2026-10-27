@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { ExamSession } from '../components/exam/ExamSession'
 import { Button, Card } from '../components/ui'
@@ -19,18 +19,34 @@ export function MockPage({
   pending,
   onPendingConsumed,
   onReview,
+  onSessionChange,
 }: {
   profileId: string
   onCompleted: () => void
   onNavigate: (route: Route) => void
-  /** Simulado pedido noutro ecrã — abre directamente. */
+  /** Simulado pedido noutra tela — abre directamente. */
   pending: PendingSession | null
   onPendingConsumed: () => void
   onReview?: (sessionId: string) => void
+  /** Avisa o App de que há uma sessão a correr (para a barra "Continuar"). */
+  onSessionChange?: (active: boolean) => void
 }) {
   const [mode, setMode] = useState<ExamMode | null>(
     pending?.mode === 'mock_cittadinanza' ? 'mock_cittadinanza' : null,
   )
+  const [finished, setFinished] = useState(false)
+
+  // O tela fica sempre montado (a sessão não pode morrer ao mudar de aba).
+  useEffect(() => {
+    if (pending?.mode !== 'mock_cittadinanza') return
+    setFinished(false)
+    setMode('mock_cittadinanza')
+    onPendingConsumed()
+  }, [pending, onPendingConsumed])
+
+  useEffect(() => {
+    onSessionChange?.(mode !== null && !finished)
+  }, [mode, finished, onSessionChange])
 
   if (mode) {
     return (
@@ -38,9 +54,13 @@ export function MockPage({
         mode={mode}
         profileId={profileId}
         onReview={onReview}
-        onSaved={onCompleted}
+        onSaved={() => {
+          setFinished(true)
+          onCompleted()
+        }}
         onExit={() => {
           setMode(null)
+          setFinished(false)
           onPendingConsumed()
         }}
         onCompleted={() => {
@@ -72,7 +92,10 @@ export function MockPage({
         </p>
         <button
           type="button"
-          onClick={() => setMode('mock_cittadinanza')}
+          onClick={() => {
+            setFinished(false)
+            setMode('mock_cittadinanza')
+          }}
           className="mt-3 w-full rounded-xl bg-teal-700 px-4 py-3 text-sm font-black text-white hover:bg-teal-800 sm:w-auto"
         >
           ▶️ Começar o simulado completo
@@ -86,7 +109,7 @@ export function MockPage({
               Foglio delle risposte
             </p>
             <p className="mt-1 text-xs font-semibold text-slate-600 dark:text-slate-300">
-              A folha oficial em A4, para escreveres as respostas à mão como no dia do exame.
+              A folha oficial em A4, para escrever as respostas à mão como no dia do exame.
             </p>
           </div>
           <Button variant="secondary" onClick={() => onNavigate('foglio')}>
@@ -106,7 +129,10 @@ export function MockPage({
               <button
                 key={item}
                 type="button"
-                onClick={() => setMode(item)}
+                onClick={() => {
+                  setFinished(false)
+                  setMode(item)
+                }}
                 className="rounded-xl border border-slate-200 p-3 text-left transition hover:border-teal-500 dark:border-slate-700"
               >
                 <p className="text-sm font-black text-slate-900 dark:text-slate-100">
@@ -123,7 +149,7 @@ export function MockPage({
         <p className="text-xs font-black uppercase tracking-wide text-slate-500">Como corrigir</p>
         <p className="mt-2 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
           A app usa os pesos e as rubricas <strong>oficiais</strong> do CILS. A prova de oral é
-          marcada com a grelha oficial, como na prova real. O resultado de cada prova fica guardado
+          marcada com a grelha oficial, como na prova real. O resultado de cada prova fica salvo
           no histórico e nunca é apagado automaticamente.
         </p>
         <div className="mt-3">

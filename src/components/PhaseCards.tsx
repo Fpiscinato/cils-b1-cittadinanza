@@ -21,7 +21,7 @@ export function PhaseCards({
         </p>
       ) : (
         <p className="mb-3 text-xs font-bold text-slate-500">
-          Marca a data da prova nos Ajustes para as fases se ajustarem ao teu prazo.
+          Marque a data da prova nos Ajustes para as fases se ajustarem ao seu prazo.
         </p>
       )}
       <div className="grid gap-3 lg:grid-cols-3">

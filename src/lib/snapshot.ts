@@ -3,7 +3,7 @@
  *
  * A app vive 100% offline (IndexedDB). Se a aluna limpar os dados do browser,
  * perde o histórico — por isso guardamos cópias automáticas do **dado do
- * utilizador** (provas, tentativas, textos) em `localStorage`, que sobrevive ao
+ * usuário** (provas, tentativas, textos) em `localStorage`, que sobrevive ao
  * "limpar dados do site" em quase todos os browsers.
  *
  * O conteúdo do banco (passagens e perguntas) NÃO entra no snapshot: é

@@ -19,8 +19,11 @@ Tudo no app é subordinado a essa pergunta. Conteúdo genérico de italiano é e
 ### Público e idioma
 
 - Usuária: adulta, fala português, vive no Reino Unido, estuda sozinha, usa tablet/laptop.
-- **Toda a interface do app é em português.** A língua avaliada (italiano) é o conteúdo das
-  provas; a língua da interface é o português. Trecho de italiano em nenhum idioma é bug.
+- **Toda a interface do app é em português do Brasil (pt-BR).** A língua avaliada (italiano) é o
+  conteúdo das provas; a língua da interface é o pt-BR. Trecho de italiano em outro idioma é bug.
+  Vocabulário pt-PT é bug de interface: celular (não telemóvel), tela (não ecrã), arquivo (não
+  ficheiro), salvo (não guardado), trem (não comboio), ônibus (não autocarro), você/pode (não
+  tu/podes).
 - Terminologia da prova em italiano (ascolto, lettura, scrittura, orale) **preservada** — é assim
   que o examinador e o materiale oficial chamam, e é o que a aluna vai encontrar na prova.
 
@@ -362,8 +365,8 @@ do Memoriza `src/lib/github-sync.ts`:
    (é assim na prova real; o treino é ler a explicação e seguir).
 6. **Uma única confirmação para parar**: um alertdialog com exatamente dois botões —
    "Continuar estudando" e "Encerrar sessão" — e a mensagem "As respostas já foram salvas".
-7. **O menu está SEMPRE visível**: no telemóvel é o menu inferior fixo (6 itens, aba ativa
-   marcada); no portátil/tablet (`md:`) é um **menu lateral fixo** no `AppShell`. Nenhum ecrã
+7. **O menu está SEMPRE visível**: no celular é o menu inferior fixo (6 itens, aba ativa
+   marcada); no notebook/tablet (`md:`) é um **menu lateral fixo** no `AppShell`. Nenhuma tela
    pode ficar sem navegação. O ícone da app fica no **canto superior esquerdo** (link para o
    Painel), com o botão de tema e o badge de sync à direita.
 8. **"Voltar ao painel" em todos os ecrãs secundários**: `BackButton` (`src/components/ui.tsx`)
@@ -402,6 +405,33 @@ do Memoriza `src/lib/github-sync.ts`:
     **por task**, para o áudio de um texto não ser cortado a meio. O simulado continua a usar
     o banco oficial na ordem oficial. Sem este limite, "Lettura" abria 629 perguntas com 40
     minutos de cronómetro.
+16. **Pronúncia (TTS) no estudo e na prática, nunca no simulado**: `PronounceButton`
+    (`src/components/exam/PronounceButton.tsx`) lê a pergunta e a resposta certa em italiano.
+    No simulado (`mode === 'exam'`) o botão não aparece (na prova real não há esse apoio). Em
+    itens de apostila (`taskId` começado por `studio-`) o enunciado é português, por isso a
+    pronúncia aparece só na resposta certa.
+17. **Aprender (vocabulário)**: dentro do cartão "Estudar" há o botão "Aprender palavras de
+    <nível>" (`src/components/LearnPanel.tsx`). Cartões com a palavra/frase em italiano, botão de
+    pronúncia, "Ver o significado em português" e a frase de exemplo traduzida. É aprendizagem,
+    não grava sessão nem entra no veredito.
+18. **Sessão não morre ao mudar de aba**: `PracticePage`, `MockPage` e `MistakesPage` ficam
+    **sempre montadas** no `App.tsx` (escondidas com `hidden`) e o pedido de prova chega por
+    efeito. Enquanto há sessão a correr e a rota ativa é outra, aparece a barra fixa
+    "⏱️ Sessão em curso — continuar", que volta ao ecrã da sessão sem a reiniciar.
+19. **Histórico do Progresso** (`src/components/SessionHistory.tsx` + `src/lib/sessionSummary.ts`):
+    uma linha por sessão concluída (Estudo, Prática ou Simulado) com a **bolinha da cor do
+    gráfico**, hora, cronómetro, acertos/erros e, nos simulados, o score por habilidade.
+    Agrupado **por dia** e recolhido: só os 2 dias mais recentes abrem; os antigos abrem num clique.
+20. **Legenda do gráfico clicável**: no "Evolução do estudo · 14 dias", cada cor (Estudo, Prática,
+    Simulado) tem tooltip e, ao clicar/tocar, mostra a descrição exata do que conta.
+21. **Anti-repetição**: a prática e o estudo empurram para o fim (e por isso não escolhem enquanto
+    houver alternativa) as perguntas respondidas nos últimos `RECENT_REPEAT_WINDOW_DAYS = 45`
+    dias (`src/lib/examBuilder.ts`). O simulado **nunca** aplica esta regra: usa a prova oficial
+    na ordem oficial. Se o banco fresco não chegar, a prova enche-se com as antigas (nunca fica
+    vazia). "Mix rápido" é uma **sessão de prática** (barra azul), não de estudo.
+22. **Áudio do ascolto na sequência certa**: o player aparece **antes** das opções, cada texto
+    tem exatamente **2 reproduções** (o contador sobe no início da reprodução, não no fim), e a
+    transcrição só é revelada **depois de confirmar a resposta**.
 
 ## 8. Standard di codice
 
@@ -410,7 +440,7 @@ do Memoriza `src/lib/github-sync.ts`:
 - Zod per ogni dato che entra nel DB o da fuori (backup, import, config).
 - Testi Vitest per **tutta** la logica di business: `scoring`, `readiness`, `roadmap`,
   `timing`, `wordCount`, `rubric`, `studyPlan`, `stageCounts`, `examBuilder`. Un bug no scoring reprova a aluna na prova real.
-- Italiano nei **dati**, português nos **textos de interface**. Nomes de código em inglês.
+- Italiano nei **dati**, **português do Brasil** nos **textos de interface**. Nomes de código em inglês.
 - Sem dependência de CDN em runtime. O app tem que funcionar **100% offline** depois do
   primeiro load (é uma PWA para studying em casa,UK, com internet instável).
 
@@ -420,7 +450,7 @@ do Memoriza `src/lib/github-sync.ts`:
 npm run dev            # vite dev
 npm run build          # tsc -b && vite build   <- único type-check confiável
 npm run lint           # oxlint
-npm run test           # vitest run  (115 testes em 14 ficheiros)
+npm run test           # vitest run  (122 testes em 15 ficheiros)
 npm run audit          # a porta de qualidade: audit:exam + audit:content + test
 npm run audit:exam     # a configuração das provas bate com a especificação oficial?
 npm run audit:content  # integridade do banco (opções, pesos, ordem) E o gabarito oficial do CILS

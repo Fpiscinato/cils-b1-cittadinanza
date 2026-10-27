@@ -28,7 +28,7 @@ export const GRAMMAR_ITEMS: GrammarItem[] = [
     title: 'Essere e avere al presente',
     rule: 'Il presente di essere e di avere si usa per dire chi sei, come stai e che cosa possiedi.',
     explanationPt:
-      'O presente de "essere" e "have" serve para dizer quem és, como estás e o que tens. São os verbos que mais se usam na prova oral.',
+      'O presente de "essere" e "avere" serve para dizer quem você é, como está e o que tem. São os verbos que mais se usam na prova oral.',
     examples: [
       { it: 'Io sono Maria e vivo a Londra.', pt: 'Eu sou a Maria e vivo em Londres.' },
       { it: 'Ho venticinque anni e un lavoro in un ospedale.', pt: 'Tenho vinte e cinco anos e trabalho num hospital.' },
@@ -44,7 +44,7 @@ export const GRAMMAR_ITEMS: GrammarItem[] = [
     explanationPt:
       'O artigo determinado (o, a, os, as) indica algo já conhecido; o indeterminado (um, uma) introduz algo novo. A forma muda com o género: "lo studente", "la studentessa", "i libri", "le ragazze".',
     examples: [
-      { it: 'Vorrei un biglietto per Roma, per favore.', pt: 'Queria um bilhete para Roma, por favor.' },
+      { it: 'Vorrei un biglietto per Roma, per favore.', pt: 'Queria uma passagem para Roma, por favor.' },
       { it: 'Abito in un appartamento vicino all\'ufficio.', pt: 'Moro num apartamento perto do escritório.' },
     ],
     level: 'A1',
@@ -116,7 +116,7 @@ export const GRAMMAR_ITEMS: GrammarItem[] = [
     explanationPt:
       'O pretérito perfeito forma-se com o presente de "ter/haver" ou "ser" + participio passado: "comi", "fui", "esci". Os verbos de movimento (andare, venire, restare) usam "essere".',
     examples: [
-      { it: 'Ieri ho comprato i biglietti del treno.', pt: 'Ontem comprei os bilhetes do comboio.' },
+      { it: 'Ieri ho comprato i biglietti del treno.', pt: 'Ontem comprei as passagens de trem.' },
       { it: 'Sono arrivata a Siena alle nove di sera.', pt: 'Cheguei a Siena às nove da noite.' },
     ],
     level: 'A2',
@@ -144,7 +144,7 @@ export const GRAMMAR_ITEMS: GrammarItem[] = [
     explanationPt:
       'Preposição + artigo fundem-se: "a il" → al, "di il" → del, "a gli" → agli, "in il" → nel, "su il" → sul, "da il" → dal. É onde muitos erros acontecem — e o que a "riflessione grammaticale" cobra.',
     examples: [
-      { it: 'Il treno parte dalla stazione centrale.', pt: 'O comboio parte da estação central.' },
+      { it: 'Il treno parte dalla stazione centrale.', pt: 'O trem parte da estação central.' },
       { it: 'Abito nel quartiere di San Giovanni.', pt: 'Moro no bairro de São João.' },
     ],
     level: 'A2',
@@ -217,7 +217,7 @@ export const GRAMMAR_ITEMS: GrammarItem[] = [
       'O pronome relativo "che" introduz uma frase relativa; "dove" substitui "em que"; "cui" substitui "o qual/a qual". Sabe-os usar — aparecem muito na escrita.',
     examples: [
       { it: 'Cerco un appartamento che sia vicino all\'ospedale.', pt: 'Procuro um apartamento que fique perto do hospital.' },
-      { it: 'Questo è il modulo in cui devi scrivere i tuoi dati.', pt: 'Este é o formulário onde tens de escrever os teus dados.' },
+      { it: 'Questo è il modulo in cui devi scrivere i tuoi dati.', pt: 'Este é o formulário onde você tem de escrever os seus dados.' },
     ],
     level: 'B1',
   },
@@ -258,7 +258,7 @@ export const GRAMMAR_ITEMS: GrammarItem[] = [
     explanationPt:
       'O passivo forma-se com "ser" + participio ("foi enviado"); as construções impessoais com "si" + verbo ("fala-se", "deve-se") são muito frequentes na parte burocrática.',
     examples: [
-      { it: 'La domanda è stata inviata tramite raccomandata.', pt: 'O pedido foi enviado por carta registada.' },
+      { it: 'La domanda è stata inviata tramite raccomandata.', pt: 'O pedido foi enviado por carta registrada.' },
       { it: 'Per ottenere il permesso si deve presentare il passaporto.', pt: 'Para obter a autorização é preciso apresentar o passaporte.' },
     ],
     level: 'B1',
@@ -290,9 +290,9 @@ export const VOCAB_ITEMS: VocabItem[] = [
     phase: 'fondazione',
     category: 'quotidiano',
     it: 'il biglietto',
-    pt: 'o bilhete',
+    pt: 'a passagem',
     example: 'Un biglietto del treno per Roma costa 20 euro.',
-    examplePt: 'Um bilhete de comboio para Roma custa 20 euros.',
+    examplePt: 'Uma passagem de trem para Roma custa 20 euros.',
     level: 'A1',
   },
   {
@@ -300,9 +300,9 @@ export const VOCAB_ITEMS: VocabItem[] = [
     phase: 'fondazione',
     category: 'quotidiano',
     it: "l'autobus",
-    pt: 'o autocarro',
+    pt: 'o ônibus',
     example: "L'autobus numero 5 arriva ogni dieci minuti.",
-    examplePt: 'O autocarro número 5 chega a cada dez minutos.',
+    examplePt: 'O ônibus número 5 chega a cada dez minutos.',
     level: 'A1',
   },
   {
@@ -514,7 +514,7 @@ export const VOCAB_ITEMS: VocabItem[] = [
     it: 'costare',
     pt: 'custar',
     example: 'Quanto costa il biglietto del treno?',
-    examplePt: 'Quanto custa o bilhete do comboio?',
+    examplePt: 'Quanto custa a passagem de trem?',
     level: 'A2',
   },
   {
@@ -827,7 +827,7 @@ export const VOCAB_ITEMS: VocabItem[] = [
     it: 'la tessera',
     pt: 'o cartão (de transporte, de cliente…)',
     example: "La tessera dell'autobus costa cinque euro.",
-    examplePt: 'O cartão do autocarro custa cinco euros.',
+    examplePt: 'O cartão do ônibus custa cinco euros.',
     level: 'A2',
   },
   {
@@ -1066,9 +1066,9 @@ export const VOCAB_ITEMS: VocabItem[] = [
     phase: 'cittadinanza',
     category: 'burocracia',
     it: 'la raccomandata',
-    pt: 'a carta registada',
+    pt: 'a carta registrada',
     example: 'La raccomandata arriva sempre con una ricevuta.',
-    examplePt: 'A carta registada chega sempre com um recibo.',
+    examplePt: 'A carta registrada chega sempre com um recibo.',
     level: 'B1',
   },
   {
@@ -1599,7 +1599,7 @@ export const VOCAB_ITEMS: VocabItem[] = [
     it: 'ricordare',
     pt: 'lembrar-se',
     example: 'Ricordo di aver pagato il biglietto.',
-    examplePt: 'Lembro-me de ter pago o bilhete.',
+    examplePt: 'Lembro-me de ter pago a passagem.',
     level: 'A2',
   },
   {
@@ -1880,7 +1880,7 @@ export const VOCAB_ITEMS: VocabItem[] = [
     it: 'sbrigare',
     pt: 'apressar-se',
     example: 'Dobbiamo sbrigarci, il treno parte tra dieci minuti.',
-    examplePt: 'Temos de nos apressar, o comboio parte dentro de dez minutos.',
+    examplePt: 'Temos de nos apressar, o trem parte dentro de dez minutos.',
     level: 'A2',
   },
   {
@@ -1908,7 +1908,7 @@ export const VOCAB_ITEMS: VocabItem[] = [
     phase: 'struttura',
     category: 'quotidiano',
     it: 'visitare',
-    pt: 'visitar (uma pessoa, um sítio)',
+    pt: 'visitar (uma pessoa, um lugar)',
     example: 'Domani vado a visitare la mia sorella.',
     examplePt: 'Amanhã vou visitar a minha irmã.',
     level: 'A1',
@@ -2151,7 +2151,7 @@ export const VOCAB_ITEMS: VocabItem[] = [
     it: 'avere fretta',
     pt: 'ter pressa',
     example: 'Ho fretta, il treno parte tra cinque minuti.',
-    examplePt: 'Tenho pressa, o comboio parte dentro de cinco minutos.',
+    examplePt: 'Tenho pressa, o trem parte dentro de cinco minutos.',
     level: 'A1',
   },
   {
@@ -2221,7 +2221,7 @@ export const VOCAB_ITEMS: VocabItem[] = [
     it: 'spedire (un documento)',
     pt: 'enviar (um documento)',
     example: 'La domanda è stata spedita per raccomandata.',
-    examplePt: 'O pedido foi enviado por carta registada.',
+    examplePt: 'O pedido foi enviado por carta registrada.',
     level: 'A2',
   },
   {

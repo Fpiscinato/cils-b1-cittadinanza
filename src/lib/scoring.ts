@@ -36,7 +36,7 @@ export const PASS_THRESHOLD_PER_SKILL = 7
 export const PASS_THRESHOLD_TOTAL = PASS_THRESHOLD_PER_SKILL * SKILLS.length // 28
 
 export const SKILL_LABELS: Record<Skill, { it: string; pt: string }> = {
-  ascolto: { it: 'Ascolto', pt: 'Escuta' },
+  ascolto: { it: 'Ascolto', pt: 'Escute' },
   lettura: { it: 'Lettura e riflessione grammaticale', pt: 'Leitura e gramática' },
   scrittura: { it: 'Produzione scritta', pt: 'Escrita' },
   orale: { it: 'Produzione orale', pt: 'Oral' },
@@ -153,7 +153,7 @@ export function scoreLettura(correctP1: number, correctP2: number): number {
 
 /**
  * Peso de cada prova (task) dentro da sua habilidade.
- * A chave é o `taskId` guardado em cada questão.
+ * A chave é o `taskId` salvo em cada questão.
  */
 export const TASK_WEIGHTS: Readonly<Record<string, number>> = {
   'ascolto-p1': ASCOLTO_P1_POINTS_PER_ITEM,
@@ -256,8 +256,8 @@ export function scoreSkillFromCounts(
 
 
 /**
- * Soma uma rubrica auto-avaliada. Cada critério é limitado ao seu máximo, então
- * uma auto-avaliação generosa não pode gerar mais de 12 pontos.
+ * Soma uma rubrica autoavaliada. Cada critério é limitado ao seu máximo, então
+ * uma autoavaliação generosa não pode gerar mais de 12 pontos.
  */
 export function scoreRubric(
   rubric: Readonly<Record<string, number>>,

@@ -19,7 +19,7 @@ import { Card, CollapsibleCard } from './ui'
 export function PhaseContent({
   onPractice,
 }: {
-  /** Começa uma prática só com o material da fase. */
+  /** Comece uma prática só com o material da fase. */
   onPractice: (phase: Phase, skill: 'ascolto' | 'lettura') => void
 }) {
   const [grammar, setGrammar] = useState<GrammarItem[]>([])
@@ -64,7 +64,7 @@ export function PhaseContent({
         </div>
         <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
           A gramática vem do Sillabo B1 Cittadinanza (a lista oficial de estruturas que a
-          examinadora pode cobrar). O vocabulário é o dos contextos do exame: vida quotidiana,
+          examinadora pode cobrar). O vocabulário é o dos contextos do exame: vida cotidiana,
           escritórios, assistência sanitária e cultura.
         </p>
       </Card>

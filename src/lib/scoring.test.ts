@@ -61,7 +61,7 @@ describe('grelhas oficiais', () => {
     expect(scoreOrale(full)).toBe(12)
   })
 
-  it('uma auto-avaliação generosa não passa do máximo', () => {
+  it('uma autoavaliação generosa não passa do máximo', () => {
     const greedy = Object.fromEntries(WRITING_RUBRIC.map((c) => [c.key, 99]))
     expect(scoreScrittura(greedy)).toBe(12)
   })

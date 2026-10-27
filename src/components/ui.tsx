@@ -82,7 +82,7 @@ export function CollapsibleCard({
   title: string
   icon?: ReactNode
   badge?: ReactNode
-  /** Abre já expandido (usa-se só na ação principal do ecrã). */
+  /** Abra já expandido (usa-se só na ação principal da tela). */
   defaultOpen?: boolean
   children: ReactNode
 }) {
@@ -128,8 +128,8 @@ export function Stat({
 }
 
 /**
- * Botão "voltar ao painel" — presente em todos os ecrãs secundários, para
- * nunca ficar preso num ecrã sem forma de sair.
+ * Botão "voltar ao painel" — presente em todos os telas secundários, para
+ * nunca ficar preso numa tela sem forma de sair.
  */
 export function BackButton({
   onBack,

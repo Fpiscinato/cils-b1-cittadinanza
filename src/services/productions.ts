@@ -1,8 +1,8 @@
 /**
  * Persistência das produções do aluno (escrita e oral).
  *
- * A app tira a pontuação da grelha oficial, mas o TEXTO e a auto-avaliação
- * também têm de ficar guardados: são o que permite rever a prova depois e
+ * A app tira a pontuação da grelha oficial, mas o TEXTO e a autoavaliação
+ * também têm de ficar salvos: são o que permite rever a prova depois e
  * enviar o relatório à professora (ver `src/components/exam/ReportPage.tsx`).
  */
 
@@ -41,7 +41,7 @@ export interface OralInput {
   rubric: Record<string, number>
   score: number
   durationSeconds: number
-  /** Gravação opcional (MediaRecorder). Fica só neste aparelho. */
+  /** Gravação opcional (MediaRecorder). Fica só neste dispositivo. */
   audio?: Blob | null
 }
 

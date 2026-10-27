@@ -1,5 +1,6 @@
 import { Check, X } from 'lucide-react'
 import type { Question } from '../../db/schemas'
+import { PronounceButton } from './PronounceButton'
 
 /**
  * Mostra uma pergunta objetiva (mcq3 / truefalse / cloze).
@@ -15,6 +16,7 @@ export function QuestionView({
   index,
   total,
   revealed = false,
+  pronounce = false,
 }: {
   question: Question
   selected: number | null
@@ -23,6 +25,8 @@ export function QuestionView({
   total: number
   /** true = resposta confirmada; as opções ficam bloqueadas. */
   revealed?: boolean
+  /** Mostra o botão de pronúncia (estudo e prática, nunca no simulado). */
+  pronounce?: boolean
 }) {
   const letters = ['A', 'B', 'C']
   return (
@@ -30,9 +34,12 @@ export function QuestionView({
       <p className="text-xs font-black uppercase tracking-wide text-slate-500">
         Pergunta {index} de {total}
       </p>
-      <p className="mt-2 text-lg font-bold leading-snug text-slate-900 dark:text-slate-100">
-        {question.stem}
-      </p>
+      <div className="mt-2 flex items-start gap-2">
+        <p className="min-w-0 flex-1 text-lg font-bold leading-snug text-slate-900 dark:text-slate-100">
+          {question.stem}
+        </p>
+        {pronounce ? <PronounceButton text={question.stem} /> : null}
+      </div>
       <div className="mt-4 flex flex-col gap-2">
         {question.options.map((option, optionIndex) => {
           const isSelected = selected === optionIndex

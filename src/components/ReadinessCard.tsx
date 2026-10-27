@@ -65,7 +65,7 @@ export function ReadinessCard({ report }: { report: ReadinessReport }) {
               />
               <p className="mt-1 text-[11px] font-bold text-slate-500">
                 {entry.samples === 0
-                  ? 'Sem provas registadas ainda.'
+                  ? 'Sem provas registradas ainda.'
                   : entry.passed
                     ? `Margem: +${entry.margin} pontos sobre a sufficienza`
                     : `Faltam ${Math.abs(entry.margin)} ponto(s) para a sufficienza`}
@@ -80,7 +80,7 @@ export function ReadinessCard({ report }: { report: ReadinessReport }) {
           <Alert tone="rose" title="Atenção: sem capitalização">
             O CILS B1 Cittadinanza <strong>não permite guardar</strong> as habilidades que passaram.
             Se uma ficar abaixo da sufficienza, a prova inteira tem de ser refeita na sessão
-            seguinte — por isso o objectivo é passar <strong>as quatro</strong>.
+            seguinte — por isso o objetivo é passar <strong>as quatro</strong>.
           </Alert>
         </div>
       ) : null}

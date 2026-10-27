@@ -2,7 +2,7 @@
  * Persistência das sessões de prova.
  *
  * Uma sessão = uma prova (ou um treino). Quando é concluída, ela passa a ser
- * o registo real da aluna e nunca mais é apagada (ver `src/lib/admin.ts`).
+ * o registro real da aluna e nunca mais é apagada (ver `src/lib/admin.ts`).
  */
 
 import { db } from '../db/database'
@@ -64,7 +64,7 @@ export async function saveAttempt(input: AttemptInput): Promise<void> {
 }
 
 /**
- * Marca a sessão como concluída, gravando a pontuação por habilidade.
+ * Marque a sessão como concluída, gravando a pontuação por habilidade.
  * A partir deste ponto a sessão é IMUTÁVEL.
  */
 export async function completeSession(
@@ -81,7 +81,7 @@ export async function completeSession(
   })
 }
 
-/** Marca a sessão como abandonada (mantém o histórico, sem contar como prova). */
+/** Marque a sessão como abandonada (mantém o histórico, sem contar como prova). */
 export async function abandonSession(sessionId: string, totalTimeSeconds: number): Promise<void> {
   await db.sessions.update(sessionId, {
     status: 'abandoned',

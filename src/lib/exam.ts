@@ -94,7 +94,7 @@ export const ASCOLTO_PROTOCOL: readonly AscoltoStep[] = [
   { id: 'p2-read', kind: 'read', task: 2, pass: null, durationSeconds: 2 * MINUTE, labelPt: 'Lê as 12 afirmações' },
   { id: 'p2-audio-2', kind: 'audio', task: 2, pass: 2, durationSeconds: 0, labelPt: 'Ascolta a prova 2 (2ª vez)' },
   { id: 'p2-review', kind: 'review', task: 2, pass: null, durationSeconds: 2 * MINUTE, labelPt: 'Confere as respostas' },
-  { id: 'write', kind: 'write', task: 2, pass: null, durationSeconds: 3 * MINUTE, labelPt: 'Escreve as respostas no foglio' },
+  { id: 'write', kind: 'write', task: 2, pass: null, durationSeconds: 3 * MINUTE, labelPt: 'Escreva as respostas no foglio' },
 ]
 
 /** Cada texto de ascolto pode ser ouvido no máximo duas vezes. */
@@ -109,7 +109,7 @@ export const EXAM_CONFIGS: Record<ExamMode, ExamConfig> = {
     mode: 'ascolto',
     skill: 'ascolto',
     title: 'Test di ascolto',
-    titlePt: 'Prova de Escuta (Ascolto)',
+    titlePt: 'Prova de Escute (Ascolto)',
     subtitlePt: '2 provas · 30 minutos · 12 pontos',
     blurbPt:
       'Textos do dia a dia, gravados em estúdio, em italiano standard. Cada texto é ouvido ' +
@@ -178,7 +178,7 @@ export const EXAM_CONFIGS: Record<ExamMode, ExamConfig> = {
     titlePt: 'Prova de Escrita (Produzione scritta)',
     subtitlePt: '1 prova · 40 minutos · 12 pontos',
     blurbPt:
-      'Escolhe 1 dos 2 temas e escreve de 80 a 120 palavras. A correção usa a grilha ' +
+      'Escolha 1 dos 2 temas e escreve de 80 a 120 palavras. A correção usa a grilha ' +
       'oficial: eficácia comunicativa, adequação estilística, correção morfossintática, ' +
       'riqueza lexical, ortografia e pontuação.',
     timeSeconds: 40 * MINUTE,
@@ -204,7 +204,7 @@ export const EXAM_CONFIGS: Record<ExamMode, ExamConfig> = {
     skill: 'all',
     title: 'Esame completo CILS B1 Cittadinanza',
     titlePt: 'Simulado completo — CILS B1 Cittadinanza',
-    subtitlePt: 'Escuta + Leitura + Escrita · 110 minutos · 36 pontos · Oral à parte',
+    subtitlePt: 'Escute + Leitura + Escrita · 110 minutos · 36 pontos · Oral à parte',
     blurbPt:
       'A prova escrita inteira, cronometrada, na ordem real: ascolto (30 min), lettura ' +
       '(40 min) e produzione scritta (40 min). A prova orale é marcada à parte, como no ' +
@@ -220,7 +220,7 @@ export const EXAM_CONFIGS: Record<ExamMode, ExamConfig> = {
     titlePt: 'Estudo por nível (A1 / A2 / B1)',
     subtitlePt: 'Exercícios do nível · sem pressão de tempo',
     blurbPt:
-      'Um bloco curto e ALEATÓRIO do nível que escolheres: exercícios de completar frases, ' +
+      'Um bloco curto e ALEATÓRIO do nível que você escolher: exercícios de completar frases, ' +
       'vocabulário, escuta ou leitura. As perguntas são sempre baralhadas e tiradas do banco ' +
       'grande, por isso cada dia é um dia novo.',
     timeSeconds: 45 * MINUTE,

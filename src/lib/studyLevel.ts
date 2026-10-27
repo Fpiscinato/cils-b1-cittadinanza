@@ -1,7 +1,7 @@
 /**
  * Nível de estudo escolhido pela aluna.
  *
- * Vive no `localStorage` (como o tema): é uma preferência deste aparelho, não
+ * Vive no `localStorage` (como o tema): é uma preferência deste dispositivo, não
  * um dado de progresso. O histórico de respostas é que diz se o nível já está
  * dominado — ver `src/lib/studyPlan.ts`.
  */

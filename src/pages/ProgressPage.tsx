@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { BookOpen } from 'lucide-react'
 import type { Attempt, Level, Session } from '../db/schemas'
-import { BackButton, Card, CollapsibleCard, ProgressBar, Stat } from '../components/ui'
+import { BackButton, Card, ProgressBar, Stat } from '../components/ui'
 import { ProgressChart } from '../components/ProgressChart'
+import { SessionHistory } from '../components/SessionHistory'
 import { StudyActivityChart } from '../components/StudyActivityChart'
 import { db } from '../db/database'
 import { buildSkillHistory } from '../services/sessions'
@@ -31,7 +31,7 @@ export function ProgressPage({
   sessions: Session[]
   attempts: Attempt[]
   onNavigate: (route: Route) => void
-  /** Abre o relatório da prova (rever e enviar à professora). */
+  /** Abra o relatório da prova (rever e enviar à professora). */
   onReview: (sessionId: string) => void
 }) {
   const [levelByQuestionId, setLevelByQuestionId] = useState<Record<string, Level>>({})
@@ -120,11 +120,11 @@ export function ProgressPage({
       <Card>
         <p className="text-xs font-black uppercase tracking-wide text-slate-500">Progresso</p>
         <p className="mt-1 text-base font-black text-slate-900 dark:text-slate-100">
-          Como estás a evoluir?
+          Como está evoluindo?
         </p>
         <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
-          Em cima vês o estudo (exercícios, escuta e leitura). Mais abaixo ficam as notas das
-          provas e simulados, que dizem se passarias hoje.
+          Em cima você vê o estudo (exercícios, escuta e leitura). Mais abaixo ficam as notas das
+          provas e simulados, que dizem se você passaria hoje.
         </p>
       </Card>
 
@@ -190,28 +190,7 @@ export function ProgressPage({
         </div>
       </Card>
 
-      <CollapsibleCard title="Últimos estudos" icon={<BookOpen size={16} />}>
-        {studySessions.length === 0 ? (
-          <p className="text-xs font-semibold text-slate-500">
-            Ainda não há sessões de estudo. Usa o botão "Estudar" na Prática.
-          </p>
-        ) : (
-          <ul className="flex flex-col gap-1">
-            {studySessions.slice(0, 8).map((session) => (
-              <li
-                key={session.id}
-                className="flex items-center justify-between gap-2 text-xs font-bold text-slate-600 dark:text-slate-300"
-              >
-                <span className="truncate">{session.title || 'Estudo'}</span>
-                <span className="shrink-0 tabular-nums text-slate-500">
-                  {new Date(session.startedAt).toLocaleDateString('pt-PT')} ·{' '}
-                  {formatDuration(session.totalTimeSeconds)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </CollapsibleCard>
+      <SessionHistory sessions={sessions} attempts={attempts} onReview={onReview} />
 
       {/* Provas e simulados */}
       <p className="mt-2 text-xs font-black uppercase tracking-wide text-slate-500">
@@ -250,7 +229,7 @@ export function ProgressPage({
               ? `📈 Subiste ${scoreSummary.delta} ponto(s) desde a primeira prova.`
               : scoreSummary.delta < 0
                 ? `📉 Desces ${Math.abs(scoreSummary.delta)} ponto(s) desde a primeira prova.`
-                : '➡️ Estás estável em relação à primeira prova.'}
+                : '➡️ Está estável em relação à primeira prova.'}
           </p>
         ) : null}
       </Card>
@@ -290,49 +269,6 @@ export function ProgressPage({
             )
           })}
         </div>
-      </Card>
-
-      <Card>
-        <p className="text-xs font-black uppercase tracking-wide text-slate-500">Histórico de provas</p>
-        {completedExams.length === 0 ? (
-          <p className="mt-2 text-xs font-semibold text-slate-500">Ainda não há provas concluídas.</p>
-        ) : (
-          <ul className="mt-2 flex flex-col gap-2">
-            {completedExams.map((session) => (
-              <li key={session.id} className="rounded-xl bg-slate-50 p-3 dark:bg-slate-700/40">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="truncate text-sm font-black text-slate-900 dark:text-slate-100">
-                    {session.title || session.mode}
-                  </span>
-                  <span className="text-sm font-black tabular-nums text-slate-700 dark:text-slate-200">
-                    {session.score ?? 0}/{TOTAL_POINTS}
-                  </span>
-                </div>
-                <p className="text-[11px] font-bold text-slate-500">
-                  {new Date(session.startedAt).toLocaleDateString('pt-PT')} ·{' '}
-                  {formatDuration(session.totalTimeSeconds)}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => onReview(session.id)}
-                  className="mt-2 rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-black text-slate-700 shadow-sm hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-200"
-                >
-                  Rever e exportar
-                </button>
-                {session.perSkill ? (
-                  <p className="mt-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                    {Object.entries(session.perSkill)
-                      .map(
-                        ([skill, score]) =>
-                          `${SKILL_LABELS[skill as keyof typeof SKILL_LABELS]?.pt ?? skill}: ${score}/12`,
-                      )
-                      .join(' · ')}
-                  </p>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        )}
       </Card>
     </div>
   )

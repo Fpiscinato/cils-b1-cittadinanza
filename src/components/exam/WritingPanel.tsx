@@ -25,7 +25,7 @@ const DELIVERY_CHECKLIST: Array<{ id: string; label: string }> = [
  * Painel da prova de escrita.
  *
  * A aluna escolhe 1 dos 2 temas (como no foglio oficial), escreve 80-120
- * palavras e auto-avalia com a GRIGLIA OFICIAL de 5 critérios. A pontuação
+ * palavras e autoavalia com a GRIGLIA OFICIAL de 5 critérios. A pontuação
  * sai da rubrica — nunca de um número escrito à mão.
  */
 export function WritingPanel({
@@ -52,8 +52,8 @@ export function WritingPanel({
           Texto entregue ✅ — {count.words} palavras
         </p>
         <p className="mt-1 text-xs font-semibold text-slate-700 dark:text-slate-200">
-          Na prova oficial a tua produção é corrigida com esta mesma grilha. Relê o texto e pensa no
-          que podes melhorar: verbos no presente, pontuação e uma frase final de despedida.
+          Na prova oficial a sua produção é corrigida com esta mesma grilha. Releia o texto e pensa no
+          que pode melhorar: verbos no presente, pontuação e uma frase final de despedida.
         </p>
       </div>
     )
@@ -63,7 +63,7 @@ export function WritingPanel({
     <div className="flex flex-col gap-4">
       <div>
         <p className="text-xs font-black uppercase tracking-wide text-slate-500">
-          Escolhe 1 tema (como no foglio oficial)
+          Escolha 1 tema (como no foglio oficial)
         </p>
         <div className="mt-2 flex flex-col gap-2">
           {prompts.map((prompt, index) => (
@@ -86,7 +86,7 @@ export function WritingPanel({
       <div>
         <div className="flex items-center justify-between">
           <label htmlFor="writing-text" className="text-xs font-black uppercase tracking-wide text-slate-500">
-            A tua produção
+            A sua produção
           </label>
           <span
             className={`text-xs font-black ${count.inRange ? 'text-emerald-700' : 'text-amber-600'}`}
@@ -182,7 +182,7 @@ export function WritingPanel({
         </ul>
         {!checklistComplete ? (
           <p className="mt-1 text-[11px] font-bold text-amber-700 dark:text-amber-300">
-            Revê a lista antes de entregar — é o que a examinadora vai ver.
+            Reveja a lista antes de entregar — é o que a examinadora vai ver.
           </p>
         ) : null}
       </div>

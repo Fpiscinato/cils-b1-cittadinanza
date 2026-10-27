@@ -1,7 +1,7 @@
 /**
- * Apagar TUDO deste aparelho.
+ * Apagar TUDO deste dispositivo.
  *
- * É uma acção DELIBERADA da aluna (com confirmação escrita "APAGAR"), não um
+ * É uma ação DELIBERADA da aluna (com confirmação escrita "APAGAR"), não um
  * reset automático: por isso pode apagar também as provas concluídas.
  *
  * O que é apagado:
